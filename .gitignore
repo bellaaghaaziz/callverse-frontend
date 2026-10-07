@@ -1,69 +1,41 @@
-# --- Build output ---------------------------------------------------------
-target/
-!**/src/main/**/target/
-!**/src/test/**/target/
-build/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# --- Maven wrapper --------------------------------------------------------
-# The wrapper is configured as distributionType=only-script, so no jar is
-# committed; mvnw downloads the Maven distribution on first use.
-.mvn/wrapper/maven-wrapper.jar
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# --- Local tooling configuration -------------------------------------------
-# Assistant instruction files are local guidance, not part of the deliverable.
-# The project's engineering rules live in CONTRIBUTING.md, which IS tracked.
-docs/CLAUDE.md
-.claude/
+# testing
+/coverage
 
-# --- Working documents ----------------------------------------------------
-# The whole docs/ folder is local. Nothing under it is versioned: it holds
-# working notes, audits, handoffs, presentation material and planning documents
-# that are written for one moment and superseded by the next.
-#
-# A bare docs/ is enough here precisely because there are no exceptions. If one
-# is ever re-introduced, this must become docs/* plus a negation: excluding the
-# directory itself stops git descending into it, and a negation can never
-# re-include a file whose parent directory is excluded.
-#
-# Note that docs/CALLVERSE_DB_SCHEMA.md is the agreed database source of truth,
-# shared with whoever provisions Neon. It is no longer versioned here, so it has
-# to reach them by another route.
-docs/
+# next.js
+/.next/
+/out/
 
-# --- Secrets --------------------------------------------------------------
-# Never commit a real Neon connection string or a JWT secret. Only the
-# template below is tracked; every concrete .env variant stays local.
-.env
-.env.*
-!.env.example
+# production
+/build
 
-# --- IDE ------------------------------------------------------------------
-.idea/
-*.iml
-*.iws
-*.ipr
-.vscode/
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-# --- Logs and OS cruft ----------------------------------------------------
-*.log
-logs/
+# misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# --- Spring Initializr leftover ------------------------------------------
-HELP.md
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# DevTools restart trigger (see application-dev.yml)
-.reloadtrigger
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
