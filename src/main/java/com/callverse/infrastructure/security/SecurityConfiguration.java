@@ -1,0 +1,183 @@
+package com.callverse.infrastructure.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ * Security wiring for the CallVerse backend: two profile-bound filter chains that share everything
+ * except their authorization rules.
+ *
+ * <p><strong>What both chains share</strong>, applied by {@link #common} so the two cannot drift:
+ *
+ * <ul>
+ *   <li>CORS from {@link CorsPolicyConfiguration}. Spring's {@code CorsFilter} runs ahead of
+ *       authorization, so a preflight from an allowed origin succeeds even on a route that
+ *       requires a token — a preflight never carries one.
+ *   <li>{@link JwtAuthenticationFilter}, before {@code UsernamePasswordAuthenticationFilter}: a
+ *       verified bearer token becomes the principal; a refused one is a 401.
+ *   <li>An entry point and an access-denied handler that write the standard error envelope — 401
+ *       {@code UNAUTHENTICATED} for an unidentified caller, 403 {@code ACCESS_DENIED} for an
+ *       identified one who is not allowed. Without them Spring answers 403 with an empty body for
+ *       both.
+ *   <li>Stateless sessions and CSRF disabled. <strong>CSRF is off only because no cookie exists
+ *       anywhere in the system</strong>: the token travels in the {@code Authorization} header,
+ *       which a cross-site form cannot set. If a refresh token ever lands in a cookie (sub-phase
+ *       2.4, Decision 2), this justification is void and CSRF must be revisited in both chains.
+ * </ul>
+ *
+ * <p><strong>Still to come, and where.</strong> Role rules on individual endpoints are
+ * {@code @PreAuthorize} in sub-phase 2.5 (blocked on schema change S-1). STOMP frames are
+ * authenticated in 2.8. These two chains are the only ones: the AI service's {@code /internal/**}
+ * chain and its service-key scheme were withdrawn on 2026-09-30 pending the AI-integration phase
+ * (git tag {@code internal-tools-http-surface}), so {@code /internal/**} now falls to whichever of
+ * these is active. No {@code UserDetailsService} is planned: the token's claims are the
+ * principal, so there is nothing for one to load.
+ */
+@Configuration
+@EnableWebSecurity
+// Registers the interceptor that makes @PreAuthorize execute. Without it those
+// annotations are inert metadata: they compile, they pass review, and they enforce
+// nothing, with no warning and no failing test. GlobalExceptionHandler maps the
+// AccessDeniedException it throws to 401/403 rather than letting the catch-all make it a 500.
+@EnableMethodSecurity
+public class SecurityConfiguration {
+
+    /**
+     * Development chain: every request is permitted.
+     *
+     * <p>Bound to the {@code dev} profile so it cannot be switched on by accident elsewhere. The JWT
+     * filter still runs, so a request carrying a valid token is identified and a request carrying a
+     * refused one is a 401 — but no route requires a token. The filter authenticates; it does not
+     * authorize.
+     */
+    @Bean
+    @Order(2) // slot 1 stays free for the /internal chain the AI-integration phase restores
+    @Profile("dev")
+    SecurityFilterChain developmentFilterChain(
+            HttpSecurity http,
+            JwtTokenService tokens,
+            AccountGate accounts,
+            AuthenticationEntryPoint entryPoint,
+            AccessDeniedHandler accessDeniedHandler)
+            throws Exception {
+        return common(http, tokens, accounts, entryPoint, accessDeniedHandler)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .build();
+    }
+
+    /**
+     * Default chain for every profile other than {@code dev}: deny by default.
+     *
+     * <p>Three routes are open, each for a reason that does not depend on 2.5's role rules:
+     *
+     * <ul>
+     *   <li>{@code /actuator/health/**} — the platform decides from it whether the instance lives.
+     *   <li>{@code POST /api/v1/auth/login} — the only way to obtain a token; closing it makes every
+     *       other route unreachable.
+     *   <li>{@code GET /api/v1/auth/me} — any authenticated caller, since it only echoes back the
+     *       caller's own token.
+     * </ul>
+     *
+     * <p>Everything else is {@code denyAll()}, which refuses even a valid token: anonymous callers
+     * get 401, authenticated ones 403. Opening further routes is 2.5's work, route by route.
+     *
+     * <p>No form login and no HTTP Basic in either chain, and no default user store: Boot's
+     * {@code UserDetailsServiceAutoConfiguration} is excluded in {@code CallVerseApplication}, so no
+     * "generated security password" exists. A "Please sign in" page can only appear if these chains
+     * fail to load — for example a DevTools restart while {@code mvn clean} empties target/classes.
+     */
+    @Bean
+    @Order(2) // slot 1 stays free for the /internal chain the AI-integration phase restores
+    @Profile("!dev")
+    SecurityFilterChain defaultFilterChain(
+            HttpSecurity http,
+            JwtTokenService tokens,
+            AccountGate accounts,
+            AuthenticationEntryPoint entryPoint,
+            AccessDeniedHandler accessDeniedHandler)
+            throws Exception {
+        return common(http, tokens, accounts, entryPoint, accessDeniedHandler)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
+                        // Staff-only reads. The chain grants reachability to any
+                        // authenticated caller; @PreAuthorize on the controller decides the
+                        // role. Both layers are required - dropping this line makes the
+                        // route unreachable outside dev, and dropping the annotation makes
+                        // it readable by every authenticated caller.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/customers/**").authenticated()
+                        // The WebSocket handshake. Authentication happens one step later, on the
+                        // STOMP CONNECT frame (StompAuthorizationInterceptor): a browser cannot put a
+                        // bearer header on the upgrade request itself.
+                        .requestMatchers(HttpMethod.GET, "/ws").permitAll()
+                        // Liveness for the frontend and the demo: it reports no business data.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/health/status").permitAll()
+                        // The documentation is public, the API is not: anyone can open Swagger UI and
+                        // read the contract (the frontend generates its types from it), and every
+                        // business route below still needs the bearer token Swagger's Authorize sends.
+                        .requestMatchers(HttpMethod.GET,
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**")
+                        .permitAll()
+                        // The advisor workspace. Same two-layer rule as above: the chain admits any
+                        // authenticated caller, @PreAuthorize on each method decides the role.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/service-incidents").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/kb/articles").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tickets").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/cards/*/block").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/conversations/*/escalations").authenticated()
+                        // The conversation core. Same two-layer rule; on top of the role, each use
+                        // case checks that the caller is the conversation's customer, its advisor or
+                        // a supervisor, and answers anyone else 404.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/conversations").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/conversations/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/conversations/*").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/conversations/*/messages").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/conversations/*/messages").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/conversations/*/resolve").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/conversations/*/abandon").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/queues").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/queues/*/next").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/supervision/kpi").authenticated()
+                        // Account administration. ADMIN on each method; the chain only admits callers.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/users", "/api/v1/admin/users/*").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/users").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/admin/users/*/role").authenticated()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/admin/users/*/block", "/api/v1/admin/users/*/unblock").authenticated()
+                        .anyRequest().denyAll())
+                .build();
+    }
+
+    private static HttpSecurity common(
+            HttpSecurity http,
+            JwtTokenService tokens,
+            AccountGate accounts,
+            AuthenticationEntryPoint entryPoint,
+            AccessDeniedHandler accessDeniedHandler)
+            throws Exception {
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(tokens, accounts, entryPoint),
+                        UsernamePasswordAuthenticationFilter.class);
+    }
+}
