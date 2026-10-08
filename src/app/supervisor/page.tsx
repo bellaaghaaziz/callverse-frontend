@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AppShell from "@/components/AppShell";
-import { useRealtime } from "@/hooks/useRealtime";
-import { Wifi, WifiOff, Sparkles, AlertTriangle, Check, X } from "lucide-react";
+import { FlaskConical, Sparkles, AlertTriangle, Check, X } from "lucide-react";
 
 const mockKpi = [
   { label: "Attente Moyenne Global", value: "1 min 48s", change: "↓ 12s", status: "good" },
@@ -42,51 +41,18 @@ const statusColor: Record<string, string> = {
   BREAK: "bg-slate-500/15 text-slate-400 border border-slate-500/30",
 };
 
-function formatWait(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m} min ${s}s`;
-}
-
 export default function SupervisorPage() {
-  const { lastMessage, connected } = useRealtime("ws://localhost:8081");
-  const [queues, setQueues] = useState(initialQueues);
   const [recommendation, setRecommendation] = useState(initialRecommendation);
-
-  useEffect(() => {
-    if (lastMessage?.topic === "/topic/queue/CREDIT") {
-      setQueues((prev) =>
-        prev.map((q) =>
-          q.skill === "CREDIT"
-            ? {
-                ...q,
-                length: lastMessage.payload.length,
-                avgWaitLabel: formatWait(lastMessage.payload.avgWait),
-              }
-            : q
-        )
-      );
-    }
-  }, [lastMessage]);
 
   return (
     <AppShell role="Superviseur" initials="KM" title="Centre de Supervision Temps Réel">
       {/* Top Banner Connection Badge */}
       <div className="mb-3 flex shrink-0 items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2 text-xs backdrop-blur-xl">
-        <div className="flex items-center gap-2">
-          {connected ? (
-            <span className="flex items-center gap-1.5 font-semibold text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <Wifi size={15} /> Flux Temps Réel Connecté (ws://localhost:8081)
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 font-semibold text-slate-400">
-              <WifiOff size={15} /> Déconnecté (Serveur WebSocket hors ligne)
-            </span>
-          )}
-        </div>
-        <span className="text-[11px] text-slate-400 font-mono">
-          Topic actif: /topic/queue/CREDIT
+        <span className="flex items-center gap-1.5 font-semibold text-amber-300">
+          <FlaskConical size={15} aria-hidden /> Simulation — données fictives
+        </span>
+        <span className="text-[11px] text-slate-400">
+          Branchement temps réel (KPI, files, alertes) prévu en phase 5
         </span>
       </div>
 
@@ -117,7 +83,7 @@ export default function SupervisorPage() {
               <span className="text-[10px] text-cyan-400 font-mono">Live Sync</span>
             </div>
             <div className="space-y-2">
-              {queues.map((q) => (
+              {initialQueues.map((q) => (
                 <div
                   key={q.skill}
                   className={`flex items-center justify-between rounded-xl border p-3 text-xs transition-all ${

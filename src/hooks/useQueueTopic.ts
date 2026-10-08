@@ -2,8 +2,20 @@
 import { useEffect, useState } from "react";
 import { getStompClient } from "@/lib/stomp";
 
+/** Event published on /topic/queue/{skill} (backend integration guide, §8). */
+export interface QueueEvent {
+  schemaVersion: 1;
+  type: "CONVERSATION_QUEUED" | "CONVERSATION_LEFT_QUEUE";
+  occurredAt: string;
+  skill: string;
+  conversationId: string;
+  /** On departure, why it left the queue: ASSIGNED or ABANDONED. */
+  status: string;
+  waiting: number;
+}
+
 export function useQueueTopic(skill: string | null) {
-  const [lastEvent, setLastEvent] = useState<any>(null);
+  const [lastEvent, setLastEvent] = useState<QueueEvent | null>(null);
 
   useEffect(() => {
     if (!skill) return;
