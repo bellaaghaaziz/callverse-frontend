@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ApiError, apiFetch } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
 import { clearSession, saveSession } from "@/lib/session";
 import { disconnectStomp } from "@/lib/stomp";
 import { Lock, Mail, ArrowRight, Shield, Sparkles, ArrowLeft, User, Headphones, Activity, Settings } from "lucide-react";
@@ -213,20 +214,20 @@ export default function LoginPage() {
                   </p>
                 )}
 
-                <button
+                <Button
                   type="submit"
-                  disabled={loading}
+                  pending={loading}
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 hover:brightness-110 active:scale-98 transition-all disabled:opacity-50"
                 >
                   {loading ? (
-                    "Connexion en cours..."
+                    "Connexion en cours…"
                   ) : (
                     <>
                       {isSignup ? "Créer mon espace" : "Se connecter"}
                       <ArrowRight size={16} />
                     </>
                   )}
-                </button>
+                </Button>
               </form>
             </div>
 

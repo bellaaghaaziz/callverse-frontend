@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { apiFetch } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { usePendingAction } from "@/hooks/usePendingAction";
 import { useConversationTopic } from "@/hooks/useConversationTopic";
 import { useQueueTopic } from "@/hooks/useQueueTopic";
 import {
@@ -115,29 +118,46 @@ export default function AdvisorPage() {
   const [draft, setDraft] = useState("");
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  // "Loading" and "empty" are different states: an empty list is only shown once loaded.
+  const [queuesLoaded, setQueuesLoaded] = useState(false);
+  const [mineLoaded, setMineLoaded] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const activeConv = myConversations.find((c) => c.id === activeConvId) || null;
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setActiveNotification(msg);
     setTimeout(() => setActiveNotification(null), 3000);
-  };
+  }, []);
+
+  const reportError = useCallback(
+    (err: unknown) => showToast(`Erreur : ${err instanceof Error ? err.message : "inconnue"}`),
+    [showToast],
+  );
 
   async function refreshMine() {
-    const d = await apiFetch("/conversations/mine");
-    setMyConversations(d.conversations);
+    try {
+      const d = await apiFetch("/conversations/mine");
+      setMyConversations(d.conversations);
+    } finally {
+      setMineLoaded(true);
+    }
   }
 
   async function refreshQueues() {
-    const d = await apiFetch("/queues");
-    setQueues(d.queues);
+    try {
+      const d = await apiFetch("/queues");
+      setQueues(d.queues);
+    } finally {
+      setQueuesLoaded(true);
+    }
   }
 
   // Chargement initial : mes conversations + les files que je tiens
   useEffect(() => {
-    refreshMine();
-    refreshQueues();
-  }, []);
+    refreshMine().catch(reportError);
+    refreshQueues().catch(reportError);
+  }, [reportError]);
 
   // Quand je change de conversation active : charger messages + fiche client + transactions
   useEffect(() => {
@@ -147,12 +167,20 @@ export default function AdvisorPage() {
       setTransactions([]);
       return;
     }
-    apiFetch(`/conversations/${activeConv.id}/messages?limit=50`).then((d) => setMessages(d.messages));
-    apiFetch(`/customers/${activeConv.customerId}`).then(setCustomer);
-    apiFetch(`/customers/${activeConv.customerId}/transactions?count=10`).then((d) =>
-      setTransactions(d.transactions)
-    );
-  }, [activeConv?.id]);
+    setDetailLoading(true);
+    setMessages([]);
+    setCustomer(null);
+    setTransactions([]);
+    Promise.all([
+      apiFetch(`/conversations/${activeConv.id}/messages?limit=50`).then((d) => setMessages(d.messages)),
+      apiFetch(`/customers/${activeConv.customerId}`).then(setCustomer),
+      apiFetch(`/customers/${activeConv.customerId}/transactions?count=10`).then((d) =>
+        setTransactions(d.transactions)
+      ),
+    ])
+      .catch(reportError)
+      .finally(() => setDetailLoading(false));
+  }, [activeConv?.id, reportError]);
 
   // Chrono SLA côté client, calculé depuis queuedAt (jamais envoyé par le serveur)
   useEffect(() => {
@@ -181,10 +209,10 @@ export default function AdvisorPage() {
       ]);
     }
     if (convEvent.type === "STATUS_CHANGED") {
-      refreshMine();
+      refreshMine().catch(reportError);
       showToast(`Conversation → ${convEvent.status}`);
     }
-  }, [convEvent]);
+  }, [convEvent, showToast, reportError]);
 
   // Temps réel : les files que je tiens (une par compétence)
   const myFirstQueueEvent = useQueueTopic(queues[0]?.skill ?? null);
@@ -214,8 +242,7 @@ export default function AdvisorPage() {
   }
 }
 
-  async function handleSendMessage(e?: React.FormEvent) {
-    if (e) e.preventDefault();
+  async function handleSendMessage() {
     if (!draft.trim() || !activeConv) return;
     await apiFetch(`/conversations/${activeConv.id}/messages`, {
       method: "POST",
@@ -279,6 +306,15 @@ export default function AdvisorPage() {
     showToast("Transfert non disponible : endpoint pas encore implémenté côté backend");
   }
 
+  // One run at a time per action: a double click can no longer take two
+  // conversations, send a message twice or open two tickets.
+  const [runTakeNext, takingNext] = usePendingAction(takeNext);
+  const [runSend, sending] = usePendingAction(handleSendMessage, reportError);
+  const [runBlock, blocking] = usePendingAction(handleBlockCard, reportError);
+  const [runTicket, openingTicket] = usePendingAction(handleOpenTicket, reportError);
+  const [runEscalate, escalating] = usePendingAction(handleEscalate, reportError);
+  const [runResolve, resolving] = usePendingAction(handleResolve, reportError);
+
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
 
@@ -288,7 +324,7 @@ export default function AdvisorPage() {
     <AppShell role="Conseiller" initials="AB" title="Poste de Travail Conseiller">
       {/* Toast notification */}
       {activeNotification && (
-        <div className="absolute top-4 right-6 z-50 rounded-xl border border-indigo-500/40 bg-indigo-900/90 px-4 py-2.5 text-xs font-semibold text-white shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-3">
+        <div role="status" aria-live="polite" className="absolute top-4 right-6 z-50 rounded-xl border border-indigo-500/40 bg-indigo-900/90 px-4 py-2.5 text-xs font-semibold text-white shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-3">
           ✨ {activeNotification}
         </div>
       )}
@@ -305,11 +341,15 @@ export default function AdvisorPage() {
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="flex flex-col gap-2">
+              {!queuesLoaded &&
+                [0, 1, 2].map((i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
               {queues.map((q) => (
                 <button
                   key={q.skill}
-                  onClick={() => takeNext(q.skill)}
-                  className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/40 p-2.5 text-left hover:bg-white/5 transition-all"
+                  onClick={() => runTakeNext(q.skill)}
+                  disabled={takingNext}
+                  aria-busy={takingNext || undefined}
+                  className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/40 p-2.5 text-left hover:bg-white/5 transition-all disabled:opacity-50"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`h-2.5 w-2.5 rounded-full ${skillColor(q.skill)}`} />
@@ -320,7 +360,7 @@ export default function AdvisorPage() {
                   </span>
                 </button>
               ))}
-              {queues.length === 0 && (
+              {queuesLoaded && queues.length === 0 && (
                 <p className="text-[11px] text-slate-500 italic">Aucune compétence assignée.</p>
               )}
             </div>
@@ -333,6 +373,8 @@ export default function AdvisorPage() {
               </span>
             </div>
             <div className="flex flex-col gap-2 pr-1">
+              {!mineLoaded &&
+                [0, 1].map((i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
               {myConversations.map((c) => (
                 <button
                   key={c.id}
@@ -360,7 +402,7 @@ export default function AdvisorPage() {
                   )}
                 </button>
               ))}
-              {myConversations.length === 0 && (
+              {mineLoaded && myConversations.length === 0 && (
                 <p className="text-[11px] text-slate-500 italic">
                   Prends un appel dans une file ci-dessus.
                 </p>
@@ -402,6 +444,14 @@ export default function AdvisorPage() {
 
               {/* Messages Stream */}
               <div className="mb-3 flex flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
+                {detailLoading &&
+                  messages.length === 0 &&
+                  [0, 1, 2].map((i) => (
+                    <Skeleton
+                      key={i}
+                      className={`h-9 rounded-2xl ${i % 2 ? "w-1/2 self-end" : "w-2/3 self-start"}`}
+                    />
+                  ))}
                 {messages.map((m) => (
                   <div
                     key={m.id}
@@ -439,7 +489,13 @@ export default function AdvisorPage() {
               </div>
 
               {/* Message Draft Input */}
-              <form onSubmit={handleSendMessage} className="flex gap-2 shrink-0">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  runSend();
+                }}
+                className="flex gap-2 shrink-0"
+              >
                 <input
                   type="text"
                   value={draft}
@@ -447,12 +503,13 @@ export default function AdvisorPage() {
                   placeholder={`Écrire un message à ${customer?.firstName ?? "…"}`}
                   className="glass-input flex-1 rounded-xl px-3.5 py-2.5 text-xs"
                 />
-                <button
+                <Button
                   type="submit"
-                  className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 px-4 py-2.5 text-xs font-semibold text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
+                  pending={sending}
+                  className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 px-4 py-2.5 text-xs font-semibold text-white shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
                 >
-                  <Send size={14} /> Envoyer
-                </button>
+                  {!sending && <Send size={14} />} Envoyer
+                </Button>
               </form>
             </>
           )}
@@ -462,7 +519,17 @@ export default function AdvisorPage() {
         <div className="lg:col-span-3 glass-card flex flex-col justify-between rounded-2xl p-4 border border-white/10 overflow-hidden">
           {!customer ? (
             <div className="flex flex-1 items-center justify-center text-xs text-slate-500">
-              Aucun client sélectionné.
+              {activeConv && detailLoading ? (
+                <div className="flex w-full flex-col gap-3" aria-label="Chargement de la fiche client">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ) : (
+                "Aucun client sélectionné."
+              )}
             </div>
           ) : (
             <>
@@ -512,7 +579,9 @@ export default function AdvisorPage() {
                           </span>
                         ) : (
                           <button
-                            onClick={() => handleBlockCard(card.id)}
+                            onClick={() => runBlock(card.id)}
+                            disabled={blocking}
+                            aria-busy={blocking || undefined}
                             className="text-[10px] font-semibold text-rose-300 hover:text-rose-200"
                           >
                             Bloquer
@@ -546,7 +615,9 @@ export default function AdvisorPage() {
               </div>
 
               <button
-                onClick={handleResolve}
+                onClick={() => runResolve()}
+                disabled={resolving}
+                aria-busy={resolving || undefined}
                 className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all active:scale-95"
               >
                 <CheckCircle2 size={15} /> Résoudre la conversation
@@ -559,8 +630,9 @@ export default function AdvisorPage() {
       {/* Action Bar Footer */}
       <div className="mt-3 flex shrink-0 flex-wrap gap-2 pt-2 border-t border-white/10">
         <button
-          onClick={handleOpenTicket}
-          disabled={!activeConv}
+          onClick={() => runTicket()}
+          disabled={!activeConv || openingTicket}
+          aria-busy={openingTicket || undefined}
           className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-40"
         >
           <Ticket size={15} className="text-indigo-400" /> Créer un ticket
@@ -573,8 +645,9 @@ export default function AdvisorPage() {
           <Percent size={15} className="text-emerald-400" /> Geste commercial
         </button>
         <button
-          onClick={handleEscalate}
-          disabled={!activeConv}
+          onClick={() => runEscalate()}
+          disabled={!activeConv || escalating}
+          aria-busy={escalating || undefined}
           className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition-all active:scale-95 disabled:opacity-40"
         >
           <AlertTriangle size={15} /> Escalader
