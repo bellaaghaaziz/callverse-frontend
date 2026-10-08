@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
+import { INTRO_GUARD_SCRIPT } from "@/lib/intro";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -21,7 +22,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    // The intro guard may set data-intro on <html> before React hydrates.
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        {/* Compile-time constant (src/lib/intro.ts), no runtime data: not an injection surface. */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_GUARD_SCRIPT }} />
+      </head>
       <body className={`${spaceGrotesk.variable} ${manrope.variable} antialiased`}>
         {children}
       </body>

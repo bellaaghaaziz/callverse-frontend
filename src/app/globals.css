@@ -16,6 +16,93 @@
   --amber: #f59e0b;
   --emerald: #10b981;
   --rose: #f43f5e;
+
+  /* Charter (palette only) — see the design direction, §5 */
+  --night: #0e1a15;
+  --brand-300: #3dbe8b;
+  --brand-500: #00965e;
+  --brand-700: #007a4d;
+
+  /* Motion tokens, mirrored in src/lib/motion.ts */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --motion-signature: 1200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Splash and mark choreography (design section 3). CSS, so it plays from first paint. */
+.cv-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: cv-draw 300ms var(--ease-out) both;
+}
+.cv-core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cv-core 240ms var(--ease-out) both;
+}
+.cv-stream {
+  animation: cv-stream 500ms var(--ease-out) both;
+}
+.cv-stage {
+  animation: cv-stage var(--motion-signature) var(--ease-out) both;
+}
+/* The splash removes itself in CSS, so the page is revealed on time even if
+   JavaScript is slow or fails. JS only adds the skip and unmounts it. */
+.cv-splash {
+  animation: cv-splash-out 280ms var(--ease-in) 1.25s both;
+  transition: opacity 280ms var(--ease-in);
+}
+.cv-splash-leave {
+  animation: none;
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes cv-splash-out {
+  from { opacity: 1; visibility: visible; }
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes cv-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes cv-core {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes cv-stream {
+  0% { transform: translate(var(--fx), var(--fy)); opacity: 0; }
+  20% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(0, 0); opacity: 0; }
+}
+@keyframes cv-stage {
+  0% { transform: scale(0.9); }
+  40% { transform: scale(1); }
+  85% { transform: scale(1); }
+  100% { transform: scale(0.82); }
+}
+
+/* Returning visitor (set before paint by the intro guard): no splash flash. */
+html[data-intro="skip"] [data-splash] {
+  display: none !important;
+}
+
+/* The user asked for less motion: no splash, no decorative animation. */
+@media (prefers-reduced-motion: reduce) {
+  [data-splash] {
+    display: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {

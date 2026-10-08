@@ -20,6 +20,7 @@ import {
   Sliders,
 } from "lucide-react";
 import DynamicCanvas from "@/components/DynamicCanvas";
+import Splash from "@/components/brand/Splash";
 
 export default function Home() {
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -41,6 +42,8 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-[#07090e] text-slate-100 selection:bg-indigo-500 selection:text-white">
+      <Splash />
+
       {/* Dynamic Background Canvas */}
       <DynamicCanvas />
 
