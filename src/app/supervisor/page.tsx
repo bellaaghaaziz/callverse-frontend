@@ -1,264 +1,311 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { useRealtime } from "@/hooks/useRealtime";
-import { Wifi, WifiOff, Sparkles, AlertTriangle, Check, X } from "lucide-react";
-
-const mockKpi = [
-  { label: "Attente Moyenne Global", value: "1 min 48s", change: "↓ 12s", status: "good" },
-  { label: "SLA du Jour (80/20)", value: "76 %", change: "Seuil 80%", status: "warning" },
-  { label: "Taux d'Abandon", value: "5 %", change: "Moyenne basse", status: "good" },
-  { label: "Occupation Conseillers", value: "82 %", change: "Optimal", status: "good" },
-];
-
-const initialQueues = [
-  { skill: "CREDIT", length: 11, avgWaitLabel: "1 min 10" },
-  { skill: "ACCOUNT", length: 2, avgWaitLabel: "0 min 30" },
-  { skill: "CARD", length: 3, avgWaitLabel: "0 min 45" },
-];
-
-const mockAdvisors = [
-  { name: "Amira B.", status: "BUSY", skill: "CREDIT" },
-  { name: "Karim L.", status: "AVAILABLE", skill: "CARD" },
-  { name: "Sonia M.", status: "BREAK", skill: "ACCOUNT" },
-];
-
-const mockAlerts = ["File CREDIT proche du seuil SLA (85%)"];
-
-const initialRecommendation = {
-  action: "Réaffecter 2 conseillers de ACCOUNT vers CREDIT",
-  reason: "File crédit à 34 clients, occupation compte à 31%",
-  status: "PENDING",
-};
-
-const mockEscalations = [
-  { customer: "Amadou Diallo", reason: "Demande de rééchelonnement hors barème standard" },
-];
-
-const statusColor: Record<string, string> = {
-  AVAILABLE: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
-  BUSY: "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-  BREAK: "bg-slate-500/15 text-slate-400 border border-slate-500/30",
-};
-
-function formatWait(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m} min ${s}s`;
-}
-
+import ConversationPanel from "@/components/ConversationPanel";
+import { FrontDesk } from "@/components/IntegrationTools";
+import { apiFetch, errorMessage } from "@/lib/api";
+import type { LiveKpi, SupervisionAlert } from "@/lib/contracts";
+import { useConnection, useTopic } from "@/hooks/useTopic";
+import { reconnectStomp } from "@/lib/stomp";
+import {
+  RefreshCw,
+  Clock,
+  Headphones,
+  CheckCircle2,
+  LogOut,
+  ShieldCheck,
+  MessageSquare,
+  ArrowUpRight,
+} from "lucide-react";
+import { skillLabel, timeLabel } from "@/lib/presentation";
+const percent = (value: number | null | undefined) =>
+  value == null
+    ? "—"
+    : new Intl.NumberFormat("fr-FR", {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }).format(value);
 export default function SupervisorPage() {
-  const { lastMessage, connected } = useRealtime("ws://localhost:8081");
-  const [queues, setQueues] = useState(initialQueues);
-  const [recommendation, setRecommendation] = useState(initialRecommendation);
-
-  useEffect(() => {
-    if (lastMessage?.topic === "/topic/queue/CREDIT") {
-      setQueues((prev) =>
-        prev.map((q) =>
-          q.skill === "CREDIT"
-            ? {
-                ...q,
-                length: lastMessage.payload.length,
-                avgWaitLabel: formatWait(lastMessage.payload.avgWait),
-              }
-            : q
-        )
-      );
+  const [kpi, setKpi] = useState<LiveKpi | null>(null);
+  const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
+  const [error, setError] = useState("");
+  const [lookupId, setLookupId] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const connection = useConnection();
+  const latestAt = useRef("");
+  const requestVersion = useRef(0);
+  const acceptKpi = useCallback((snapshot: LiveKpi) => {
+    if (snapshot.schemaVersion !== 1 || snapshot.at < latestAt.current) return;
+    latestAt.current = snapshot.at;
+    setKpi(snapshot);
+  }, []);
+  const refresh = useCallback(async () => {
+    const version = ++requestVersion.current;
+    try {
+      const snapshot = await apiFetch<LiveKpi>("/supervision/kpi");
+      if (version === requestVersion.current) {
+        acceptKpi(snapshot);
+        setError("");
+      }
+    } catch (error) {
+      if (version === requestVersion.current) setError(errorMessage(error));
     }
-  }, [lastMessage]);
-
+  }, [acceptKpi]);
+  useEffect(() => {
+    const invalidate = () => {
+      ++requestVersion.current;
+    };
+    void refresh();
+    window.addEventListener("callverse:reconnected", refresh);
+    return () => {
+      invalidate();
+      window.removeEventListener("callverse:reconnected", refresh);
+    };
+  }, [refresh]);
+  useTopic<LiveKpi>("/topic/supervision/kpi", acceptKpi);
+  useTopic<SupervisionAlert>("/topic/supervision/alerts", (alert) =>
+    setAlerts((previous) => {
+      const key = (item: SupervisionAlert) =>
+        `${item.type}:${item.escalationId || item.cardId}:${item.occurredAt}`;
+      if (previous.some((item) => key(item) === key(alert))) return previous;
+      return [alert, ...previous]
+        .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+        .slice(0, 100);
+    }),
+  );
+  const metrics = [
+    ["En attente", kpi?.waitingTotal ?? "—"],
+    ["En conversation", kpi?.inService ?? "—"],
+    ["Résolues aujourd'hui", kpi?.resolvedToday ?? "—"],
+    ["Abandonnées aujourd'hui", kpi?.abandonedToday ?? "—"],
+    [
+      "Attente moyenne",
+      kpi?.averageWaitSeconds == null
+        ? "—"
+        : `${Math.round(kpi.averageWaitSeconds)} s`,
+    ],
+    ["Respect du délai cible", percent(kpi?.slaRatio)],
+    ["Taux d'abandon", percent(kpi?.abandonRate)],
+  ];
+  const mainMetrics = metrics.slice(0, 4);
   return (
-    <AppShell role="Superviseur" initials="KM" title="Centre de Supervision Temps Réel">
-      {/* Top Banner Connection Badge */}
-      <div className="mb-3 flex shrink-0 items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2 text-xs backdrop-blur-xl">
-        <div className="flex items-center gap-2">
-          {connected ? (
-            <span className="flex items-center gap-1.5 font-semibold text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <Wifi size={15} /> Flux Temps Réel Connecté (ws://localhost:8081)
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 font-semibold text-slate-400">
-              <WifiOff size={15} /> Déconnecté (Serveur WebSocket hors ligne)
-            </span>
-          )}
+    <AppShell role="Superviseur" initials="SV" title="Vue d’ensemble">
+      <div className="cv-page-heading" id="workspace">
+        <div>
+          <p className="cv-eyebrow">PILOTAGE DE L’ACTIVITÉ</p>
+          <h1>Gardez une longueur d’avance.</h1>
+          <p className="cv-subtitle">
+            Les files, les indicateurs et les alertes de votre équipe, en
+            direct.
+          </p>
         </div>
-        <span className="text-[11px] text-slate-400 font-mono">
-          Topic actif: /topic/queue/CREDIT
-        </span>
+        <div className="flex items-center gap-3">
+          <span
+            className={
+              "cv-live " + (connection !== "connected" ? "cv-live-off" : "")
+            }
+          >
+            {connection === "connected"
+              ? "Flux live connecté"
+              : "Connexion interrompue"}
+          </span>
+          <button
+            onClick={() => {
+              reconnectStomp();
+              void refresh();
+            }}
+            className="cv-button cv-button-secondary cv-button-small"
+          >
+            <RefreshCw size={13} />
+            Actualiser
+          </button>
+        </div>
       </div>
-
-      {/* KPI Cards Row */}
-      <div className="mb-4 grid shrink-0 grid-cols-2 md:grid-cols-4 gap-3">
-        {mockKpi.map((k) => (
-          <div key={k.label} className="glass-card rounded-2xl p-4 border border-white/10">
-            <p className="text-xs font-medium text-slate-400">{k.label}</p>
-            <div className="mt-1 flex items-baseline justify-between">
-              <p className="font-display text-2xl font-bold text-white">{k.value}</p>
-              <span className="text-[10px] font-semibold font-mono text-emerald-400">
-                {k.change}
-              </span>
+      {error && (
+        <p role="alert" className="cv-error mb-5">
+          {error}
+        </p>
+      )}
+      <div className="cv-stat-grid">
+        {mainMetrics.map(([label, value], i) => (
+          <div className="cv-card cv-stat" key={label}>
+            <div className="cv-stat-top">
+              <span>{label}</span>
+              {i === 0 ? (
+                <Clock size={16} />
+              ) : i === 1 ? (
+                <Headphones size={16} />
+              ) : i === 2 ? (
+                <CheckCircle2 size={16} />
+              ) : (
+                <LogOut size={16} />
+              )}
             </div>
+            <p className="cv-stat-value">{value}</p>
+            <p className="cv-stat-foot">
+              {i < 2 ? "Situation actuelle" : "Depuis le début de la journée"}
+            </p>
           </div>
         ))}
       </div>
-
-      {/* 3 Columns Layout */}
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-12 gap-3 overflow-y-auto pr-1">
-        {/* Col 1: Queues & Advisors (4 cols) */}
-        <div className="lg:col-span-4 glass-card rounded-2xl p-4 border border-white/10 flex flex-col gap-4">
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Files par Compétence
-              </span>
-              <span className="text-[10px] text-cyan-400 font-mono">Live Sync</span>
+      <div className="cv-two-columns">
+        <section className="cv-card">
+          <div className="cv-card-heading">
+            <div>
+              <h2>Files par compétence</h2>
+              <p>Répartition des contacts en attente</p>
             </div>
-            <div className="space-y-2">
-              {queues.map((q) => (
-                <div
-                  key={q.skill}
-                  className={`flex items-center justify-between rounded-xl border p-3 text-xs transition-all ${
-                    q.skill === "CREDIT"
-                      ? "border-indigo-500/40 bg-indigo-500/15 shadow-md shadow-indigo-500/10"
-                      : "border-white/10 bg-slate-900/60"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-white">{q.skill}</span>
-                    {q.skill === "CREDIT" && (
-                      <span className="rounded-full bg-indigo-500/30 px-2 py-0.5 text-[9px] font-mono text-indigo-300">
-                        WebSocket
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-mono font-bold text-cyan-300">
-                    {q.length} en attente
-                  </span>
-                  <span className="text-slate-400 font-mono">{q.avgWaitLabel}</span>
-                </div>
-              ))}
-            </div>
+            <span className="cv-count">{kpi?.queues.length || 0}</span>
           </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Roster Conseillers
-              </span>
+          <div className="cv-table-wrap">
+            <table className="cv-table">
+              <thead>
+                <tr>
+                  <th>Compétence</th>
+                  <th>En attente</th>
+                  <th>Attente la plus longue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kpi?.queues.map((queue) => (
+                  <tr key={queue.skill}>
+                    <td>
+                      <span
+                        className={
+                          "cv-status-dot mr-2 " +
+                          (queue.skill === "FRAUD"
+                            ? "text-rose-400"
+                            : "text-emerald-600")
+                        }
+                      />
+                      {skillLabel[queue.skill] || queue.skill}
+                    </td>
+                    <td>
+                      <span className="cv-count">{queue.waiting}</span>
+                    </td>
+                    <td>
+                      {queue.oldestWaitSeconds == null
+                        ? "—"
+                        : Math.round(queue.oldestWaitSeconds) + " s"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!kpi && <div className="cv-empty">Chargement de l’activité…</div>}
+          <div className="grid grid-cols-3 border-t border-[#edf0e9] p-5 gap-4">
+            {metrics.slice(4).map(([label, value]) => (
+              <div key={label}>
+                <p className="cv-muted">{label}</p>
+                <p className="text-lg mt-2 font-semibold">{value}</p>
+              </div>
+            ))}
+          </div>
+          <p className="cv-muted px-5 pb-5">
+            Les indicateurs affichent « — » lorsqu’aucune mesure n’est
+            disponible.{kpi ? " · Mise à jour " + timeLabel(kpi.at) : ""}
+          </p>
+        </section>
+        <section className="cv-card" id="alerts">
+          <div className="cv-card-heading">
+            <div>
+              <h2>Alertes de la session</h2>
+              <p>Les événements reçus depuis votre connexion</p>
             </div>
-            <div className="space-y-2">
-              {mockAdvisors.map((a) => (
-                <div
-                  key={a.name}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 p-2.5 text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-white">{a.name}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">({a.skill})</span>
-                  </div>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
-                      statusColor[a.status]
-                    }`}
+            <span className="cv-count">{alerts.length}</span>
+          </div>
+          <div className="max-h-[440px] overflow-y-auto p-5">
+            {!alerts.length && (
+              <div className="cv-empty">
+                <ShieldCheck size={28} />
+                <strong>Tout est calme pour le moment.</strong>Les nouvelles
+                alertes s’afficheront ici.
+              </div>
+            )}
+            {alerts.map((alert) => (
+              <div
+                key={
+                  alert.type +
+                  ":" +
+                  alert.escalationId +
+                  ":" +
+                  alert.cardId +
+                  ":" +
+                  alert.occurredAt
+                }
+                className="cv-result !mt-0 mb-3"
+              >
+                <div className="flex gap-2 justify-between mb-2">
+                  <span className="cv-badge cv-badge-rose">
+                    {alert.type === "ESCALATION_RAISED"
+                      ? "Intervention demandée"
+                      : "Carte bloquée · " + (alert.cardLast4 || "")}
+                  </span>
+                  <span className="cv-muted">
+                    {timeLabel(alert.occurredAt)}
+                  </span>
+                </div>
+                <p className="cv-key">Client : {alert.customerId}</p>
+                {alert.conversationId && (
+                  <button
+                    className="cv-button cv-button-secondary cv-button-small mt-3"
+                    onClick={() => {
+                      setSelectedId(alert.conversationId);
+                      document
+                        .getElementById("conversation")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }}
                   >
-                    {a.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Col 2: Alerts & Escalations (4 cols) */}
-        <div className="lg:col-span-4 glass-card rounded-2xl p-4 border border-white/10 flex flex-col gap-4">
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <AlertTriangle size={14} className="text-rose-400" /> Alertes SLA
-              </span>
-            </div>
-            <div className="space-y-2">
-              {mockAlerts.map((a, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 font-medium"
-                >
-                  ⚠️ {a}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Escalades en Attente
-              </span>
-            </div>
-            <div className="space-y-2">
-              {mockEscalations.map((e, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs"
-                >
-                  <p className="font-bold text-white mb-1">{e.customer}</p>
-                  <p className="text-slate-400 font-light leading-relaxed">{e.reason}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Col 3: Workforce AI Recommendation (4 cols) */}
-        <div className="lg:col-span-4 glass-card rounded-2xl p-5 border border-indigo-500/30 bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-cyan-500/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-300 uppercase tracking-wider">
-                <Sparkles size={16} className="text-cyan-400" /> Workforce Manager IA
-              </span>
-              <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-purple-300 border border-purple-500/30">
-                IA Autonome
-              </span>
-            </div>
-
-            <h4 className="text-base font-bold text-white mb-2">{recommendation.action}</h4>
-            <p className="text-xs text-slate-300 leading-relaxed font-light mb-4">
-              {recommendation.reason}
-            </p>
-
-            {recommendation.status === "VALIDATED" && (
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/15 p-3 text-xs text-emerald-300 font-medium flex items-center gap-2">
-                <Check size={16} /> Recommandation appliquée avec succès !
+                    Ouvrir la conversation
+                    <ArrowUpRight size={12} />
+                  </button>
+                )}
               </div>
-            )}
-
-            {recommendation.status === "REJECTED" && (
-              <div className="rounded-xl border border-slate-500/30 bg-slate-500/15 p-3 text-xs text-slate-300 font-medium flex items-center gap-2">
-                <X size={16} /> Recommandation ignorée.
-              </div>
-            )}
+            ))}
           </div>
-
-          {recommendation.status === "PENDING" && (
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setRecommendation({ ...recommendation, status: "VALIDATED" })}
-                className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 py-2.5 text-xs font-semibold text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
-              >
-                <Check size={14} /> Valider
-              </button>
-              <button
-                onClick={() => setRecommendation({ ...recommendation, status: "REJECTED" })}
-                className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-semibold text-slate-300 hover:bg-white/10 active:scale-95 transition-all"
-              >
-                <X size={14} /> Rejeter
-              </button>
-            </div>
-          )}
+        </section>
+      </div>
+      <section className="cv-section cv-card cv-card-pad" id="conversation">
+        <h2 className="cv-tool-title">
+          <MessageSquare size={18} />
+          Consulter une conversation
+        </h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSelectedId(lookupId.trim());
+          }}
+          className="cv-inline-form"
+        >
+          <input
+            aria-label="Identifiant de conversation"
+            required
+            pattern="[0-9a-fA-F-]{36}"
+            value={lookupId}
+            onChange={(e) => setLookupId(e.target.value)}
+            className="cv-input"
+            placeholder="Identifiant de conversation"
+          />
+          <button className="cv-button">
+            Ouvrir
+            <ArrowUpRight size={13} />
+          </button>
+        </form>
+      </section>
+      {selectedId && (
+        <div className="cv-section">
+          <ConversationPanel
+            key={selectedId}
+            id={selectedId}
+            role="SUPERVISOR"
+          />
         </div>
+      )}
+      <div className="cv-section" id="frontdesk">
+        <FrontDesk
+          onOpened={(conversation) => setSelectedId(conversation.id)}
+        />
       </div>
     </AppShell>
   );

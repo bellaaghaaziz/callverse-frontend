@@ -1,234 +1,297 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { apiFetch } from "@/lib/api";
-import { useConversationTopic } from "@/hooks/useConversationTopic";
-import { useQueueTopic } from "@/hooks/useQueueTopic";
+import { apiFetch, ApiError, errorMessage } from "@/lib/api";
+import {
+  mergeMessages,
+  money,
+  type Conversation,
+  type Message,
+  type Customer,
+  type Schema,
+  type ConversationEvent,
+} from "@/lib/contracts";
+import {
+  FrontDesk,
+  KnowledgeSearch,
+  Incidents,
+} from "@/components/IntegrationTools";
+import { useConnection, useTopic } from "@/hooks/useTopic";
+import { reconnectStomp } from "@/lib/stomp";
+import { useQueueTopics } from "@/hooks/useQueueTopic";
 import {
   Clock,
-  Sparkles,
   Ticket,
-  Percent,
-  AlertTriangle,
   ArrowRightLeft,
   Send,
   User,
   ShieldAlert,
   Copy,
-  PhoneIncoming,
   CheckCircle2,
+  RefreshCw,
+  ArrowUpRight,
+  Inbox,
+  MessageSquare,
+  CreditCard,
 } from "lucide-react";
+import ChatThread from "@/components/ChatThread";
+import StatusBadge from "@/components/StatusBadge";
+import {
+  skillLabel,
+  intentLabel,
+  initialsFor,
+  segmentLabel,
+  durationLabel,
+} from "@/lib/presentation";
 
-interface Conversation {
-  id: string;
-  customerId: string;
-  advisorId: string | null;
-  skill: string;
-  intent: string | null;
-  channel: string;
-  status: string;
-  queuedAt: string;
-  assignedAt: string | null;
-  endedAt: string | null;
-}
-
-interface Message {
-  id: number;
-  conversationId: string;
-  sender: "CUSTOMER" | "ADVISOR" | "SYSTEM";
-  content: string;
-  sentAt: string;
-}
-
-interface Card {
-  id: string;
-  panLast4: string;
-  network: string;
-  type: string;
-  status: string;
-  expiresOn: string;
-  blockedAt?: string | null;
-  blockReason?: string | null;
-}
-
-interface Account {
-  id: string;
-  iban: string;
-  status: string;
-  product: { code: string; name: string; category: string };
-  cards: Card[];
-}
-
-interface Customer {
-  id: string;
-  externalRef: string;
-  firstName: string;
-  lastName: string;
-  segment: string;
-  region: string;
-  tenureMonths: number;
-  accounts: Account[];
-}
-
-interface Queue {
-  skill: string;
-  waiting: number;
-  oldestWaitSeconds: number | null;
-}
-
-interface Transaction {
-  id: string;
-  accountId: string;
-  type: string;
-  amount: number;
-  currency: string;
-  label: string;
-  status: string;
-  bookedAt: string;
-}
-
-const mockSuggestion = {
-  reply: "Retard de paiement détecté sur son prêt, un rééchelonnement est possible.",
-  sources: [{ kb_article_id: "KB-Retard-Paiement-018", score: 0.91 }],
-};
-
-const priorityColor: Record<string, string> = {
-  high: "bg-rose-500 shadow-rose-500/50",
-  medium: "bg-amber-500 shadow-amber-500/50",
-  low: "bg-slate-500 shadow-slate-500/50",
-};
-
-function skillColor(skill: string) {
-  if (skill === "FRAUD") return priorityColor.high;
-  if (skill === "CARDS" || skill === "CREDIT") return priorityColor.medium;
-  return priorityColor.low;
-}
+type Queue = Schema["Queue"];
+type Transaction = Schema["Transaction"];
 
 export default function AdvisorPage() {
   const [myConversations, setMyConversations] = useState<Conversation[]>([]);
+  const [customerNames, setCustomerNames] = useState<Record<string, string>>(
+    {},
+  );
+  const customerIds = [...new Set(myConversations.map((c) => c.customerId))]
+    .sort()
+    .join(",");
+  useEffect(() => {
+    if (!customerIds) return;
+    const controller = new AbortController();
+    void Promise.allSettled(
+      customerIds.split(",").map(async (id) => {
+        const profile = await apiFetch<Customer>("/customers/" + id, {
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted)
+          setCustomerNames((previous) => ({
+            ...previous,
+            [id]: profile.firstName + " " + profile.lastName,
+          }));
+      }),
+    );
+    return () => controller.abort();
+  }, [customerIds]);
   const [queues, setQueues] = useState<Queue[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [draft, setDraft] = useState("");
-  const [activeNotification, setActiveNotification] = useState<string | null>(null);
+  const [activeNotification, setActiveNotification] = useState<string | null>(
+    null,
+  );
   const [elapsed, setElapsed] = useState(0);
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticket, setTicket] = useState({
+    title: "",
+    description: "",
+    category: "FRAUD",
+    severity: 3,
+  });
+  const [escalationOpen, setEscalationOpen] = useState(false);
+  const [escalationReason, setEscalationReason] = useState("");
 
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const connection = useConnection();
+  const latestEvent = useRef<{ id: string | null; at: string }>({
+    id: null,
+    at: "",
+  });
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(noticeTimer.current), []);
   const activeConv = myConversations.find((c) => c.id === activeConvId) || null;
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setActiveNotification(msg);
-    setTimeout(() => setActiveNotification(null), 3000);
-  };
-
-  async function refreshMine() {
-    const d = await apiFetch("/conversations/mine");
-    setMyConversations(d.conversations);
-  }
-
-  async function refreshQueues() {
-    const d = await apiFetch("/queues");
-    setQueues(d.queues);
-  }
-
-  // Chargement initial : mes conversations + les files que je tiens
-  useEffect(() => {
-    refreshMine();
-    refreshQueues();
+    clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setActiveNotification(null), 6000);
   }, []);
 
-  // Quand je change de conversation active : charger messages + fiche client + transactions
-  useEffect(() => {
-    if (!activeConv) {
-      setMessages([]);
-      setCustomer(null);
-      setTransactions([]);
-      return;
-    }
-    apiFetch(`/conversations/${activeConv.id}/messages?limit=50`).then((d) => setMessages(d.messages));
-    apiFetch(`/customers/${activeConv.customerId}`).then(setCustomer);
-    apiFetch(`/customers/${activeConv.customerId}/transactions?count=10`).then((d) =>
-      setTransactions(d.transactions)
+  const refreshMine = useCallback(async () => {
+    const data = await apiFetch<Schema["ConversationList"]>(
+      "/conversations/mine",
     );
-  }, [activeConv?.id]);
+    setMyConversations(data.conversations);
+  }, []);
+  const refreshQueues = useCallback(async () => {
+    const data = await apiFetch<Schema["Queues"]>("/queues");
+    setQueues(data.queues);
+  }, []);
+  useEffect(() => {
+    const load = () => {
+      Promise.all([refreshMine(), refreshQueues()]).catch((error) =>
+        showToast(errorMessage(error)),
+      );
+    };
+    load();
+    window.addEventListener("callverse:reconnected", load);
+    return () => window.removeEventListener("callverse:reconnected", load);
+  }, [refreshMine, refreshQueues, showToast]);
+  const selectedId = activeConv?.id;
+  const selectedCustomerId = activeConv?.customerId;
+  useEffect(() => {
+    setMessages([]);
+    setCustomer(null);
+    setTransactions([]);
+    setDraft("");
+    setTicketOpen(false);
+    setEscalationOpen(false);
+    latestEvent.current = { id: selectedId || null, at: "" };
+    if (!selectedId || !selectedCustomerId) return;
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const [transcript, profile, movements] = await Promise.all([
+          apiFetch<Schema["Transcript"]>(
+            "/conversations/" + selectedId + "/messages?limit=200",
+            { signal: controller.signal },
+          ),
+          apiFetch<Customer>("/customers/" + selectedCustomerId, {
+            signal: controller.signal,
+          }),
+          apiFetch<Schema["TransactionsResponse"]>(
+            "/customers/" + selectedCustomerId + "/transactions?count=10",
+            { signal: controller.signal },
+          ),
+        ]);
+        if (!controller.signal.aborted) {
+          setMessages((previous) =>
+            mergeMessages(previous, transcript.messages),
+          );
+          setCustomer(profile);
+          setTransactions(movements.transactions);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) showToast(errorMessage(error));
+      }
+    };
+    void load();
+    window.addEventListener("callverse:reconnected", load);
+    return () => {
+      controller.abort();
+      window.removeEventListener("callverse:reconnected", load);
+    };
+  }, [selectedId, selectedCustomerId, showToast]);
+  async function perform(action: () => Promise<void>) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      await action();
+    } catch (error) {
+      showToast(errorMessage(error));
+      if (error instanceof ApiError && error.status === 409)
+        await refreshMine().catch(() => {});
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }
 
+  const selectedQueuedAt = activeConv?.queuedAt;
   // Chrono SLA côté client, calculé depuis queuedAt (jamais envoyé par le serveur)
   useEffect(() => {
-    if (!activeConv) return;
-    const start = new Date(activeConv.queuedAt).getTime();
-    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
+    if (!selectedId || !selectedQueuedAt) return;
+    const start = new Date(selectedQueuedAt).getTime();
+    const tick = () =>
+      setElapsed(Math.max(0, Math.floor((Date.now() - start) / 1000)));
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [activeConv?.id, activeConv?.queuedAt]);
+  }, [selectedId, selectedQueuedAt]);
 
-  // Temps réel : messages et changements de statut sur la conversation ouverte
-  const convEvent = useConversationTopic(activeConvId);
-  useEffect(() => {
-    if (!convEvent) return;
-    if (convEvent.type === "MESSAGE_POSTED" && convEvent.sender) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: convEvent.messageId!,
-          conversationId: convEvent.conversationId,
-          sender: convEvent.sender!,
-          content: convEvent.content!,
-          sentAt: convEvent.sentAt!,
-        },
-      ]);
-    }
-    if (convEvent.type === "STATUS_CHANGED") {
-      refreshMine();
-      showToast(`Conversation → ${convEvent.status}`);
-    }
-  }, [convEvent]);
-
-  // Temps réel : les files que je tiens (une par compétence)
-  const myFirstQueueEvent = useQueueTopic(queues[0]?.skill ?? null);
-  useEffect(() => {
-    if (myFirstQueueEvent) refreshQueues();
-  }, [myFirstQueueEvent]);
+  useTopic<ConversationEvent>(
+    selectedId ? "/topic/conversation/" + selectedId : null,
+    (convEvent) => {
+      if (convEvent.conversationId !== selectedId) return;
+      if (
+        convEvent.type === "MESSAGE_POSTED" &&
+        convEvent.sender &&
+        convEvent.messageId !== null &&
+        convEvent.content !== null &&
+        convEvent.sentAt
+      ) {
+        setMessages((previous) =>
+          mergeMessages(previous, [
+            {
+              id: convEvent.messageId!,
+              conversationId: convEvent.conversationId,
+              sender: convEvent.sender!,
+              content: convEvent.content!,
+              sentAt: convEvent.sentAt!,
+            },
+          ]),
+        );
+      }
+      if (
+        latestEvent.current.id === convEvent.conversationId &&
+        convEvent.occurredAt >= latestEvent.current.at
+      ) {
+        latestEvent.current.at = convEvent.occurredAt;
+        setMyConversations((previous) =>
+          previous
+            .map((conversation) =>
+              conversation.id === convEvent.conversationId
+                ? { ...conversation, status: convEvent.status }
+                : conversation,
+            )
+            .filter(
+              (conversation) =>
+                !["RESOLVED", "ABANDONED"].includes(conversation.status),
+            ),
+        );
+      }
+    },
+  );
+  useQueueTopics(
+    queues.map((queue) => queue.skill),
+    () => {
+      refreshQueues().catch((error) => showToast(errorMessage(error)));
+    },
+  );
 
   async function takeNext(skill: string) {
-  try {
-    const result = await apiFetch(`/queues/${skill}/next`, { method: "POST" });
-    if (result) {
-      await refreshMine();
-      setActiveConvId(result.id);
-      showToast(`Appel pris : file ${skill}`);
-    } else {
-      showToast(`Rien en attente sur ${skill} pour l'instant`);
-    }
-  } catch (err) {
-    const code = err instanceof Error ? err.message : "UNKNOWN";
-    if (code === "ADVISOR_UNAVAILABLE") {
-      showToast("Tu as déjà atteint ton nombre maximum d'appels simultanés");
-    } else if (code === "ADVISOR_PROFILE_NOT_FOUND") {
-      showToast("Ce compte n'a pas de profil conseiller configuré");
-    } else {
-      showToast(`Erreur : ${code}`);
+    try {
+      const result = await apiFetch<Conversation | null>(
+        `/queues/${skill}/next`,
+        { method: "POST" },
+      );
+      if (result) {
+        await refreshMine();
+        setActiveConvId(result.id);
+        showToast("Contact pris en charge · " + (skillLabel[skill] || skill));
+      } else {
+        showToast(
+          "Aucun contact en attente dans la file " +
+            (skillLabel[skill] || skill) +
+            ".",
+        );
+      }
+    } catch (err) {
+      throw err;
     }
   }
-}
 
   async function handleSendMessage(e?: React.FormEvent) {
     if (e) e.preventDefault();
     if (!draft.trim() || !activeConv) return;
-    await apiFetch(`/conversations/${activeConv.id}/messages`, {
-      method: "POST",
-      body: JSON.stringify({ content: draft }),
-    });
+    const message = await apiFetch<Message>(
+      `/conversations/${activeConv.id}/messages`,
+      {
+        method: "POST",
+        body: JSON.stringify({ content: draft }),
+      },
+    );
+    setMessages((previous) => mergeMessages(previous, [message]));
+    await refreshMine();
     setDraft("");
     // Le message s'affichera via le topic temps réel (événement MESSAGE_POSTED)
   }
-
-  const handleApplySuggestion = () => {
-    setDraft(mockSuggestion.reply);
-    showToast("Suggestion IA copiée dans le champ de saisie !");
-  };
 
   async function handleBlockCard(cardId: string) {
     await apiFetch(`/cards/${cardId}/block`, {
@@ -236,7 +299,7 @@ export default function AdvisorPage() {
       body: JSON.stringify({ reason: "FRAUD_SUSPECTED" }),
     });
     if (activeConv) {
-      const d = await apiFetch(`/customers/${activeConv.customerId}`);
+      const d = await apiFetch<Customer>(`/customers/${activeConv.customerId}`);
       setCustomer(d);
     }
     showToast("Carte bloquée pour suspicion de fraude");
@@ -249,343 +312,600 @@ export default function AdvisorPage() {
       body: JSON.stringify({
         customerId: activeConv.customerId,
         conversationId: activeConv.id,
-        category: activeConv.skill,
-        title: "Demande du client",
-        severity: 3,
+        category: ticket.category,
+        title: ticket.title.trim(),
+        description: ticket.description.trim(),
+        severity: ticket.severity,
       }),
     });
-    showToast(`Nouveau ticket ouvert pour ${customer?.firstName ?? "le client"}`);
+    setTicketOpen(false);
+    setTicket({ title: "", description: "", category: "FRAUD", severity: 3 });
+    showToast(
+      `Nouveau ticket ouvert pour ${customer?.firstName ?? "le client"}`,
+    );
   }
 
   async function handleEscalate() {
     if (!activeConv) return;
     await apiFetch(`/conversations/${activeConv.id}/escalations`, {
       method: "POST",
-      body: JSON.stringify({ reason: "Nécessite l'intervention d'un superviseur" }),
+      body: JSON.stringify({ reason: escalationReason.trim() }),
     });
+    await refreshMine();
+    setEscalationOpen(false);
     showToast("Dossier escaladé au superviseur en charge");
   }
 
   async function handleResolve() {
     if (!activeConv) return;
-    await apiFetch(`/conversations/${activeConv.id}/resolve`, { method: "POST" });
+    await apiFetch(`/conversations/${activeConv.id}/resolve`, {
+      method: "POST",
+    });
     setActiveConvId(null);
     await refreshMine();
     showToast("Conversation résolue");
   }
 
-  function handleTransfer() {
-    // Pas d'endpoint de transfert documenté côté backend pour l'instant — reste un mock volontaire.
-    showToast("Transfert non disponible : endpoint pas encore implémenté côté backend");
+  async function handleAbandon() {
+    if (!activeConv) return;
+    await apiFetch("/conversations/" + activeConv.id + "/abandon", {
+      method: "POST",
+    });
+    setActiveConvId(null);
+    await refreshMine();
+    await refreshQueues();
+    showToast("Conversation terminée : client parti.");
   }
 
-  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
-  const ss = String(elapsed % 60).padStart(2, "0");
-
-  const allCards = customer?.accounts.flatMap((a) => a.cards) ?? [];
-
+  const customerName = customer
+    ? customer.firstName + " " + customer.lastName
+    : "Conversation client";
+  const canReply =
+    !!activeConv &&
+    ["ASSIGNED", "ACTIVE", "ESCALATED"].includes(activeConv.status);
   return (
-    <AppShell role="Conseiller" initials="AB" title="Poste de Travail Conseiller">
-      {/* Toast notification */}
+    <AppShell role="Conseiller" initials="CO" title="Espace de travail">
       {activeNotification && (
-        <div className="absolute top-4 right-6 z-50 rounded-xl border border-indigo-500/40 bg-indigo-900/90 px-4 py-2.5 text-xs font-semibold text-white shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-3">
-          ✨ {activeNotification}
+        <div className="cv-toast" role="status">
+          <CheckCircle2 size={17} />
+          {activeNotification}
         </div>
       )}
-
-      {/* Main 3-Column Layout */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
-        {/* Left Column: Files + mes conversations (3 cols) */}
-        <div className="lg:col-span-3 glass-card flex flex-col rounded-2xl p-3 border border-white/10 overflow-hidden gap-4">
-          <div>
-            <div className="mb-2 flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Mes compétences
-              </span>
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <div className="flex flex-col gap-2">
-              {queues.map((q) => (
-                <button
-                  key={q.skill}
-                  onClick={() => takeNext(q.skill)}
-                  className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/40 p-2.5 text-left hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className={`h-2.5 w-2.5 rounded-full ${skillColor(q.skill)}`} />
-                    <span className="text-xs font-medium text-slate-200">{q.skill}</span>
-                  </div>
-                  <span className="flex items-center gap-1 rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-300">
-                    <PhoneIncoming size={11} /> {q.waiting}
-                  </span>
-                </button>
-              ))}
-              {queues.length === 0 && (
-                <p className="text-[11px] text-slate-500 italic">Aucune compétence assignée.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <div className="mb-2 border-b border-white/10 pb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Mes conversations ({myConversations.length})
-              </span>
-            </div>
-            <div className="flex flex-col gap-2 pr-1">
-              {myConversations.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveConvId(c.id)}
-                  className={`flex items-center justify-between rounded-xl p-2.5 transition-all text-left ${
-                    c.id === activeConvId
-                      ? "border border-indigo-500/40 bg-indigo-500/15 shadow-lg shadow-indigo-500/10"
-                      : "border border-white/5 bg-slate-900/40 hover:bg-white/5"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className={`h-2.5 w-2.5 rounded-full ${skillColor(c.skill)}`} />
-                    <span
-                      className={`text-xs font-medium ${
-                        c.id === activeConvId ? "text-white font-semibold" : "text-slate-300"
-                      }`}
-                    >
-                      {c.skill} · {c.status}
-                    </span>
-                  </div>
-                  {c.id === activeConvId && (
-                    <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-300">
-                      En cours
-                    </span>
-                  )}
-                </button>
-              ))}
-              {myConversations.length === 0 && (
-                <p className="text-[11px] text-slate-500 italic">
-                  Prends un appel dans une file ci-dessus.
-                </p>
-              )}
-            </div>
-          </div>
+      <div className="cv-page-heading" id="workspace">
+        <div>
+          <p className="cv-eyebrow">RELATION CLIENT</p>
+          <h1>Votre espace de travail</h1>
+          <p className="cv-subtitle">
+            Des échanges clairs. Les bonnes informations, au bon moment.
+          </p>
         </div>
-
-        {/* Center Column: Live Conversation & AI Assistant (6 cols) */}
-        <div className="lg:col-span-6 glass-card flex flex-col rounded-2xl p-4 border border-white/10 overflow-hidden">
-          {!activeConv ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-slate-500">
-              Sélectionne ou prends une conversation pour commencer.
-            </div>
-          ) : (
-            <>
-              {/* Header */}
-              <div className="mb-3 flex shrink-0 items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-amber-500 font-bold text-xs text-white shadow-md">
-                    {customer ? `${customer.firstName[0]}${customer.lastName[0]}` : "…"}
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-white flex items-center gap-2">
-                      {customer ? `${customer.firstName} ${customer.lastName}` : "Chargement…"}
-                      <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-300 border border-indigo-500/30">
-                        {customer?.segment}
-                      </span>
-                    </span>
-                    <span className="text-[11px] text-slate-400 block">
-                      {activeConv.skill} · {customer?.region}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-mono font-semibold text-rose-400">
-                  <Clock size={14} /> {mm}:{ss}
-                </div>
-              </div>
-
-              {/* Messages Stream */}
-              <div className="mb-3 flex flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
-                {messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
-                      m.sender === "CUSTOMER"
-                        ? "self-start bg-slate-900/80 text-slate-200 border border-white/10 shadow-sm"
-                        : m.sender === "ADVISOR"
-                        ? "self-end bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/20"
-                        : "self-center text-slate-500 text-[11px] italic"
-                    }`}
-                  >
-                    {m.content}
-                  </div>
-                ))}
-              </div>
-
-              {/* AI Suggestion Box — reste en mock, pas encore fourni par le backend */}
-              <div className="mb-3 shrink-0 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-cyan-500/10 p-3 shadow-lg">
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="flex items-center gap-1.5 text-xs font-bold text-indigo-300">
-                    <Sparkles size={14} className="text-cyan-400" /> Suggestion IA (RAG)
-                  </p>
-                  <button
-                    onClick={handleApplySuggestion}
-                    className="flex items-center gap-1 rounded-lg bg-indigo-500/30 px-2.5 py-1 text-[11px] font-semibold text-indigo-200 border border-indigo-500/40 hover:bg-indigo-500/50 transition-colors"
-                  >
-                    <Copy size={12} /> Utiliser
-                  </button>
-                </div>
-                <p className="text-xs text-slate-200 font-light leading-relaxed">{mockSuggestion.reply}</p>
-                <p className="mt-1.5 text-[10px] text-slate-400 font-mono">
-                  Source : {mockSuggestion.sources[0].kb_article_id} · Indice de confiance :{" "}
-                  {mockSuggestion.sources[0].score * 100}%
-                </p>
-              </div>
-
-              {/* Message Draft Input */}
-              <form onSubmit={handleSendMessage} className="flex gap-2 shrink-0">
-                <input
-                  type="text"
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={`Écrire un message à ${customer?.firstName ?? "…"}`}
-                  className="glass-input flex-1 rounded-xl px-3.5 py-2.5 text-xs"
-                />
-                <button
-                  type="submit"
-                  className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 px-4 py-2.5 text-xs font-semibold text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
-                >
-                  <Send size={14} /> Envoyer
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-
-        {/* Right Column: Customer Profile 360 (3 cols) */}
-        <div className="lg:col-span-3 glass-card flex flex-col justify-between rounded-2xl p-4 border border-white/10 overflow-hidden">
-          {!customer ? (
-            <div className="flex flex-1 items-center justify-center text-xs text-slate-500">
-              Aucun client sélectionné.
-            </div>
-          ) : (
-            <>
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 block flex items-center gap-1.5 border-b border-white/10 pb-2">
-                  <User size={15} className="text-indigo-400" /> Fiche Client 360°
-                </span>
-
-                <div className="space-y-3 text-xs">
-                  <div className="flex items-center justify-between py-1.5 border-b border-white/10">
-                    <span className="text-slate-400">Produit Actif</span>
-                    <span className="font-semibold text-white">
-                      {customer.accounts[0]?.product.name ?? "—"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-white/10">
-                    <span className="text-slate-400">Ancienneté</span>
-                    <span className="font-mono font-semibold text-cyan-300">
-                      {customer.tenureMonths} mois
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-white/10">
-                    <span className="text-slate-400">Segment</span>
-                    <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 font-semibold text-indigo-300 border border-indigo-500/30">
-                      {customer.segment}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Cartes — action reelle de blocage */}
-                <div className="mt-4">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 block">
-                    Cartes
-                  </span>
-                  <div className="space-y-1.5">
-                    {allCards.map((card) => (
-                      <div
-                        key={card.id}
-                        className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-900/60 px-2.5 py-2"
-                      >
-                        <span className="font-mono text-[11px] text-slate-300">
-                          •••• {card.panLast4}
-                        </span>
-                        {card.status === "BLOCKED" ? (
-                          <span className="flex items-center gap-1 text-[10px] text-rose-400">
-                            <ShieldAlert size={11} /> Bloquée
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => handleBlockCard(card.id)}
-                            className="text-[10px] font-semibold text-rose-300 hover:text-rose-200"
-                          >
-                            Bloquer
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dernières transactions */}
-                <div className="mt-4">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 block">
-                    Dernières opérations
-                  </span>
-                  <div className="space-y-1.5">
-                    {transactions.slice(0, 5).map((t) => (
-                      <div key={t.id} className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400 truncate max-w-[120px]">{t.label}</span>
-                        <span
-                          className={`font-mono font-semibold ${
-                            t.amount < 0 ? "text-slate-300" : "text-emerald-400"
-                          }`}
-                        >
-                          {t.amount.toFixed(2)} {t.currency}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleResolve}
-                className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all active:scale-95"
-              >
-                <CheckCircle2 size={15} /> Résoudre la conversation
-              </button>
-            </>
-          )}
+        <div className="flex items-center gap-3">
+          <span
+            className={
+              "cv-live " + (connection !== "connected" ? "cv-live-off" : "")
+            }
+          >
+            {connection === "connected"
+              ? "Flux live connecté"
+              : "Connexion interrompue"}
+          </span>
+          <button
+            className="cv-icon-button"
+            aria-label="Actualiser les conversations"
+            disabled={busy}
+            onClick={() =>
+              perform(async () => {
+                reconnectStomp();
+                await refreshMine();
+                await refreshQueues();
+              })
+            }
+          >
+            <RefreshCw size={14} />
+          </button>
         </div>
       </div>
-
-      {/* Action Bar Footer */}
-      <div className="mt-3 flex shrink-0 flex-wrap gap-2 pt-2 border-t border-white/10">
-        <button
-          onClick={handleOpenTicket}
-          disabled={!activeConv}
-          className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-40"
+      <div className="cv-advisor-grid">
+        <section
+          className="cv-card cv-inbox"
+          aria-label="Files et conversations"
         >
-          <Ticket size={15} className="text-indigo-400" /> Créer un ticket
-        </button>
-        <button
-          onClick={() => showToast("Geste commercial : en attente de validation côté équipe")}
-          disabled
-          className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 opacity-40"
+          <div className="cv-inbox-head">
+            <h2>Boîte de réception</h2>
+            <span className="cv-count">{myConversations.length}</span>
+          </div>
+          <div className="cv-queue-section">
+            <p>PRENDRE LE PROCHAIN CONTACT</p>
+            {queues.map((queue) => (
+              <button
+                key={queue.skill}
+                disabled={busy}
+                className="cv-queue-button"
+                onClick={() => perform(() => takeNext(queue.skill))}
+                aria-label={skillLabel[queue.skill] + " " + queue.waiting}
+              >
+                <span>
+                  <span
+                    className={
+                      "cv-status-dot " +
+                      (queue.skill === "FRAUD"
+                        ? "text-rose-400"
+                        : "text-emerald-600")
+                    }
+                  />
+                  {skillLabel[queue.skill] || queue.skill}
+                </span>
+                <span>
+                  <b>{queue.waiting}</b>
+                  <ArrowUpRight size={12} />
+                </span>
+              </button>
+            ))}
+            {!queues.length && (
+              <p className="cv-muted">Chargement des files…</p>
+            )}
+          </div>
+          <div className="cv-conversation-list">
+            {myConversations.map((conv) => (
+              <button
+                key={conv.id}
+                className={
+                  "cv-conversation-item " +
+                  (activeConvId === conv.id ? "cv-conversation-selected" : "")
+                }
+                onClick={() => setActiveConvId(conv.id)}
+                disabled={busy}
+                aria-pressed={activeConvId === conv.id}
+              >
+                <span className="cv-avatar">
+                  <MessageSquare size={14} />
+                </span>
+                <div>
+                  <strong>
+                    {customerNames[conv.customerId] ||
+                      "Contact · " + conv.id.slice(0, 6)}
+                  </strong>
+                  <p>{skillLabel[conv.skill] || conv.skill}</p>
+                  <StatusBadge status={conv.status} />
+                </div>
+              </button>
+            ))}
+            {!myConversations.length && (
+              <div className="cv-empty">
+                <Inbox size={24} />
+                <strong>Tout est à jour</strong>Prenez un contact dans une file
+                pour démarrer.
+              </div>
+            )}
+          </div>
+        </section>
+        <section
+          className="cv-card cv-chat-panel"
+          aria-label="Conversation active"
         >
-          <Percent size={15} className="text-emerald-400" /> Geste commercial
-        </button>
-        <button
-          onClick={handleEscalate}
-          disabled={!activeConv}
-          className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition-all active:scale-95 disabled:opacity-40"
-        >
-          <AlertTriangle size={15} /> Escalader
-        </button>
-        <button
-          onClick={handleTransfer}
-          disabled={!activeConv}
-          className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-40"
-        >
-          <ArrowRightLeft size={15} className="text-cyan-400" /> Transférer
-        </button>
+          {activeConv ? (
+            <>
+              <div className="cv-chat-header">
+                <div className="cv-chat-person">
+                  <span className="cv-avatar cv-avatar-light">
+                    {initialsFor(customerName)}
+                  </span>
+                  <div>
+                    <strong>{customerName}</strong>
+                    <p>
+                      {intentLabel[activeConv.intent || ""] ||
+                        skillLabel[activeConv.skill] ||
+                        "Relation client"}
+                    </p>
+                  </div>
+                </div>
+                <div className="cv-chat-status">
+                  <StatusBadge status={activeConv.status} />
+                  <span className="cv-muted">{messages.length} messages</span>
+                </div>
+              </div>
+              <div className="cv-chat-context">
+                <span>
+                  <Clock size={12} />
+                  Depuis la mise en file · {durationLabel(elapsed)}
+                </span>
+                <button
+                  className="flex items-center gap-1"
+                  title="Copier l’identifiant de conversation"
+                  onClick={() => {
+                    navigator.clipboard
+                      .writeText(activeConv.id)
+                      .then(() =>
+                        showToast("Identifiant de conversation copié"),
+                      )
+                      .catch(() =>
+                        showToast(
+                          "La copie est indisponible dans ce navigateur.",
+                        ),
+                      );
+                  }}
+                >
+                  <Copy size={11} />
+                  Référence {activeConv.id.slice(0, 8)}
+                </button>
+              </div>
+              <ChatThread
+                key={activeConv.id}
+                messages={messages}
+                role="ADVISOR"
+                customerName={customerName}
+              />
+              <div className="cv-composer">
+                {canReply ? (
+                  <>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void perform(() => handleSendMessage());
+                      }}
+                    >
+                      <input
+                        aria-label="Message"
+                        disabled={busy}
+                        placeholder="Écrire un message à votre client…"
+                        className="cv-input"
+                        maxLength={2000}
+                        required
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                      />
+                      <button
+                        className="cv-button"
+                        disabled={busy || !draft.trim()}
+                      >
+                        <Send size={15} />
+                        <span>Envoyer</span>
+                      </button>
+                    </form>
+                    <p>
+                      <span>Votre message sera visible par le client.</span>
+                      <span>{draft.length}/2000</span>
+                    </p>
+                  </>
+                ) : (
+                  <p>Cette conversation est en lecture seule.</p>
+                )}
+              </div>
+              <div className="cv-chat-actions">
+                <button
+                  className="cv-button cv-button-secondary"
+                  disabled={busy}
+                  onClick={() => {
+                    setTicketOpen(!ticketOpen);
+                    setEscalationOpen(false);
+                  }}
+                >
+                  <Ticket size={12} />
+                  Ouvrir un ticket
+                </button>
+                <button
+                  className="cv-button cv-button-secondary"
+                  disabled={busy || activeConv.status !== "ACTIVE"}
+                  onClick={() => {
+                    setEscalationOpen(!escalationOpen);
+                    setTicketOpen(false);
+                  }}
+                >
+                  <ShieldAlert size={12} />
+                  Escalader
+                </button>
+                <button
+                  className="cv-button cv-button-secondary"
+                  disabled={busy || activeConv.status !== "ACTIVE"}
+                  onClick={() => perform(handleResolve)}
+                >
+                  <CheckCircle2 size={12} />
+                  Résoudre la conversation
+                </button>
+                {["QUEUED", "ASSIGNED", "ACTIVE"].includes(
+                  activeConv.status,
+                ) && (
+                  <button
+                    className="cv-button cv-button-danger"
+                    disabled={busy}
+                    onClick={() => perform(handleAbandon)}
+                  >
+                    Terminer — client parti
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="cv-chat-empty">
+              <span className="cv-empty-icon">
+                <MessageSquare size={25} />
+              </span>
+              <h3>Chaque échange commence ici.</h3>
+              <p>
+                Sélectionnez une conversation ou prenez
+                <br />
+                le prochain contact dans une file.
+              </p>
+            </div>
+          )}
+        </section>
+        <aside className="cv-customer-column">
+          <section className="cv-card">
+            {customer ? (
+              <>
+                <div className="cv-customer-header">
+                  <span className="cv-avatar">{initialsFor(customerName)}</span>
+                  <h2>{customerName}</h2>
+                  <p>DOSSIER CLIENT · {customer.externalRef}</p>
+                </div>
+                <div className="cv-profile-section">
+                  <h3>
+                    Informations client <User size={13} />
+                  </h3>
+                  <dl className="cv-meta-list">
+                    <div>
+                      <dt>Segment</dt>
+                      <dd>
+                        {segmentLabel[customer.segment] || customer.segment}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Région</dt>
+                      <dd>{customer.region}</dd>
+                    </div>
+                    <div>
+                      <dt>Ancienneté</dt>
+                      <dd>{customer.tenureMonths} mois</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className="cv-profile-section">
+                  <h3>
+                    Comptes & cartes <CreditCard size={13} />
+                  </h3>
+                  {customer.accounts.map((account) => (
+                    <div key={account.id} className="cv-account-card">
+                      <p>{account.product.name}</p>
+                      <strong>
+                        {money(account.balance, account.currency)}
+                      </strong>
+                      <p>{account.maskedIban}</p>
+                      <p className="mt-2">
+                        Découvert :{" "}
+                        {money(account.overdraftLimit, account.currency)}
+                      </p>
+                      <div className="mt-2">
+                        <StatusBadge
+                          status={account.status}
+                          label={
+                            account.status === "ACTIVE" ? "Actif" : undefined
+                          }
+                        />
+                      </div>
+                      {account.cards.map((card) => (
+                        <div className="cv-bank-card" key={card.id}>
+                          <p>•••• {card.panLast4}</p>
+                          {card.status === "ACTIVE" ? (
+                            <button
+                              className="cv-button cv-button-danger"
+                              disabled={busy}
+                              onClick={() =>
+                                perform(() => handleBlockCard(card.id))
+                              }
+                            >
+                              Bloquer
+                            </button>
+                          ) : (
+                            <StatusBadge status={card.status} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="cv-profile-section">
+                  <h3>
+                    Dernières opérations <ArrowRightLeft size={13} />
+                  </h3>
+                  {transactions.slice(0, 5).map((t) => (
+                    <div className="cv-list-row" key={t.id}>
+                      <div>
+                        <strong>{t.label}</strong>
+                      </div>
+                      <span
+                        className={t.amount < 0 ? "cv-negative" : "cv-positive"}
+                      >
+                        {money(t.amount, t.currency)}
+                      </span>
+                    </div>
+                  ))}
+                  {!transactions.length && (
+                    <p className="cv-muted">Aucune opération récente.</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="cv-empty">
+                <User size={26} />
+                <strong>Le contexte fait la différence.</strong>Les informations
+                client apparaîtront avec votre conversation.
+              </div>
+            )}
+          </section>
+          {(ticketOpen || escalationOpen) && (
+            <section className="cv-card cv-action-form">
+              {ticketOpen ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void perform(handleOpenTicket);
+                  }}
+                >
+                  <h3>Ouvrir un ticket</h3>
+                  <label className="cv-field">
+                    <span className="cv-label">Titre du ticket</span>
+                    <input
+                      aria-label="Titre du ticket"
+                      required
+                      minLength={3}
+                      maxLength={140}
+                      className="cv-input"
+                      value={ticket.title}
+                      onChange={(e) =>
+                        setTicket({ ...ticket, title: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="cv-field">
+                    <span className="cv-label">Description du ticket</span>
+                    <textarea
+                      aria-label="Description du ticket"
+                      required
+                      minLength={5}
+                      maxLength={4000}
+                      className="cv-input"
+                      value={ticket.description}
+                      onChange={(e) =>
+                        setTicket({ ...ticket, description: e.target.value })
+                      }
+                    />
+                  </label>
+                  <div className="cv-form-row">
+                    <label className="cv-field">
+                      <span className="cv-label">Catégorie du ticket</span>
+                      <select
+                        aria-label="Catégorie du ticket"
+                        className="cv-input"
+                        value={ticket.category}
+                        onChange={(e) =>
+                          setTicket({ ...ticket, category: e.target.value })
+                        }
+                      >
+                        {["FRAUD", "CARD", "CREDIT", "ACCOUNT", "OTHER"].map(
+                          (value) => (
+                            <option key={value} value={value}>
+                              {
+                                (
+                                  {
+                                    FRAUD: "Fraude",
+                                    CARD: "Carte",
+                                    CREDIT: "Crédit",
+                                    ACCOUNT: "Compte",
+                                    OTHER: "Autre",
+                                  } as Record<string, string>
+                                )[value]
+                              }
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="cv-field">
+                      <span className="cv-label">Gravité du ticket</span>
+                      <select
+                        aria-label="Gravité du ticket"
+                        className="cv-input"
+                        value={ticket.severity}
+                        onChange={(e) =>
+                          setTicket({
+                            ...ticket,
+                            severity: Number(e.target.value),
+                          })
+                        }
+                      >
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <option key={value} value={value}>
+                            {value} / 5
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className="cv-button"
+                      disabled={
+                        busy ||
+                        !ticket.title.trim() ||
+                        !ticket.description.trim()
+                      }
+                    >
+                      Créer le ticket
+                    </button>
+                    <button
+                      type="button"
+                      className="cv-button cv-button-secondary"
+                      onClick={() => setTicketOpen(false)}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void perform(handleEscalate);
+                  }}
+                >
+                  <h3>Demander une intervention</h3>
+                  <p className="cv-subtitle mb-4">
+                    Le superviseur recevra votre demande avec le contexte de la
+                    conversation.
+                  </p>
+                  <label className="cv-field">
+                    <span className="cv-label">Motif d’escalade</span>
+                    <textarea
+                      aria-label="Motif d’escalade"
+                      required
+                      minLength={3}
+                      maxLength={2000}
+                      className="cv-input"
+                      value={escalationReason}
+                      onChange={(e) => setEscalationReason(e.target.value)}
+                    />
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      className="cv-button"
+                      disabled={busy || !escalationReason.trim()}
+                    >
+                      Confirmer l’escalade
+                    </button>
+                    <button
+                      type="button"
+                      className="cv-button cv-button-secondary"
+                      onClick={() => setEscalationOpen(false)}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
+          )}
+        </aside>
+      </div>
+      <div className="cv-section">
+        <div className="cv-section-title">
+          <h2>Vos outils, à portée de main</h2>
+          <p>Pour accompagner chaque demande</p>
+        </div>
+        <div className="grid lg:grid-cols-2 gap-5">
+          <div id="frontdesk" className="scroll-mt-6">
+            <FrontDesk
+              onOpened={() => {
+                void refreshQueues().catch((e) => showToast(errorMessage(e)));
+              }}
+            />
+          </div>
+          <div id="knowledge" className="scroll-mt-6">
+            <KnowledgeSearch />
+          </div>
+        </div>
+        <div id="incidents" className="cv-section">
+          <Incidents region={customer?.region} />
+        </div>
       </div>
     </AppShell>
   );
