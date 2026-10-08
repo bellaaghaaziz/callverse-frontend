@@ -4,7 +4,6 @@ import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { logout } from "@/lib/auth";
 import { LayoutGrid, LogOut, ChevronDown, Sparkles, Home } from "lucide-react";
-import DynamicCanvas from "./DynamicCanvas";
 
 const roleAccent: Record<string, { color: string; label: string }> = {
   Client: { color: "#06B6D4", label: "Portail Client" },
@@ -33,9 +32,6 @@ export default function AppShell({
 
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-[#07090e] text-slate-100 antialiased">
-      {/* Background animated canvas */}
-      <DynamicCanvas />
-
       <div className="relative z-10 flex h-full w-full p-3 md:p-4 gap-3">
         {/* Left Sidebar */}
         <aside className="glass-panel flex w-16 shrink-0 flex-col items-center justify-between rounded-2xl py-4 border border-white/10 shadow-2xl backdrop-blur-xl">

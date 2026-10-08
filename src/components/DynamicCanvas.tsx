@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { forEachNeighborPair, particleBudget } from "@/components/canvas/neighbors";
+import { prefersReducedMotion } from "@/lib/intro";
 
 interface Particle {
   x: number;
   y: number;
-  baseX: number;
-  baseY: number;
   size: number;
   vx: number;
   vy: number;
@@ -14,169 +14,138 @@ interface Particle {
   color: string;
 }
 
+const COLORS = ["#6366f1", "#06b6d4", "#8b5cf6", "#3b82f6", "#10b981"];
+const LINK_DISTANCE = 110;
+const GRID_SPACING = 80;
+const PARALLAX = 0.4;
+/** Decorative glows and dots: 1x density is visually enough and keeps the per-frame fill cost low (measured). */
+const MAX_DPR = 1;
+
+/**
+ * Decorative particle background for the landing and login pages.
+ * Cost controls: capped particle count, grid-based neighbour search instead
+ * of all pairs, no per-particle shadowBlur, DPR cap, paused while the tab is
+ * hidden, and nothing at all under reduced motion.
+ */
 export default function DynamicCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || prefersReducedMotion()) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-
+    let frame = 0;
+    let width = 0;
+    let height = 0;
     let scrollY = window.scrollY;
-
-    const handleScroll = () => {
-      scrollY = window.scrollY;
-    };
-
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles();
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize);
-
-    const colors = ["#6366f1", "#06b6d4", "#8b5cf6", "#3b82f6", "#10b981"];
     let particles: Particle[] = [];
 
-    const initParticles = () => {
-      particles = [];
-      const particleCount = Math.floor((width * height) / 14000);
-      for (let i = 0; i < particleCount; i++) {
-        const x = Math.random() * width;
-        const y = Math.random() * height * 2; // extended for scrolling canvas depth
-        particles.push({
-          x,
-          y,
-          baseX: x,
-          baseY: y,
-          size: Math.random() * 2 + 1,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          alpha: Math.random() * 0.6 + 0.2,
-          color: colors[Math.floor(Math.random() * colors.length)],
-        });
-      }
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      particles = Array.from({ length: particleBudget(width, height) }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height * 2,
+        size: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random() * 0.6 + 0.2,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      }));
     };
-
-    initParticles();
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Radial background aura glow
-      const radialGradient = ctx.createRadialGradient(
-        width / 2,
-        height / 2 - scrollY * 0.2,
-        100,
-        width / 2,
-        height / 2,
-        Math.max(width, height)
-      );
-      radialGradient.addColorStop(0, "rgba(99, 102, 241, 0.08)");
-      radialGradient.addColorStop(0.5, "rgba(6, 182, 212, 0.04)");
-      radialGradient.addColorStop(1, "rgba(8, 12, 20, 0.95)");
-      ctx.fillStyle = radialGradient;
+      const glow = ctx.createRadialGradient(width / 2, height / 2 - scrollY * 0.2, 100, width / 2, height / 2, Math.max(width, height));
+      glow.addColorStop(0, "rgba(99, 102, 241, 0.08)");
+      glow.addColorStop(0.5, "rgba(6, 182, 212, 0.04)");
+      glow.addColorStop(1, "rgba(8, 12, 20, 0.95)");
+      ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw grid line mesh that subtly reacts to scroll
-      const gridSpacing = 80;
-      const scrollOffset = (scrollY * 0.3) % gridSpacing;
+      // One path for the whole grid instead of one stroke per line.
       ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
       ctx.lineWidth = 1;
-
-      for (let x = 0; x < width; x += gridSpacing) {
-        ctx.beginPath();
+      ctx.beginPath();
+      for (let x = 0; x < width; x += GRID_SPACING) {
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
-        ctx.stroke();
       }
-
-      for (let y = -gridSpacing + scrollOffset; y < height; y += gridSpacing) {
-        ctx.beginPath();
+      for (let y = -GRID_SPACING + ((scrollY * 0.3) % GRID_SPACING); y < height; y += GRID_SPACING) {
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
-        ctx.stroke();
+      }
+      ctx.stroke();
+
+      // Move, then project to the screen with scroll parallax.
+      const onScreen: { x: number; y: number; p: Particle }[] = [];
+      for (const p of particles) {
+        p.x = (p.x + p.vx + width) % width;
+        p.y = (p.y + p.vy + height * 2) % (height * 2);
+        const projected = (p.y - scrollY * PARALLAX) % (height * 1.5);
+        const y = projected < 0 ? projected + height * 1.5 : projected;
+        if (y <= height + 50) onScreen.push({ x: p.x, y, p });
       }
 
-      // Update & Draw Particles with scroll parallax
-      const parallaxFactor = 0.4;
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-
-        // Move position slightly
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Wrap around boundaries
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height * 2;
-        if (p.y > height * 2) p.y = 0;
-
-        // Effective position on screen accounting for scroll parallax
-        const screenY = (p.y - scrollY * parallaxFactor) % (height * 1.5);
-        const actualY = screenY < 0 ? screenY + height * 1.5 : screenY;
-
-        if (actualY > height + 50) continue;
-
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = p.color;
+      ctx.lineWidth = 0.8;
+      forEachNeighborPair(onScreen, LINK_DISTANCE, (i, j, d) => {
+        ctx.globalAlpha = (1 - d / LINK_DISTANCE) * 0.15;
+        ctx.strokeStyle = onScreen[i].p.color;
         ctx.beginPath();
-        ctx.arc(p.x, actualY, p.size, 0, Math.PI * 2);
+        ctx.moveTo(onScreen[i].x, onScreen[i].y);
+        ctx.lineTo(onScreen[j].x, onScreen[j].y);
+        ctx.stroke();
+      });
+
+      // A soft halo (wide, faint disc) replaces the costly shadowBlur.
+      for (const { x, y, p } of onScreen) {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha * 0.18;
+        ctx.beginPath();
+        ctx.arc(x, y, p.size * 3, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
-
-        // Connect close particles with dynamic glowing lines
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const screenY2 = (p2.y - scrollY * parallaxFactor) % (height * 1.5);
-          const actualY2 = screenY2 < 0 ? screenY2 + height * 1.5 : screenY2;
-
-          const dx = p.x - p2.x;
-          const dy = actualY - actualY2;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 110) {
-            ctx.save();
-            ctx.globalAlpha = (1 - dist / 110) * 0.15;
-            ctx.strokeStyle = p.color;
-            ctx.lineWidth = 0.8;
-            ctx.beginPath();
-            ctx.moveTo(p.x, actualY);
-            ctx.lineTo(p2.x, actualY2);
-            ctx.stroke();
-            ctx.restore();
-          }
-        }
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(x, y, p.size, 0, Math.PI * 2);
+        ctx.fill();
       }
+      ctx.globalAlpha = 1;
 
-      animationFrameId = requestAnimationFrame(render);
+      frame = requestAnimationFrame(render);
     };
 
-    render();
+    const start = () => {
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    const onVisibility = () => (document.hidden ? stop() : start());
+    const onScroll = () => {
+      scrollY = window.scrollY;
+    };
+
+    resize();
+    start();
+    window.addEventListener("resize", resize);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
+      stop();
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-0 h-full w-full"
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none fixed inset-0 z-0 h-full w-full" />;
 }
