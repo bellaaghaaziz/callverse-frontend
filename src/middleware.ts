@@ -24,8 +24,15 @@ export function middleware(request: NextRequest) {
 
   const homePage = roleHome[role];
 
+  // An unknown role value (tampered or stale cookie) gets no workspace
+  if (!homePage) {
+    const res = NextResponse.redirect(new URL("/login", request.url));
+    res.cookies.delete("role");
+    return res;
+  }
+
   // Restrict access so roles can only access their authorized workspace route
-  if (homePage && !pathname.startsWith(homePage)) {
+  if (!pathname.startsWith(homePage)) {
     return NextResponse.redirect(new URL(homePage, request.url));
   }
 
@@ -34,4 +41,4 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
-};
+};

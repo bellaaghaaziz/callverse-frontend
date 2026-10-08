@@ -1,10 +1,7 @@
 import { Client } from "@stomp/stompjs";
+import { getToken } from "@/lib/session";
 
 let client: Client | null = null;
-
-function getToken() {
-  return typeof window !== "undefined" ? sessionStorage.getItem("jwt") : null;
-}
 
 export function getStompClient(): Client {
   if (client) return client;
@@ -21,4 +18,12 @@ export function getStompClient(): Client {
   });
   client.activate();
   return client;
+}
+
+/** Close the live connection and forget it, so the next user starts fresh. */
+export function disconnectStomp(): void {
+  if (!client) return;
+  const current = client;
+  client = null;
+  void current.deactivate();
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { logout } from "@/lib/auth";
 import { LayoutGrid, LogOut, ChevronDown, Sparkles, Home } from "lucide-react";
 import DynamicCanvas from "./DynamicCanvas";
 
@@ -24,21 +24,12 @@ export default function AppShell({
   title: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const accentInfo = roleAccent[role] || { color: "#6366F1", label: role };
   const accent = accentInfo.color;
 
-  const handleLogout = () => {
-    // Clear cookies & localStorage
-    document.cookie = "jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("jwt");
-      localStorage.removeItem("role");
-    }
-    router.push("/");
-  };
+  // Closes the live connection, clears token and role, reloads on /login.
+  const handleLogout = () => logout();
 
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-[#07090e] text-slate-100 antialiased">
@@ -159,4 +150,4 @@ export default function AppShell({
       </div>
     </div>
   );
-}
+}

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
+import { clearSession, saveSession } from "@/lib/session";
+import { disconnectStomp } from "@/lib/stomp";
 import { Lock, Mail, ArrowRight, Shield, Sparkles, ArrowLeft, User, Headphones, Activity, Settings } from "lucide-react";
 import DynamicCanvas from "@/components/DynamicCanvas";
 
@@ -12,35 +14,52 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("expired") === "1") {
+      setNotice("Votre session a expiré. Reconnectez-vous.");
+    }
+  }, []);
+
   async function performLogin(targetEmail: string, targetPass: string) {
-  setError(null);
-  setLoading(true);
-  try {
-    const data = await apiFetch("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email: targetEmail, password: targetPass }),
-    });
-    sessionStorage.setItem("jwt", data.token);       // token : sessionStorage uniquement
-    document.cookie = `role=${data.role}; path=/`;    // role : cookie, lu par le middleware
+    setError(null);
+    setLoading(true);
+    // Never carry a previous user's token or live connection into a new login.
+    disconnectStomp();
+    clearSession();
+    try {
+      const data = await apiFetch("/auth/login", {
+        method: "POST",
+        anonymous: true,
+        body: JSON.stringify({ email: targetEmail, password: targetPass }),
+      });
+      saveSession({ token: data.token, role: data.role, expiresAt: data.expiresAt });
 
-    const roleHome: Record<string, string> = {
-      CUSTOMER: "/client",
-      ADVISOR: "/advisor",
-      SUPERVISOR: "/supervisor",
-      ADMIN: "/admin",
-    };
-    router.push(roleHome[data.role] || "/");
-  } catch {
-    setError("Identifiants invalides. Veuillez réessayer.");
-  } finally {
-    setLoading(false);
+      const roleHome: Record<string, string> = {
+        CUSTOMER: "/client",
+        ADVISOR: "/advisor",
+        SUPERVISOR: "/supervisor",
+        ADMIN: "/admin",
+      };
+      router.push(roleHome[data.role] || "/");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setError("Email ou mot de passe incorrect.");
+      } else if (err instanceof ApiError && err.status === 0) {
+        setError("Serveur injoignable. Vérifiez que le backend CallVerse est démarré.");
+      } else {
+        setError("Connexion impossible pour le moment. Réessayez dans un instant.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
   await performLogin(email, password);
 }
@@ -48,28 +67,28 @@ async function handleSubmit(e: React.FormEvent) {
   const demoAccounts = [
     {
       role: "Client",
-      email: "client@banque.com",
+      email: "customer@callverse.local",
       icon: User,
       color: "from-cyan-500 to-blue-500",
       desc: "Portail usager & prêts",
     },
     {
       role: "Conseiller",
-      email: "conseiller@banque.com",
+      email: "advisor@callverse.local",
       icon: Headphones,
       color: "from-indigo-500 to-purple-500",
       desc: "Workstation & Suggestions IA",
     },
     {
       role: "Superviseur",
-      email: "superviseur@banque.com",
+      email: "supervisor@callverse.local",
       icon: Activity,
       color: "from-purple-500 to-pink-500",
       desc: "Supervision & WebSockets",
     },
     {
       role: "Admin",
-      email: "admin@banque.com",
+      email: "admin@callverse.local",
       icon: Settings,
       color: "from-emerald-500 to-teal-500",
       desc: "Back-office & Règles",
@@ -157,7 +176,7 @@ async function handleSubmit(e: React.FormEvent) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      placeholder="vous@banque.com"
+                      placeholder="vous@callverse.local"
                       className="glass-input w-full rounded-xl pl-10 pr-3.5 py-2.5 text-sm"
                     />
                   </div>
@@ -171,6 +190,8 @@ async function handleSubmit(e: React.FormEvent) {
                     <Lock size={16} className="absolute left-3.5 top-3 text-slate-400" />
                     <input
                       type="password"
+                      ref={passwordRef}
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -180,8 +201,14 @@ async function handleSubmit(e: React.FormEvent) {
                   </div>
                 </div>
 
+                {notice && !error && (
+                  <p role="status" className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs font-medium text-amber-200">
+                    {notice}
+                  </p>
+                )}
+
                 {error && (
-                  <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-medium text-rose-300">
+                  <p role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-medium text-rose-300">
                     {error}
                   </p>
                 )}
@@ -213,11 +240,11 @@ async function handleSubmit(e: React.FormEvent) {
             <div>
               <div className="flex items-center gap-2 text-indigo-400 mb-2">
                 <Sparkles size={16} />
-                <span className="text-xs font-bold uppercase tracking-wider">Accès Démo 1-Clic</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Comptes de démonstration</span>
               </div>
               <h3 className="text-base font-bold text-white mb-1">Tester un Rôle Spécifique</h3>
               <p className="text-xs text-slate-400 mb-4 font-light leading-relaxed">
-                Cliquez sur n&apos;importe quel rôle pour charger immédiatement une session complète sans saisir de mot de passe.
+                Choisissez un rôle pour pré-remplir son adresse, puis saisissez le mot de passe de démonstration fourni par l&apos;équipe.
               </p>
 
               <div className="space-y-2.5">
@@ -229,8 +256,9 @@ async function handleSubmit(e: React.FormEvent) {
                       type="button"
                       onClick={() => {
                         setEmail(acc.email);
-                        setPassword("demo1234");
-                        performLogin(acc.email, "demo1234");
+                        setPassword("");
+                        setError(null);
+                        passwordRef.current?.focus();
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-indigo-500/40 transition-all text-left group"
                     >
