@@ -507,3 +507,14 @@ test("the suggestion request posts to the façade path and adapts the answer", a
   answer = { confidence: 0.8 };
   await assert.rejects(requests.requestSuggestion("c1", { features: on }), /INVALID_SUGGESTION/);
 });
+test("contrast ratio follows WCAG relative luminance", () => {
+  const { contrastRatio } = compile("contrast");
+  assert.equal(contrastRatio("#000000", "#ffffff"), 21);
+  assert.equal(contrastRatio("#ffffff", "#000000"), 21);
+  // Audit tools truncate to two decimals: the landing nav reads 3.49:1.
+  assert.equal(Math.floor(contrastRatio("#7a8a81", "#fafbf7") * 100) / 100, 3.49);
+  // The 4.5:1 boundary: #767676 is the lightest grey that passes on white.
+  assert.ok(contrastRatio("#767676", "#ffffff") >= 4.5);
+  assert.ok(contrastRatio("#777777", "#ffffff") < 4.5);
+  assert.equal(contrastRatio("#fff", "#000"), 21);
+});
