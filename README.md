@@ -27,6 +27,8 @@ npm run typecheck
 npm run build
 ```
 
+After a backend contract change, start the backend on http://localhost:8080 and run `npm run gen:api` to regenerate src/shared/api-client/generated/callverse-api.d.ts from its OpenAPI document.
+
 GitHub Actions runs the same four checks on every pull request and push to main (.github/workflows/ci.yml).
 
 To build without overwriting a running development server's output:

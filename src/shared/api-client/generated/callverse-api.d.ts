@@ -472,6 +472,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/supervision/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find and browse live conversations
+         * @description Every live conversation, newest first, paged (page from 0, size 1 to 100, default 20). Optional filters: status (repeatable), skill, customerId, advisorId, q (customer name or reference, case-insensitive), from (queued at or after) and to (queued before), ISO-8601. Each row names the customer and the advisor (advisor null while queued) and carries the wait, handle time, SLA outcome, message count, last message time and whether an escalation is pending. Open a row with getConversation, listMessages and /topic/conversation/{id}. Supervisors and admins only.
+         */
+        get: operations["listSupervisedConversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/supervision/kpi": {
         parameters: {
             query?: never;
@@ -981,6 +1001,73 @@ export interface components {
         /** @description Active outages of banking services */
         ServiceIncidentsResponse: {
             incidents: components["schemas"]["ServiceIncident"][];
+        };
+        SupervisedConversation: {
+            advisor?: components["schemas"]["SupervisedParty"];
+            /** Format: date-time */
+            assignedAt?: string;
+            /** @example CHAT */
+            channel: string;
+            customer: components["schemas"]["SupervisedParty"];
+            /** Format: date-time */
+            endedAt?: string;
+            /**
+             * Format: int32
+             * @description Seconds from assignment to the end; null until it ends
+             * @example 360
+             */
+            handleSeconds?: number;
+            /** Format: uuid */
+            id: string;
+            /** @example FRAUD */
+            intent?: string;
+            /**
+             * Format: date-time
+             * @description Null when nothing has been written
+             */
+            lastMessageAt?: string;
+            /**
+             * Format: int64
+             * @example 12
+             */
+            messageCount: number;
+            /** @description An escalation is waiting for a supervisor */
+            pendingEscalation: boolean;
+            /** Format: date-time */
+            queuedAt: string;
+            /**
+             * @description The queue's skill code; null only for a conversation recorded without a skill
+             * @example FRAUD
+             */
+            skill?: string;
+            /** @description Answered within the skill's SLA target; null until measured */
+            slaMet?: boolean;
+            /**
+             * @example ESCALATED
+             * @enum {string}
+             */
+            status: "QUEUED" | "ASSIGNED" | "ACTIVE" | "ESCALATED" | "RESOLVED" | "ABANDONED";
+            /**
+             * Format: int32
+             * @description Seconds waited in the queue; null until measured
+             * @example 42
+             */
+            waitSeconds?: number;
+        };
+        SupervisedConversationPage: {
+            content: components["schemas"]["SupervisedConversation"][];
+            page: components["schemas"]["PageInfo"];
+        };
+        SupervisedParty: {
+            /** Format: uuid */
+            id: string;
+            /** @example Amina Haddad */
+            name: string;
+            /**
+             * @description The bank's customer reference; null for an advisor
+             * @example DEMO-00418
+             */
+            reference?: string;
         };
         /** @description A support ticket */
         TicketResponse: {
@@ -2986,6 +3073,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ServiceIncidentsResponse"];
+                };
+            };
+            /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not authenticated. code UNAUTHENTICATED: no bearer token, or one that is expired, malformed or wrongly signed - all indistinguishable, and the signal to refresh or log in again. code INVALID_CREDENTIALS: login refused; an unknown email and a wrong password are deliberately indistinguishable. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authenticated, but not permitted: code ACCESS_DENIED. Re-authenticating will not help, so clients must not refresh on it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No such route, or a referenced resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A business rule refused the operation. The request was well-formed; the current state of the business forbids it. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected failure. message is deliberately generic and carries no internal detail; see the server log for the stack trace. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listSupervisedConversations: {
+        parameters: {
+            query?: {
+                status?: ("QUEUED" | "ASSIGNED" | "ACTIVE" | "ESCALATED" | "RESOLVED" | "ABANDONED")[];
+                skill?: string;
+                customerId?: string;
+                advisorId?: string;
+                q?: string;
+                from?: string;
+                to?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisedConversationPage"];
                 };
             };
             /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
