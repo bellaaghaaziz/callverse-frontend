@@ -473,3 +473,30 @@ test("a suggestion is requested again only when the customer writes something ne
   assert.equal(suggestionKey("c1", [message(2, "ADVISOR")]), null);
   assert.equal(suggestionKey(null, opened), null);
 });
+test("the suggestion request never reaches the API while the façade flag is off", async () => {
+  const calls = [];
+  const requests = compile("aiRequests", {}, {
+    "./api": { apiFetch: async (...args) => { calls.push(args); return {}; } },
+    "./ai": compile("ai"),
+  });
+  const off = { suggestion: false, workforce: false, quality: false, simulation: false };
+  assert.equal(await requests.requestSuggestion("c1", { features: off }), null);
+  assert.equal(await requests.requestSuggestion("c1", {}), null);
+  assert.equal(calls.length, 0);
+});
+test("the suggestion request posts to the façade path and adapts the answer", async () => {
+  const calls = [];
+  let answer = { reply: "Je bloque votre carte. " + SENTINEL, confidence: 0.8, action: { type: "BLOCK_CARD" } };
+  const requests = compile("aiRequests", {}, {
+    "./api": { apiFetch: async (...args) => { calls.push(args); return answer; } },
+    "./ai": compile("ai"),
+  });
+  const on = { suggestion: true, workforce: false, quality: false, simulation: false };
+  const view = await requests.requestSuggestion("c1", { features: on });
+  assert.equal(calls[0][0], "/conversations/c1/suggestion");
+  assert.equal(calls[0][1].method, "POST");
+  assert.equal(view.confidence, 0.8);
+  assert.equal(view.suggestedAction.type, "BLOCK_CARD");
+  answer = { confidence: 0.8 };
+  await assert.rejects(requests.requestSuggestion("c1", { features: on }), /INVALID_SUGGESTION/);
+});
