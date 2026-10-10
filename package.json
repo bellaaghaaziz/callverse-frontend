@@ -13,12 +13,10 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.3.0",
-    "bcryptjs": "^3.0.3",
     "lucide-react": "^1.47.0",
     "next": "15.5.25",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "ws": "^8.21.3"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
