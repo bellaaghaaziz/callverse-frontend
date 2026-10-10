@@ -2,24 +2,40 @@
 import { useId } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { useAiCapability } from "@/hooks/useAiCapability";
-import { aiSlotState, type AiFeature, type AiRequest } from "@/lib/ai";
-// One place an AI feature renders. Its height is fixed in every state, so
-// the AI's arrival or failure never moves the page.
-export default function AiSlot({
-  feature,
-  title,
-  request = "pending",
-  onRetry,
-  children,
-}: {
-  feature: AiFeature;
+import {
+  aiSlotState,
+  type AiFeature,
+  type AiRequest,
+  type AiSlotState,
+} from "@/lib/ai";
+type SlotProps = {
   title: string;
-  request?: AiRequest;
   onRetry?: () => void;
   // The rendered result, shown only in the ready state.
   children?: React.ReactNode;
-}) {
-  const state = aiSlotState(useAiCapability(feature), request);
+};
+// One place an AI feature renders. Its state comes from the feature's
+// capability and the caller's request.
+export default function AiSlot({
+  feature,
+  request = "pending",
+  ...props
+}: SlotProps & { feature: AiFeature; request?: AiRequest }) {
+  return (
+    <AiSlotView
+      state={aiSlotState(useAiCapability(feature), request)}
+      {...props}
+    />
+  );
+}
+// The markup for one state. Its height is fixed in every state, so the AI's
+// arrival or failure never moves the page.
+export function AiSlotView({
+  state,
+  title,
+  onRetry,
+  children,
+}: SlotProps & { state: AiSlotState }) {
   const titleId = useId();
   return (
     <section
