@@ -322,3 +322,21 @@ test("AI slot follows the request once the feature is available, including a ret
   // Retrying sets the request back to pending.
   assert.equal(aiSlotState("available", "pending"), "loading");
 });
+test("no AI feature claims to be available before its Spring façade exists", () => {
+  const { AI_FEATURES, capabilityFor } = compile("ai");
+  assert.deepEqual(
+    Object.entries(AI_FEATURES).filter(([, ready]) => ready),
+    [],
+  );
+  for (const health of [null, "UP", "DEGRADED", "DOWN", "UNREACHABLE"])
+    assert.equal(capabilityFor("suggestion", health), "soon");
+});
+test("health can only downgrade a feature whose façade exists", () => {
+  const { capabilityFor } = compile("ai");
+  const flags = { suggestion: true, workforce: false, quality: false, simulation: false };
+  assert.equal(capabilityFor("suggestion", null, flags), "checking");
+  assert.equal(capabilityFor("suggestion", "UP", flags), "available");
+  for (const health of ["DEGRADED", "DOWN", "UNREACHABLE"])
+    assert.equal(capabilityFor("suggestion", health, flags), "down");
+  assert.equal(capabilityFor("quality", "UP", flags), "soon");
+});
