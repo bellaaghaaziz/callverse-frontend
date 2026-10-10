@@ -30,8 +30,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Read in an effect, not useSearchParams, so /login stays statically prerendered.
+  // Drop the query afterwards so Back or a reload doesn't show the notice again.
   useEffect(() => {
-    setNotice(sessionNotice(window.location.search));
+    const message = sessionNotice(window.location.search);
+    if (!message) return;
+    setNotice(message);
+    window.history.replaceState(null, "", "/login");
   }, []);
 
   async function performLogin(targetEmail: string, targetPass: string) {
