@@ -76,7 +76,8 @@ export interface SuggestionViewModel {
   reply: string;
   intent: string | null;
   confidence: number | null;
-  sources: { articleId: string; score: number | null }[];
+  // title: only if the façade sends it (the KB has no get-by-id).
+  sources: { articleId: string; title: string | null; score: number | null }[];
   toolCalls: { tool: string; ok: boolean; summary: string }[];
   suggestedAction: { type: AiActionType; payload: Json };
   latencyMs: number | null;
@@ -98,7 +99,7 @@ export function adaptSuggestion(raw: unknown): SuggestionViewModel | null {
       const articleId =
         typeof id === "number" && Number.isFinite(id) ? String(id) : text(id);
       return articleId
-        ? [{ articleId, score: numberIn(source.score, 0, 1) }]
+        ? [{ articleId, title: text(source.title), score: numberIn(source.score, 0, 1) }]
         : [];
     }),
     toolCalls: list(raw.tool_calls).flatMap((call) =>
@@ -242,4 +243,16 @@ export const actionLabel = (type: AiActionType) => ACTION_LABELS[type];
 export function draftWithSuggestion(draft: string, reply: string): string {
   const typed = draft.trim();
   return (typed ? typed + " " + reply : reply).slice(0, MESSAGE_MAX_LENGTH);
+}
+// Changes only when the customer writes something new in this conversation,
+// so the advisor's own messages never trigger another suggestion.
+export function suggestionKey(
+  conversationId: string | null,
+  messages: { id: number; sender: string; conversationId: string }[],
+): string | null {
+  if (!conversationId) return null;
+  const last = messages
+    .filter((m) => m.conversationId === conversationId && m.sender === "CUSTOMER")
+    .at(-1);
+  return last ? conversationId + ":" + last.id : null;
 }

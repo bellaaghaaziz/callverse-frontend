@@ -357,7 +357,7 @@ test("suggestion adapter keeps confidence, sources, tools and action, and reject
   assert.equal(view.reply, raw.reply);
   assert.equal(view.intent, "FRAUD");
   assert.equal(view.confidence, 0.82);
-  assert.deepEqual(JSON.parse(JSON.stringify(view.sources)), [{ articleId: "a1", score: 0.9 }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.sources)), [{ articleId: "a1", title: null, score: 0.9 }]);
   assert.deepEqual(JSON.parse(JSON.stringify(view.toolCalls)), [{ tool: "get_customer", ok: true, summary: "Client trouvé" }]);
   assert.equal(view.suggestedAction.type, "BLOCK_CARD");
   assert.equal(view.suggestedAction.payload.cardId, "c1");
@@ -447,4 +447,29 @@ test("AI slot waits idle while there is nothing to answer", () => {
   const { aiSlotState } = compile("ai");
   assert.equal(aiSlotState("available", "idle"), "idle");
   assert.equal(aiSlotState("soon", "idle"), "unavailable-soon");
+});
+test("suggestion sources keep a title when the façade sends one", () => {
+  const { adaptSuggestion } = compile("ai");
+  const view = adaptSuggestion({
+    reply: "Voici la procédure.",
+    sources: [
+      { kb_article_id: "a1", score: 0.9, title: "Opposition carte bancaire" },
+      { kb_article_id: "a2", score: 0.4 },
+    ],
+  });
+  assert.equal(view.sources[0].title, "Opposition carte bancaire");
+  assert.equal(view.sources[1].title, null);
+});
+test("a suggestion is requested again only when the customer writes something new", () => {
+  const { suggestionKey } = compile("ai");
+  const message = (id, sender, conversationId = "c1") => ({ id, sender, conversationId });
+  const opened = [message(1, "CUSTOMER"), message(2, "ADVISOR")];
+  const key = suggestionKey("c1", opened);
+  assert.equal(suggestionKey("c1", [...opened, message(3, "ADVISOR")]), key);
+  assert.notEqual(suggestionKey("c1", [...opened, message(4, "CUSTOMER")]), key);
+  assert.notEqual(suggestionKey("c2", [message(1, "CUSTOMER", "c2")]), key);
+  // Messages left over from another conversation never count.
+  assert.equal(suggestionKey("c1", [...opened, message(9, "CUSTOMER", "c2")]), key);
+  assert.equal(suggestionKey("c1", [message(2, "ADVISOR")]), null);
+  assert.equal(suggestionKey(null, opened), null);
 });
