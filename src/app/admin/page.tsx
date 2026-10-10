@@ -286,12 +286,16 @@ export default function AdminPage() {
             </form>
             <div className="cv-table-wrap">
               <table className="cv-table">
+                <caption className="sr-only">
+                  Utilisateurs, page {page + 1} sur{" "}
+                  {Math.max(1, users?.page.totalPages || 0)}
+                </caption>
                 <thead>
                   <tr>
-                    <th>Utilisateur</th>
-                    <th>Rôle</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Rôle</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>

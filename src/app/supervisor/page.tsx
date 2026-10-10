@@ -167,11 +167,12 @@ export default function SupervisorPage() {
           </div>
           <div className="cv-table-wrap">
             <table className="cv-table">
+              <caption className="sr-only">Files par compétence</caption>
               <thead>
                 <tr>
-                  <th>Compétence</th>
-                  <th>En attente</th>
-                  <th>Attente la plus longue</th>
+                  <th scope="col">Compétence</th>
+                  <th scope="col">En attente</th>
+                  <th scope="col">Attente la plus longue</th>
                 </tr>
               </thead>
               <tbody>
