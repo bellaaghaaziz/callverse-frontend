@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { FrontDesk, KnowledgeSearch } from "@/components/IntegrationTools";
 import ConversationPanel from "@/components/ConversationPanel";
@@ -17,8 +17,25 @@ import {
   Settings2,
 } from "lucide-react";
 import { roleLabel, initialsFor } from "@/lib/presentation";
+import { tabKeyTarget } from "@/lib/tabs";
+const tabs = [
+  "Utilisateurs",
+  "Procédures",
+  "Accueil",
+  "Catalogue produits",
+  "Conseillers",
+  "Règles",
+];
 export default function AdminPage() {
   const [tab, setTab] = useState("Utilisateurs");
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Each tab's content is the one panel the tabs control.
+  const panel = {
+    role: "tabpanel",
+    id: "admin-panel",
+    "aria-labelledby": "admin-tab-" + tabs.indexOf(tab),
+    tabIndex: 0,
+  };
   useEffect(() => {
     const handler = (event: Event) =>
       setTab((event as CustomEvent<string>).detail);
@@ -162,19 +179,25 @@ export default function AdminPage() {
         role="tablist"
         aria-label="Sections d’administration"
       >
-        {[
-          "Utilisateurs",
-          "Procédures",
-          "Accueil",
-          "Catalogue produits",
-          "Conseillers",
-          "Règles",
-        ].map((label) => (
+        {tabs.map((label, index) => (
           <button
             key={label}
+            ref={(node) => {
+              tabRefs.current[index] = node;
+            }}
+            id={"admin-tab-" + index}
             role="tab"
             aria-selected={tab === label}
+            aria-controls="admin-panel"
+            tabIndex={tab === label ? 0 : -1}
             onClick={() => setTab(label)}
+            onKeyDown={(event) => {
+              const next = tabKeyTarget(event.key, index, tabs.length);
+              if (next === null) return;
+              event.preventDefault();
+              setTab(tabs[next]);
+              tabRefs.current[next]?.focus();
+            }}
           >
             {label}
           </button>
@@ -186,7 +209,7 @@ export default function AdminPage() {
         </p>
       )}
       {tab === "Utilisateurs" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <section className="cv-card">
             <div className="cv-card-heading">
               <div>
@@ -494,7 +517,7 @@ export default function AdminPage() {
         </div>
       )}
       {tab === "Procédures" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <KnowledgeSearch />
           <p className="cv-muted">
             La création et la modification d’articles ne sont pas encore
@@ -503,7 +526,7 @@ export default function AdminPage() {
         </div>
       )}
       {tab === "Accueil" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <FrontDesk
             onOpened={(conversation) =>
               setSelectedConversation(conversation.id)
@@ -546,7 +569,7 @@ export default function AdminPage() {
         </div>
       )}
       {["Catalogue produits", "Conseillers", "Règles"].includes(tab) && (
-        <section className="cv-card">
+        <section className="cv-card" {...panel}>
           <div className="cv-empty !py-20">
             <span className="cv-empty-icon mx-auto">
               <Settings2 size={24} />

@@ -51,7 +51,8 @@ a {
   text-decoration: none;
 }
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+[role="tabpanel"]:focus-visible {
   outline: 3px solid #087f70;
   outline-offset: 3px;
 }
