@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import ChatThread from "@/components/ChatThread";
 import StatusBadge from "@/components/StatusBadge";
+import AiSlot from "@/components/AiSlot";
 import {
   skillLabel,
   intentLabel,
@@ -532,6 +533,7 @@ export default function AdvisorPage() {
                 customerName={customerName}
               />
               <div className="cv-composer">
+                <AiSlot feature="suggestion" title="Suggestion de réponse" />
                 {canReply ? (
                   <>
                     <form
