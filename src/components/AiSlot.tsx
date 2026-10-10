@@ -1,34 +1,13 @@
 "use client";
 import { useId } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
-import { useAiCapability } from "@/hooks/useAiCapability";
-import {
-  aiSlotState,
-  type AiFeature,
-  type AiRequest,
-  type AiSlotState,
-} from "@/lib/ai";
+import type { AiSlotState } from "@/lib/ai";
 type SlotProps = {
   title: string;
   onRetry?: () => void;
   // The rendered result, shown only in the ready state.
   children?: React.ReactNode;
 };
-// One place an AI feature renders. Its state comes from the feature's
-// capability and the caller's request, which every caller must supply:
-// enabling a feature means wiring its request too, not only its flag.
-export default function AiSlot({
-  feature,
-  request,
-  ...props
-}: SlotProps & { feature: AiFeature; request: AiRequest }) {
-  return (
-    <AiSlotView
-      state={aiSlotState(useAiCapability(feature), request)}
-      {...props}
-    />
-  );
-}
 const messages: Record<AiSlotState, string> = {
   idle: "En attente d’un message du client",
   "unavailable-soon": "Bientôt disponible",
@@ -37,8 +16,9 @@ const messages: Record<AiSlotState, string> = {
   error: "Le service IA n’a pas pu répondre.",
   ready: "",
 };
-// The markup for one state. Its height is fixed in every state, so the AI's
-// arrival or failure never moves the page.
+// Where an AI feature renders. Each feature's hook (e.g. useSuggestion)
+// derives the state from its capability and request. The height is fixed in
+// every state, so the AI's arrival or failure never moves the page.
 export function AiSlotView({
   state,
   title,
