@@ -64,6 +64,8 @@ export default function ChatThread({
         aria-label="Messages de la conversation"
         aria-live="polite"
         aria-relevant="additions"
+        // Focusable so the keyboard can scroll a long conversation.
+        tabIndex={0}
         className="cv-thread"
         onScroll={() => {
           const element = viewport.current;

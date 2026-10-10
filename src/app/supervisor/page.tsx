@@ -165,7 +165,12 @@ export default function SupervisorPage() {
             </div>
             <span className="cv-count">{kpi?.queues.length || 0}</span>
           </div>
-          <div className="cv-table-wrap">
+          <div
+            className="cv-table-wrap"
+            role="region"
+            aria-label="Files par compétence"
+            tabIndex={0}
+          >
             <table className="cv-table">
               <caption className="sr-only">Files par compétence</caption>
               <thead>
