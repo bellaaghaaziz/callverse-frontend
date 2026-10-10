@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import { apiFetch, ApiError, errorMessage } from "@/lib/api";
 import {
   ESCALATION_REASON_MAX_LENGTH,
+  MESSAGE_MAX_LENGTH,
   mergeMessages,
   money,
   type Conversation,
@@ -547,9 +548,14 @@ export default function AdvisorPage() {
                   {suggestion.suggestion && (
                     <SuggestionCard
                       suggestion={suggestion.suggestion}
+                      used={suggestion.used}
+                      disabled={busy}
                       onUse={() => {
                         const reply = suggestion.suggestion!.reply;
-                        setDraft((current) => draftWithSuggestion(current, reply));
+                        setDraft((current) =>
+                          draftWithSuggestion(current, reply, MESSAGE_MAX_LENGTH),
+                        );
+                        suggestion.markUsed();
                         composerInput.current?.focus();
                       }}
                     />
@@ -571,7 +577,7 @@ export default function AdvisorPage() {
                         disabled={busy}
                         placeholder="Écrire un message à votre client…"
                         className="cv-input"
-                        maxLength={2000}
+                        maxLength={MESSAGE_MAX_LENGTH}
                         required
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
@@ -586,7 +592,9 @@ export default function AdvisorPage() {
                     </form>
                     <p>
                       <span>Votre message sera visible par le client.</span>
-                      <span>{draft.length}/2000</span>
+                      <span>
+                        {draft.length}/{MESSAGE_MAX_LENGTH}
+                      </span>
                     </p>
                   </>
                 ) : (

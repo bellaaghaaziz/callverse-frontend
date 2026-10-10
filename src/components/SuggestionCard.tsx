@@ -12,9 +12,15 @@ import { intentLabel } from "@/lib/presentation";
 export default function SuggestionCard({
   suggestion,
   onUse,
+  used,
+  disabled,
 }: {
   suggestion: SuggestionViewModel;
   onUse: () => void;
+  // Already put in the draft; available again when the customer writes.
+  used: boolean;
+  // A message is being sent: inserting now would be erased.
+  disabled: boolean;
 }) {
   const action = actionLabel(suggestion.suggestedAction.type);
   const facts = [
@@ -28,13 +34,17 @@ export default function SuggestionCard({
   return (
     <div>
       <div className="flex items-center gap-3">
-        <p className="truncate grow min-w-0">{suggestion.reply}</p>
+        {/* One-line preview; the full reply below is the one read aloud. */}
+        <p className="truncate grow min-w-0" aria-hidden="true">
+          {suggestion.reply}
+        </p>
         <button
           type="button"
           className="cv-button cv-button-small shrink-0"
+          disabled={used || disabled}
           onClick={onUse}
         >
-          Utiliser la suggestion
+          {used ? "Suggestion utilisée" : "Utiliser la suggestion"}
         </button>
       </div>
       <p className="cv-muted">{facts.join(" · ")}</p>
