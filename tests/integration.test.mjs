@@ -231,3 +231,52 @@ test("expireSession redirects to a login URL that shows the expired notice", () 
     "Votre session a expiré. Reconnectez-vous.",
   );
 });
+test("supervision query sends only paging when no filter is set", () => {
+  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  assert.equal(
+    supervisionQuery({ statuses: [], skill: "", q: "  ", from: "", to: "", page: 0 }),
+    "page=0&size=20",
+  );
+});
+test("supervision query repeats status, trims the search and drops values outside the contract", () => {
+  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  const params = new URLSearchParams(
+    supervisionQuery({
+      statuses: ["ESCALATED", "ACTIVE", "UNKNOWN"],
+      skill: "WEATHER",
+      q: "  DEMO-00418 ",
+      from: "",
+      to: "",
+      page: 2,
+      size: 500,
+    }),
+  );
+  assert.deepEqual(params.getAll("status"), ["ESCALATED", "ACTIVE"]);
+  assert.equal(params.get("skill"), null);
+  assert.equal(params.get("q"), "DEMO-00418");
+  assert.equal(params.get("page"), "2");
+  assert.equal(params.get("size"), "100");
+  assert.equal(
+    new URLSearchParams(
+      supervisionQuery({ statuses: [], skill: "FRAUD", q: "", from: "", to: "", page: 0, size: 0 }),
+    ).get("size"),
+    "1",
+  );
+});
+test("supervision query converts the date range to ISO-8601 UTC and ignores invalid dates", () => {
+  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  const params = new URLSearchParams(
+    supervisionQuery({
+      statuses: [],
+      skill: "FRAUD",
+      q: "",
+      from: "2026-10-10T08:30",
+      to: "not-a-date",
+      page: 0,
+    }),
+  );
+  assert.equal(params.get("skill"), "FRAUD");
+  assert.equal(params.get("from"), new Date("2026-10-10T08:30").toISOString());
+  assert.match(params.get("from"), /Z$/);
+  assert.equal(params.get("to"), null);
+});
