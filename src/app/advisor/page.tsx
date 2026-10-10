@@ -38,7 +38,10 @@ import {
 } from "lucide-react";
 import ChatThread from "@/components/ChatThread";
 import StatusBadge from "@/components/StatusBadge";
-import AiSlot from "@/components/AiSlot";
+import { AiSlotView } from "@/components/AiSlot";
+import SuggestionCard from "@/components/SuggestionCard";
+import { useSuggestion } from "@/hooks/useSuggestion";
+import { draftWithSuggestion } from "@/lib/ai";
 import {
   skillLabel,
   intentLabel,
@@ -360,6 +363,9 @@ export default function AdvisorPage() {
   const canReply =
     !!activeConv &&
     ["ASSIGNED", "ACTIVE", "ESCALATED"].includes(activeConv.status);
+  // Only conversations the advisor can answer get a suggestion.
+  const suggestion = useSuggestion(canReply ? activeConvId : null, messages);
+  const composerInput = useRef<HTMLInputElement>(null);
   return (
     <AppShell role="Conseiller" initials="CO" title="Espace de travail">
       {activeNotification && (
@@ -533,12 +539,22 @@ export default function AdvisorPage() {
                 customerName={customerName}
               />
               {canReply && (
-                // R5.1 replaces "pending" with the suggestion request's state.
-                <AiSlot
-                  feature="suggestion"
+                <AiSlotView
+                  state={suggestion.state}
                   title="Suggestion de réponse"
-                  request="pending"
-                />
+                  onRetry={suggestion.retry}
+                >
+                  {suggestion.suggestion && (
+                    <SuggestionCard
+                      suggestion={suggestion.suggestion}
+                      onUse={() => {
+                        const reply = suggestion.suggestion!.reply;
+                        setDraft((current) => draftWithSuggestion(current, reply));
+                        composerInput.current?.focus();
+                      }}
+                    />
+                  )}
+                </AiSlotView>
               )}
               <div className="cv-composer">
                 {canReply ? (
@@ -550,6 +566,7 @@ export default function AdvisorPage() {
                       }}
                     >
                       <input
+                        ref={composerInput}
                         aria-label="Message"
                         disabled={busy}
                         placeholder="Écrire un message à votre client…"
