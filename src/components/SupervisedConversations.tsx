@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiFetch, errorMessage } from "@/lib/api";
 import type { SupervisedConversationPage } from "@/lib/contracts";
 import {
   LIVE_STATUSES,
   SUPERVISED_STATUSES,
+  invalidRange,
   supervisionQuery,
 } from "@/lib/supervision";
 import { durationLabel, skillLabel, statusLabel } from "@/lib/presentation";
@@ -32,7 +33,12 @@ export default function SupervisedConversations({
   refreshKey: string;
   onOpen: (id: string) => void;
 }) {
-  const [data, setData] = useState<SupervisedConversationPage | null>(null);
+  // Each result remembers the query it answers, so rows from other filters
+  // never show under the current ones (for example after a failed request).
+  const [data, setData] = useState<{
+    params: string;
+    result: SupervisedConversationPage;
+  } | null>(null);
   const [error, setError] = useState("");
   const [choice, setChoice] = useState("live");
   const [skill, setSkill] = useState("");
@@ -50,53 +56,72 @@ export default function SupervisedConversations({
     to,
     page,
   });
+  const rangeInvalid = invalidRange(from, to);
+  const current = data?.params === params ? data.result : null;
   useEffect(() => {
     const reconnected = () => setReload((value) => value + 1);
     window.addEventListener("callverse:reconnected", reconnected);
     return () =>
       window.removeEventListener("callverse:reconnected", reconnected);
   }, []);
+  // Live activity refetches at most once every 1.5 s; later events in the
+  // window do not push it back, so a busy floor cannot starve the list.
+  const lastKey = useRef(refreshKey);
+  const liveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    // Bursts of live events collapse into one request; a newer request
-    // aborts the previous one, so a stale page never replaces a fresh one.
+    if (refreshKey === lastKey.current) return;
+    lastKey.current = refreshKey;
+    if (liveTimer.current) return;
+    liveTimer.current = setTimeout(() => {
+      liveTimer.current = null;
+      setReload((value) => value + 1);
+    }, 1500);
+  }, [refreshKey]);
+  useEffect(
+    () => () => {
+      if (liveTimer.current) clearTimeout(liveTimer.current);
+    },
+    [],
+  );
+  useEffect(() => {
+    if (rangeInvalid) return;
+    // A newer request aborts the older one, so a stale page never wins.
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const result = await apiFetch<SupervisedConversationPage>(
-          `/supervision/conversations?${params}`,
-          { signal: controller.signal },
-        );
+    apiFetch<SupervisedConversationPage>(
+      `/supervision/conversations?${params}`,
+      { signal: controller.signal },
+    )
+      .then((result) => {
         if (controller.signal.aborted) return;
-        setData(result);
+        setData({ params, result });
         setError("");
-        if (result.page.totalPages > 0 && page >= result.page.totalPages)
-          setPage(result.page.totalPages - 1);
-      } catch (error) {
+        const lastPage = Math.max(0, result.page.totalPages - 1);
+        if (page > lastPage) setPage(lastPage);
+      })
+      .catch((error) => {
         if (!controller.signal.aborted) setError(errorMessage(error));
-      }
-    }, 300);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [params, page, refreshKey, reload]);
+      });
+    return () => controller.abort();
+  }, [params, page, rangeInvalid, reload]);
   const update = (set: (value: string) => void) => (value: string) => {
     set(value);
     setPage(0);
   };
-  const totalPages = Math.max(1, data?.page.totalPages || 0);
+  const totalPages = Math.max(1, current?.page.totalPages || 0);
   return (
     <section className="cv-section cv-card" id="conversation">
       <div className="cv-card-heading">
         <div>
           <h2>Conversations</h2>
           <p role="status">
-            {data
-              ? data.page.totalElements +
+            {current
+              ? current.page.totalElements +
                 " conversation" +
-                (data.page.totalElements > 1 ? "s" : "") +
+                (current.page.totalElements > 1 ? "s" : "") +
                 " · les plus récentes d’abord"
-              : "Chargement des conversations…"}
+              : error || rangeInvalid
+                ? "Liste indisponible"
+                : "Chargement des conversations…"}
           </p>
         </div>
         <button
@@ -134,11 +159,13 @@ export default function SupervisedConversations({
           <option value="live">En cours</option>
           <option value="escalated">Escalades en attente</option>
           <option value="all">Toutes</option>
-          {SUPERVISED_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {statusLabel[status]}
-            </option>
-          ))}
+          {SUPERVISED_STATUSES.filter((status) => status !== "ESCALATED").map(
+            (status) => (
+              <option key={status} value={status}>
+                {statusLabel[status]}
+              </option>
+            ),
+          )}
         </select>
         <select
           aria-label="Filtrer par file"
@@ -157,6 +184,7 @@ export default function SupervisedConversations({
           type="datetime-local"
           aria-label="Arrivées depuis"
           className="cv-input"
+          max={to || undefined}
           value={from}
           onChange={(e) => update(setFrom)(e.target.value)}
         />
@@ -164,14 +192,21 @@ export default function SupervisedConversations({
           type="datetime-local"
           aria-label="Arrivées avant"
           className="cv-input"
+          min={from || undefined}
           value={to}
           onChange={(e) => update(setTo)(e.target.value)}
         />
       </form>
-      {error && (
+      {rangeInvalid ? (
         <p role="alert" className="cv-error mx-5 mb-5">
-          {error}
+          « Arrivées avant » doit être postérieure à « Arrivées depuis ».
         </p>
+      ) : (
+        error && (
+          <p role="alert" className="cv-error mx-5 mb-5">
+            {error}
+          </p>
+        )
       )}
       <div className="cv-table-wrap">
         <table className="cv-table">
@@ -195,7 +230,7 @@ export default function SupervisedConversations({
             </tr>
           </thead>
           <tbody>
-            {data?.content.map((conversation) => (
+            {current?.content.map((conversation) => (
               <tr key={conversation.id}>
                 <td>
                   <strong className="font-semibold">
@@ -259,7 +294,7 @@ export default function SupervisedConversations({
           </tbody>
         </table>
       </div>
-      {data?.content.length === 0 && (
+      {current?.content.length === 0 && (
         <div className="cv-empty">
           <MessageSquare size={24} />
           <strong>Aucun résultat</strong>Essayez un autre filtre ou une autre
@@ -280,7 +315,7 @@ export default function SupervisedConversations({
           </button>
           <button
             className="cv-button cv-button-secondary cv-button-small"
-            disabled={!data || page + 1 >= data.page.totalPages}
+            disabled={!current || page + 1 >= current.page.totalPages}
             onClick={() => setPage((value) => value + 1)}
           >
             Suivant
