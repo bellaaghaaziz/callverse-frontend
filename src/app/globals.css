@@ -608,6 +608,12 @@ textarea.cv-input {
   font-size: 12px;
   line-height: 1.7;
 }
+/* AI slot: the same height in every state, so AI results never shift the page. */
+.cv-ai-slot {
+  height: 88px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
 .cv-error {
   padding: 12px 15px;
   border-radius: 8px;
