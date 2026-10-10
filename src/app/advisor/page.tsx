@@ -595,6 +595,7 @@ export default function AdvisorPage() {
                       <input
                         ref={composerInput}
                         aria-label="Message"
+                        aria-describedby="composer-help"
                         disabled={busy}
                         placeholder="Écrire un message à votre client…"
                         className="cv-input"
@@ -612,7 +613,9 @@ export default function AdvisorPage() {
                       </button>
                     </form>
                     <p>
-                      <span>Votre message sera visible par le client.</span>
+                      <span id="composer-help">
+                        Votre message sera visible par le client.
+                      </span>
                       <span>
                         {draft.length}/{MESSAGE_MAX_LENGTH}
                       </span>
@@ -907,7 +910,7 @@ export default function AdvisorPage() {
                   }}
                 >
                   <h3>Demander une intervention</h3>
-                  <p className="cv-subtitle mb-4">
+                  <p className="cv-subtitle mb-4" id="escalation-help">
                     Le superviseur recevra votre demande avec le contexte de la
                     conversation.
                   </p>
@@ -916,6 +919,7 @@ export default function AdvisorPage() {
                     <textarea
                       ref={escalationField}
                       aria-label="Motif d’escalade"
+                      aria-describedby="escalation-help"
                       required
                       minLength={3}
                       maxLength={ESCALATION_REASON_MAX_LENGTH}
