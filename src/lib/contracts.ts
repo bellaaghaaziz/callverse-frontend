@@ -50,6 +50,8 @@ export interface SupervisionAlert {
   cardId: string | null;
   cardLast4: string | null;
 }
+// EscalationRequest.reason maxLength in the backend contract.
+export const ESCALATION_REASON_MAX_LENGTH = 255;
 export function mergeMessages(
   previous: Message[],
   incoming: Message[],

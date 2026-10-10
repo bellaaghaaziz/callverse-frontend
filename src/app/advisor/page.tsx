@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { apiFetch, ApiError, errorMessage } from "@/lib/api";
 import {
+  ESCALATION_REASON_MAX_LENGTH,
   mergeMessages,
   money,
   type Conversation,
@@ -859,7 +860,7 @@ export default function AdvisorPage() {
                       aria-label="Motif d’escalade"
                       required
                       minLength={3}
-                      maxLength={2000}
+                      maxLength={ESCALATION_REASON_MAX_LENGTH}
                       className="cv-input"
                       value={escalationReason}
                       onChange={(e) => setEscalationReason(e.target.value)}
