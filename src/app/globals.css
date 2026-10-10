@@ -98,6 +98,25 @@ svg {
   display: flex;
   min-height: 100vh;
 }
+/* Skip link: off screen until focused, then over the light header. */
+.cv-skip-link {
+  position: fixed;
+  top: 16px;
+  left: 256px;
+  z-index: 70;
+  transform: translateY(-200%);
+}
+.cv-skip-link:focus {
+  transform: none;
+}
+@media (max-width: 900px) {
+  .cv-skip-link {
+    left: 16px;
+  }
+}
+.cv-main:focus {
+  outline: none;
+}
 .cv-sidebar {
   width: 240px;
   background: #142b39;

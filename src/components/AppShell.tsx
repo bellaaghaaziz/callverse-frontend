@@ -154,6 +154,9 @@ export default function AppShell({
   return (
     <SessionGuard>
       <div className="cv-app">
+        <a href="#main-content" className="cv-button cv-skip-link">
+          Aller au contenu principal
+        </a>
         {mobileOpen && (
           <button
             className="cv-nav-backdrop"
@@ -163,6 +166,7 @@ export default function AppShell({
           />
         )}
         <aside
+          aria-label="Barre latérale"
           inert={isMobile && !mobileOpen}
           aria-hidden={isMobile && !mobileOpen}
           className={"cv-sidebar " + (mobileOpen ? "cv-sidebar-open" : "")}
@@ -275,7 +279,7 @@ export default function AppShell({
               </div>
             </div>
           </header>
-          <main className="cv-main" id="main-content">
+          <main className="cv-main" id="main-content" tabIndex={-1}>
             {children}
           </main>
           <footer className="cv-app-footer">
