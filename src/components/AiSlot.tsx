@@ -31,8 +31,7 @@ export default function AiSlot({
 }
 const messages: Record<AiSlotState, string> = {
   "unavailable-soon": "Bientôt disponible",
-  "unavailable-down":
-    "Service IA indisponible. Vous pouvez continuer sans suggestion.",
+  "unavailable-down": "Service IA indisponible",
   loading: "Préparation en cours…",
   error: "Le service IA n’a pas pu répondre.",
   ready: "",
