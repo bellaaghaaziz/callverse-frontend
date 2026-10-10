@@ -257,24 +257,20 @@ export default function AdvisorPage() {
   );
 
   async function takeNext(skill: string) {
-    try {
-      const result = await apiFetch<Conversation | null>(
-        `/queues/${skill}/next`,
-        { method: "POST" },
+    const result = await apiFetch<Conversation | null>(
+      `/queues/${skill}/next`,
+      { method: "POST" },
+    );
+    if (result) {
+      await refreshMine();
+      setActiveConvId(result.id);
+      showToast("Contact pris en charge · " + (skillLabel[skill] || skill));
+    } else {
+      showToast(
+        "Aucun contact en attente dans la file " +
+          (skillLabel[skill] || skill) +
+          ".",
       );
-      if (result) {
-        await refreshMine();
-        setActiveConvId(result.id);
-        showToast("Contact pris en charge · " + (skillLabel[skill] || skill));
-      } else {
-        showToast(
-          "Aucun contact en attente dans la file " +
-            (skillLabel[skill] || skill) +
-            ".",
-        );
-      }
-    } catch (err) {
-      throw err;
     }
   }
 
@@ -291,7 +287,6 @@ export default function AdvisorPage() {
     setMessages((previous) => mergeMessages(previous, [message]));
     await refreshMine();
     setDraft("");
-    // Le message s'affichera via le topic temps réel (événement MESSAGE_POSTED)
   }
 
   async function handleBlockCard(cardId: string) {
