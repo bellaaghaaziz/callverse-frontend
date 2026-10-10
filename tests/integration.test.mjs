@@ -232,14 +232,14 @@ test("expireSession redirects to a login URL that shows the expired notice", () 
   );
 });
 test("supervision query sends only paging when no filter is set", () => {
-  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  const { supervisionQuery } = compile("supervision", { URLSearchParams }, { "./presentation": compile("presentation") });
   assert.equal(
     supervisionQuery({ statuses: [], skill: "", q: "  ", from: "", to: "", page: 0 }),
     "page=0&size=20",
   );
 });
 test("supervision query repeats status, trims the search and drops values outside the contract", () => {
-  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  const { supervisionQuery } = compile("supervision", { URLSearchParams }, { "./presentation": compile("presentation") });
   const params = new URLSearchParams(
     supervisionQuery({
       statuses: ["ESCALATED", "ACTIVE", "UNKNOWN"],
@@ -264,7 +264,7 @@ test("supervision query repeats status, trims the search and drops values outsid
   );
 });
 test("supervision query converts the date range to ISO-8601 UTC and ignores invalid dates", () => {
-  const { supervisionQuery } = compile("supervision", { URLSearchParams });
+  const { supervisionQuery } = compile("supervision", { URLSearchParams }, { "./presentation": compile("presentation") });
   const params = new URLSearchParams(
     supervisionQuery({
       statuses: [],
@@ -279,4 +279,30 @@ test("supervision query converts the date range to ISO-8601 UTC and ignores inva
   assert.equal(params.get("from"), new Date("2026-10-10T08:30").toISOString());
   assert.match(params.get("from"), /Z$/);
   assert.equal(params.get("to"), null);
+});
+test("supervision query accepts every queue the interface labels", () => {
+  const { supervisionQuery } = compile(
+    "supervision",
+    { URLSearchParams },
+    { "./presentation": { skillLabel: { FRAUD: "Fraude", LOANS: "Prêts" } } },
+  );
+  const query = (skill) =>
+    new URLSearchParams(
+      supervisionQuery({ statuses: [], skill, q: "", from: "", to: "", page: 0 }),
+    ).get("skill");
+  assert.equal(query("LOANS"), "LOANS");
+  assert.equal(query("CARDS"), null);
+  assert.equal(query("toString"), null);
+});
+test("a date range is invalid only when its end is not after its start", () => {
+  const { invalidRange } = compile(
+    "supervision",
+    { URLSearchParams },
+    { "./presentation": { skillLabel: {} } },
+  );
+  assert.equal(invalidRange("2026-10-10T12:00", "2026-10-10T08:00"), true);
+  assert.equal(invalidRange("2026-10-10T08:00", "2026-10-10T08:00"), true);
+  assert.equal(invalidRange("2026-10-10T08:00", "2026-10-10T12:00"), false);
+  assert.equal(invalidRange("2026-10-10T08:00", ""), false);
+  assert.equal(invalidRange("", "2026-10-10T08:00"), false);
 });
