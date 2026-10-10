@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { apiFetch, ApiError, errorMessage } from "@/lib/api";
 import {
+  ESCALATION_REASON_MAX_LENGTH,
+  MESSAGE_MAX_LENGTH,
   mergeMessages,
   money,
   type Conversation,
@@ -37,6 +39,10 @@ import {
 } from "lucide-react";
 import ChatThread from "@/components/ChatThread";
 import StatusBadge from "@/components/StatusBadge";
+import { AiSlotView } from "@/components/AiSlot";
+import SuggestionCard from "@/components/SuggestionCard";
+import { useSuggestion } from "@/hooks/useSuggestion";
+import { draftWithSuggestion } from "@/lib/ai";
 import {
   skillLabel,
   intentLabel,
@@ -256,24 +262,20 @@ export default function AdvisorPage() {
   );
 
   async function takeNext(skill: string) {
-    try {
-      const result = await apiFetch<Conversation | null>(
-        `/queues/${skill}/next`,
-        { method: "POST" },
+    const result = await apiFetch<Conversation | null>(
+      `/queues/${skill}/next`,
+      { method: "POST" },
+    );
+    if (result) {
+      await refreshMine();
+      setActiveConvId(result.id);
+      showToast("Contact pris en charge · " + (skillLabel[skill] || skill));
+    } else {
+      showToast(
+        "Aucun contact en attente dans la file " +
+          (skillLabel[skill] || skill) +
+          ".",
       );
-      if (result) {
-        await refreshMine();
-        setActiveConvId(result.id);
-        showToast("Contact pris en charge · " + (skillLabel[skill] || skill));
-      } else {
-        showToast(
-          "Aucun contact en attente dans la file " +
-            (skillLabel[skill] || skill) +
-            ".",
-        );
-      }
-    } catch (err) {
-      throw err;
     }
   }
 
@@ -290,7 +292,6 @@ export default function AdvisorPage() {
     setMessages((previous) => mergeMessages(previous, [message]));
     await refreshMine();
     setDraft("");
-    // Le message s'affichera via le topic temps réel (événement MESSAGE_POSTED)
   }
 
   async function handleBlockCard(cardId: string) {
@@ -363,6 +364,9 @@ export default function AdvisorPage() {
   const canReply =
     !!activeConv &&
     ["ASSIGNED", "ACTIVE", "ESCALATED"].includes(activeConv.status);
+  // Only conversations the advisor can answer get a suggestion.
+  const suggestion = useSuggestion(canReply ? activeConvId : null, messages);
+  const composerInput = useRef<HTMLInputElement>(null);
   return (
     <AppShell role="Conseiller" initials="CO" title="Espace de travail">
       {activeNotification && (
@@ -535,6 +539,29 @@ export default function AdvisorPage() {
                 role="ADVISOR"
                 customerName={customerName}
               />
+              {canReply && (
+                <AiSlotView
+                  state={suggestion.state}
+                  title="Suggestion de réponse"
+                  onRetry={suggestion.retry}
+                >
+                  {suggestion.suggestion && (
+                    <SuggestionCard
+                      suggestion={suggestion.suggestion}
+                      used={suggestion.used}
+                      disabled={busy}
+                      onUse={() => {
+                        const reply = suggestion.suggestion!.reply;
+                        setDraft((current) =>
+                          draftWithSuggestion(current, reply, MESSAGE_MAX_LENGTH),
+                        );
+                        suggestion.markUsed();
+                        composerInput.current?.focus();
+                      }}
+                    />
+                  )}
+                </AiSlotView>
+              )}
               <div className="cv-composer">
                 {canReply ? (
                   <>
@@ -545,11 +572,12 @@ export default function AdvisorPage() {
                       }}
                     >
                       <input
+                        ref={composerInput}
                         aria-label="Message"
                         disabled={busy}
                         placeholder="Écrire un message à votre client…"
                         className="cv-input"
-                        maxLength={2000}
+                        maxLength={MESSAGE_MAX_LENGTH}
                         required
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
@@ -564,7 +592,9 @@ export default function AdvisorPage() {
                     </form>
                     <p>
                       <span>Votre message sera visible par le client.</span>
-                      <span>{draft.length}/2000</span>
+                      <span>
+                        {draft.length}/{MESSAGE_MAX_LENGTH}
+                      </span>
                     </p>
                   </>
                 ) : (
@@ -859,7 +889,7 @@ export default function AdvisorPage() {
                       aria-label="Motif d’escalade"
                       required
                       minLength={3}
-                      maxLength={2000}
+                      maxLength={ESCALATION_REASON_MAX_LENGTH}
                       className="cv-input"
                       value={escalationReason}
                       onChange={(e) => setEscalationReason(e.target.value)}
