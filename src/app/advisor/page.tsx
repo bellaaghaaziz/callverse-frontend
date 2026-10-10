@@ -532,8 +532,15 @@ export default function AdvisorPage() {
                 role="ADVISOR"
                 customerName={customerName}
               />
+              {canReply && (
+                // R5.1 replaces "pending" with the suggestion request's state.
+                <AiSlot
+                  feature="suggestion"
+                  title="Suggestion de réponse"
+                  request="pending"
+                />
+              )}
               <div className="cv-composer">
-                <AiSlot feature="suggestion" title="Suggestion de réponse" />
                 {canReply ? (
                   <>
                     <form
