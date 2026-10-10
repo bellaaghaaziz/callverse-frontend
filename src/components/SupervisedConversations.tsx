@@ -156,7 +156,7 @@ export default function SupervisedConversations({
           value={choice}
           onChange={(e) => update(setChoice)(e.target.value)}
         >
-          <option value="live">En cours</option>
+          <option value="live">Non clôturées</option>
           <option value="escalated">Escalades en attente</option>
           <option value="all">Toutes</option>
           {SUPERVISED_STATUSES.filter((status) => status !== "ESCALATED").map(
