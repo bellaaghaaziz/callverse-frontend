@@ -306,3 +306,19 @@ test("a date range is invalid only when its end is not after its start", () => {
   assert.equal(invalidRange("2026-10-10T08:00", ""), false);
   assert.equal(invalidRange("", "2026-10-10T08:00"), false);
 });
+test("AI slot shows the unavailable states whatever the request does", () => {
+  const { aiSlotState } = compile("ai");
+  for (const request of ["pending", "done", "failed"]) {
+    assert.equal(aiSlotState("soon", request), "unavailable-soon");
+    assert.equal(aiSlotState("down", request), "unavailable-down");
+  }
+  assert.equal(aiSlotState("checking", "done"), "loading");
+});
+test("AI slot follows the request once the feature is available, including a retry", () => {
+  const { aiSlotState } = compile("ai");
+  assert.equal(aiSlotState("available", "pending"), "loading");
+  assert.equal(aiSlotState("available", "done"), "ready");
+  assert.equal(aiSlotState("available", "failed"), "error");
+  // Retrying sets the request back to pending.
+  assert.equal(aiSlotState("available", "pending"), "loading");
+});
