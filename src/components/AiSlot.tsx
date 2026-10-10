@@ -52,6 +52,8 @@ export function AiSlotView({
       aria-labelledby={titleId}
       aria-busy={state === "loading"}
       data-state={state}
+      // A result can be longer than the fixed height: let keyboards scroll it.
+      tabIndex={state === "ready" ? 0 : undefined}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
         <strong id={titleId} className="flex items-center gap-2">
