@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import ConversationPanel from "@/components/ConversationPanel";
+import SupervisedConversations from "@/components/SupervisedConversations";
 import { FrontDesk } from "@/components/IntegrationTools";
 import { apiFetch, errorMessage } from "@/lib/api";
 import type { LiveKpi, SupervisionAlert } from "@/lib/contracts";
@@ -14,7 +15,6 @@ import {
   CheckCircle2,
   LogOut,
   ShieldCheck,
-  MessageSquare,
   ArrowUpRight,
 } from "lucide-react";
 import { skillLabel, timeLabel } from "@/lib/presentation";
@@ -29,7 +29,6 @@ export default function SupervisorPage() {
   const [kpi, setKpi] = useState<LiveKpi | null>(null);
   const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
   const [error, setError] = useState("");
-  const [lookupId, setLookupId] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const connection = useConnection();
   const latestAt = useRef("");
@@ -266,35 +265,19 @@ export default function SupervisorPage() {
           </div>
         </section>
       </div>
-      <section className="cv-section cv-card cv-card-pad" id="conversation">
-        <h2 className="cv-tool-title">
-          <MessageSquare size={18} />
-          Consulter une conversation
-        </h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSelectedId(lookupId.trim());
-          }}
-          className="cv-inline-form"
-        >
-          <input
-            aria-label="Identifiant de conversation"
-            required
-            pattern="[0-9a-fA-F-]{36}"
-            value={lookupId}
-            onChange={(e) => setLookupId(e.target.value)}
-            className="cv-input"
-            placeholder="Identifiant de conversation"
-          />
-          <button className="cv-button">
-            Ouvrir
-            <ArrowUpRight size={13} />
-          </button>
-        </form>
-      </section>
+      <SupervisedConversations
+        refreshKey={(kpi?.at ?? "") + "|" + (alerts[0]?.occurredAt ?? "")}
+        onOpen={(id) => {
+          setSelectedId(id);
+          requestAnimationFrame(() =>
+            document
+              .getElementById("conversation-panel")
+              ?.scrollIntoView({ behavior: "smooth" }),
+          );
+        }}
+      />
       {selectedId && (
-        <div className="cv-section">
+        <div className="cv-section" id="conversation-panel">
           <ConversationPanel
             key={selectedId}
             id={selectedId}
