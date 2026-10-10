@@ -88,11 +88,16 @@ export function adaptSuggestion(raw: unknown): SuggestionViewModel | null {
     reply,
     intent: intent && INTENTS.includes(intent) ? intent : null,
     confidence: numberIn(raw.confidence, 0, 1),
-    sources: list(raw.sources).flatMap((source) =>
-      isRecord(source) && text(source.kb_article_id)
-        ? [{ articleId: String(source.kb_article_id), score: numberIn(source.score, 0, 1) }]
-        : [],
-    ),
+    sources: list(raw.sources).flatMap((source) => {
+      if (!isRecord(source)) return [];
+      // A UUID in the contract; a façade may still serialise ids as numbers.
+      const id = source.kb_article_id;
+      const articleId =
+        typeof id === "number" && Number.isFinite(id) ? String(id) : text(id);
+      return articleId
+        ? [{ articleId, score: numberIn(source.score, 0, 1) }]
+        : [];
+    }),
     toolCalls: list(raw.tool_calls).flatMap((call) =>
       isRecord(call) && text(call.tool)
         ? [{ tool: String(call.tool), ok: call.ok === true, summary: text(call.result_summary) ?? "" }]

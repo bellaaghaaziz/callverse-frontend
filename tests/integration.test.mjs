@@ -314,13 +314,12 @@ test("AI slot shows the unavailable states whatever the request does", () => {
   }
   assert.equal(aiSlotState("checking", "done"), "loading");
 });
-test("AI slot follows the request once the feature is available, including a retry", () => {
+test("AI slot follows the request once the feature is available", () => {
   const { aiSlotState } = compile("ai");
+  // A retry is the caller setting the request back to pending.
   assert.equal(aiSlotState("available", "pending"), "loading");
   assert.equal(aiSlotState("available", "done"), "ready");
   assert.equal(aiSlotState("available", "failed"), "error");
-  // Retrying sets the request back to pending.
-  assert.equal(aiSlotState("available", "pending"), "loading");
 });
 test("no AI feature claims to be available before its Spring façade exists", () => {
   const { AI_FEATURES, capabilityFor } = compile("ai");
@@ -341,6 +340,7 @@ test("health can only downgrade a feature whose façade exists", () => {
   assert.equal(capabilityFor("quality", "UP", flags), "soon");
 });
 // Test-only fixtures shaped like the provisional ai-service contracts (48afba8).
+// The sentinel lets a grep of the production build prove no fixture shipped.
 const SENTINEL = "CV_FIXTURE_SENTINEL_7f3a";
 test("suggestion adapter keeps confidence, sources, tools and action, and rejects bad values", () => {
   const { adaptSuggestion } = compile("ai");
@@ -368,6 +368,10 @@ test("suggestion adapter keeps confidence, sources, tools and action, and reject
   assert.equal(odd.suggestedAction.type, "NONE");
   assert.equal(odd.latencyMs, null);
   assert.equal(odd.sources.length, 0);
+  assert.equal(
+    adaptSuggestion({ reply: "Bonjour", sources: [{ kb_article_id: 42, score: 0.5 }] }).sources[0].articleId,
+    "42",
+  );
   assert.equal(adaptSuggestion({ confidence: 0.5 }), null);
   assert.equal(adaptSuggestion("not an object"), null);
 });
