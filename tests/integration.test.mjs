@@ -518,3 +518,14 @@ test("contrast ratio follows WCAG relative luminance", () => {
   assert.ok(contrastRatio("#777777", "#ffffff") < 4.5);
   assert.equal(contrastRatio("#fff", "#000"), 21);
 });
+test("tab keys move to the next, previous, first and last tab and wrap around", () => {
+  const { tabKeyTarget } = compile("tabs");
+  assert.equal(tabKeyTarget("ArrowRight", 0, 6), 1);
+  assert.equal(tabKeyTarget("ArrowRight", 5, 6), 0);
+  assert.equal(tabKeyTarget("ArrowLeft", 0, 6), 5);
+  assert.equal(tabKeyTarget("ArrowLeft", 3, 6), 2);
+  assert.equal(tabKeyTarget("Home", 4, 6), 0);
+  assert.equal(tabKeyTarget("End", 1, 6), 5);
+  assert.equal(tabKeyTarget("Enter", 1, 6), null);
+  assert.equal(tabKeyTarget("ArrowDown", 1, 6), null);
+});
