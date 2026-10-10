@@ -52,8 +52,13 @@ a {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid #4db6a4;
+  outline: 3px solid #087f70;
   outline-offset: 3px;
+}
+/* On dark surfaces the lighter teal keeps the ring at 3:1 or more. */
+.cv-sidebar :focus-visible,
+.cv-landing-cta :focus-visible {
+  outline-color: #4db6a4;
 }
 input:focus,
 select:focus,
