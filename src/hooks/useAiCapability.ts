@@ -16,15 +16,24 @@ export function useAiCapability(feature: AiFeature): AiCapability {
   const [health, setHealth] = useState<AiHealth | null>(null);
   useEffect(() => {
     if (!needsHealth) return;
-    const controller = new AbortController();
-    apiFetch<Schema["HealthStatusResponse"]>("/health/status", {
-      signal: controller.signal,
-    })
-      .then((response) => setHealth(response.status))
-      .catch(() => {
-        if (!controller.signal.aborted) setHealth("UNREACHABLE");
-      });
-    return () => controller.abort();
+    let controller = new AbortController();
+    const check = () => {
+      controller.abort();
+      controller = new AbortController();
+      const { signal } = controller;
+      apiFetch<Schema["HealthStatusResponse"]>("/health/status", { signal })
+        .then((response) => setHealth(response.status))
+        .catch(() => {
+          if (!signal.aborted) setHealth("UNREACHABLE");
+        });
+    };
+    check();
+    // Re-read after a reconnect, which follows a backend restart.
+    window.addEventListener("callverse:reconnected", check);
+    return () => {
+      controller.abort();
+      window.removeEventListener("callverse:reconnected", check);
+    };
   }, [needsHealth]);
   return capabilityFor(feature, health);
 }
