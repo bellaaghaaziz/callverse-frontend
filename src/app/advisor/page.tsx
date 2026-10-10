@@ -110,6 +110,26 @@ export default function AdvisorPage() {
     undefined,
   );
   useEffect(() => () => clearTimeout(noticeTimer.current), []);
+  // An opened form takes focus; once it closes, focus goes back to the
+  // button that opened it, as soon as that button is usable again.
+  const ticketButton = useRef<HTMLButtonElement>(null);
+  const ticketTitle = useRef<HTMLInputElement>(null);
+  const escalationButton = useRef<HTMLButtonElement>(null);
+  const escalationField = useRef<HTMLTextAreaElement>(null);
+  const returnFocus = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (ticketOpen) ticketTitle.current?.focus();
+  }, [ticketOpen]);
+  useEffect(() => {
+    if (escalationOpen) escalationField.current?.focus();
+  }, [escalationOpen]);
+  useEffect(() => {
+    const target = returnFocus.current;
+    if (ticketOpen || escalationOpen || busy || !target) return;
+    returnFocus.current = null;
+    // After an escalation the button is disabled; the ticket button is not.
+    (target.disabled ? ticketButton.current : target)?.focus();
+  }, [ticketOpen, escalationOpen, busy]);
   const activeConv = myConversations.find((c) => c.id === activeConvId) || null;
 
   const showToast = useCallback((msg: string) => {
@@ -147,6 +167,7 @@ export default function AdvisorPage() {
     setDraft("");
     setTicketOpen(false);
     setEscalationOpen(false);
+    returnFocus.current = null;
     latestEvent.current = { id: selectedId || null, at: "" };
     if (!selectedId || !selectedCustomerId) return;
     const controller = new AbortController();
@@ -603,9 +624,12 @@ export default function AdvisorPage() {
               </div>
               <div className="cv-chat-actions">
                 <button
+                  ref={ticketButton}
                   className="cv-button cv-button-secondary"
                   disabled={busy}
+                  aria-expanded={ticketOpen}
                   onClick={() => {
+                    returnFocus.current = ticketButton.current;
                     setTicketOpen(!ticketOpen);
                     setEscalationOpen(false);
                   }}
@@ -614,9 +638,12 @@ export default function AdvisorPage() {
                   Ouvrir un ticket
                 </button>
                 <button
+                  ref={escalationButton}
                   className="cv-button cv-button-secondary"
                   disabled={busy || activeConv.status !== "ACTIVE"}
+                  aria-expanded={escalationOpen}
                   onClick={() => {
+                    returnFocus.current = escalationButton.current;
                     setEscalationOpen(!escalationOpen);
                     setTicketOpen(false);
                   }}
@@ -775,6 +802,7 @@ export default function AdvisorPage() {
                   <label className="cv-field">
                     <span className="cv-label">Titre du ticket</span>
                     <input
+                      ref={ticketTitle}
                       aria-label="Titre du ticket"
                       required
                       minLength={3}
@@ -886,6 +914,7 @@ export default function AdvisorPage() {
                   <label className="cv-field">
                     <span className="cv-label">Motif d’escalade</span>
                     <textarea
+                      ref={escalationField}
                       aria-label="Motif d’escalade"
                       required
                       minLength={3}

@@ -56,6 +56,13 @@ export default function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
   const [detail, setDetail] = useState<Schema["User"] | null>(null);
+  // The detail takes focus when it opens; « Fermer » returns it to « Détails ».
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  const detailTrigger = useRef<HTMLButtonElement | null>(null);
+  const detailId = detail?.id;
+  useEffect(() => {
+    if (detailId) detailHeading.current?.focus();
+  }, [detailId]);
   const [conversationId, setConversationId] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
@@ -344,7 +351,10 @@ export default function AdminPage() {
                           </button>
                           <button
                             className="cv-button cv-button-secondary cv-button-small"
-                            onClick={() => inspect(user.id)}
+                            onClick={(event) => {
+                              detailTrigger.current = event.currentTarget;
+                              void inspect(user.id);
+                            }}
                           >
                             Détails
                             <ArrowUpRight size={12} />
@@ -393,14 +403,17 @@ export default function AdminPage() {
                     {initialsFor(detail.firstName + " " + detail.lastName)}
                   </span>
                   <div>
-                    <h2 className="text-lg">
+                    <h2 className="text-lg" ref={detailHeading} tabIndex={-1}>
                       {detail.firstName} {detail.lastName}
                     </h2>
                     <p className="cv-subtitle">{detail.email}</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setDetail(null)}
+                  onClick={() => {
+                    setDetail(null);
+                    detailTrigger.current?.focus();
+                  }}
                   className="cv-button cv-button-secondary cv-button-small"
                 >
                   Fermer

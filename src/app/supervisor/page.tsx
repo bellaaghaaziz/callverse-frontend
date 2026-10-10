@@ -89,12 +89,12 @@ export default function SupervisorPage() {
   const mainMetrics = metrics.slice(0, 4);
   const openConversation = (id: string) => {
     setSelectedId(id);
-    // After the panel renders, bring it into view.
-    requestAnimationFrame(() =>
-      document
-        .getElementById("conversation-panel")
-        ?.scrollIntoView({ behavior: "smooth" }),
-    );
+    // After the panel renders, bring it into view and move focus into it.
+    requestAnimationFrame(() => {
+      const panel = document.getElementById("conversation-panel");
+      panel?.focus({ preventScroll: true });
+      panel?.scrollIntoView({ behavior: "smooth" });
+    });
   };
   return (
     <AppShell role="Superviseur" initials="SV" title="Vue d’ensemble">
@@ -276,13 +276,18 @@ export default function SupervisorPage() {
         onOpen={openConversation}
       />
       {selectedId && (
-        <div className="cv-section" id="conversation-panel">
+        <section
+          className="cv-section"
+          id="conversation-panel"
+          aria-label="Conversation ouverte"
+          tabIndex={-1}
+        >
           <ConversationPanel
             key={selectedId}
             id={selectedId}
             role="SUPERVISOR"
           />
-        </div>
+        </section>
       )}
       <div className="cv-section" id="frontdesk">
         <FrontDesk
