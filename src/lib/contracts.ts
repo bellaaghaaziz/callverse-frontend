@@ -79,6 +79,8 @@ export interface SupervisionAlert {
 }
 // EscalationRequest.reason maxLength in the backend contract.
 export const ESCALATION_REASON_MAX_LENGTH = 255;
+// MessageRequest.content maxLength in the backend contract.
+export const MESSAGE_MAX_LENGTH = 2000;
 export function mergeMessages(
   previous: Message[],
   incoming: Message[],

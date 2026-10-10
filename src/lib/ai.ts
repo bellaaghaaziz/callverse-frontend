@@ -219,13 +219,12 @@ export function adaptSimulationTurn(raw: unknown): SimulationTurnViewModel | nul
 }
 
 // Suggestion presentation and use.
-export const MESSAGE_MAX_LENGTH = 2000; // MessageRequest.content maxLength
 export const confidenceLabel = (confidence: number | null) =>
   confidence === null ? "—" : Math.round(confidence * 100) + " %";
 export const latencyLabel = (ms: number | null) =>
   ms === null
     ? "—"
-    : ms < 1000
+    : Math.round(ms) < 1000
       ? Math.round(ms) + " ms"
       : new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(
           ms / 1000,
@@ -239,10 +238,19 @@ const ACTION_LABELS: Record<AiActionType, string | null> = {
   BLOCK_CARD: "Bloquer la carte",
 };
 export const actionLabel = (type: AiActionType) => ACTION_LABELS[type];
-// Never overwrite what the advisor typed: append, within the message limit.
-export function draftWithSuggestion(draft: string, reply: string): string {
+// Never overwrite what the advisor typed: append once, within the message
+// limit, without splitting a character in two.
+export function draftWithSuggestion(
+  draft: string,
+  reply: string,
+  limit: number,
+): string {
   const typed = draft.trim();
-  return (typed ? typed + " " + reply : reply).slice(0, MESSAGE_MAX_LENGTH);
+  if (typed.includes(reply.trim())) return draft;
+  const merged = (typed ? typed + " " + reply : reply).slice(0, limit);
+  const last = merged.charCodeAt(merged.length - 1);
+  // A lone high surrogate means the cut fell inside an emoji.
+  return last >= 0xd800 && last <= 0xdbff ? merged.slice(0, -1) : merged;
 }
 // Changes only when the customer writes something new in this conversation,
 // so the advisor's own messages never trigger another suggestion.

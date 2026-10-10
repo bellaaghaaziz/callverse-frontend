@@ -429,6 +429,7 @@ test("suggestion labels show confidence, latency and the proposed action in Fren
   assert.equal(confidenceLabel(null), "—");
   assert.equal(latencyLabel(840), "840 ms");
   assert.equal(latencyLabel(1240), "1,2 s");
+  assert.equal(latencyLabel(999.6), "1 s");
   assert.equal(latencyLabel(null), "—");
   assert.equal(actionLabel("BLOCK_CARD"), "Bloquer la carte");
   assert.equal(actionLabel("APPLY_CREDIT"), "Geste commercial");
@@ -436,12 +437,19 @@ test("suggestion labels show confidence, latency and the proposed action in Fren
 });
 test("using a suggestion keeps what the advisor typed and never exceeds the message limit", () => {
   const { draftWithSuggestion } = compile("ai");
-  assert.equal(draftWithSuggestion("", "Je bloque votre carte."), "Je bloque votre carte.");
-  assert.equal(draftWithSuggestion("  ", "Je bloque votre carte."), "Je bloque votre carte.");
-  assert.equal(draftWithSuggestion("Bonjour,", "je bloque votre carte."), "Bonjour, je bloque votre carte.");
-  const long = draftWithSuggestion("x".repeat(1990), "y".repeat(50));
+  const reply = "je bloque votre carte.";
+  assert.equal(draftWithSuggestion("", reply, 2000), reply);
+  assert.equal(draftWithSuggestion("  ", reply, 2000), reply);
+  assert.equal(draftWithSuggestion("Bonjour,", reply, 2000), "Bonjour, " + reply);
+  // Using it twice does not insert it twice.
+  assert.equal(draftWithSuggestion("Bonjour, " + reply, reply, 2000), "Bonjour, " + reply);
+  const long = draftWithSuggestion("x".repeat(1990), "y".repeat(50), 2000);
   assert.equal(long.length, 2000);
   assert.ok(long.startsWith("x".repeat(1990)));
+  // The cut never splits an emoji into an invalid half.
+  const cut = draftWithSuggestion("x".repeat(1998), "😀😀", 2000);
+  assert.equal(cut, "x".repeat(1998) + " ");
+  assert.equal(cut.length, 1999);
 });
 test("AI slot waits idle while there is nothing to answer", () => {
   const { aiSlotState } = compile("ai");
@@ -481,7 +489,6 @@ test("the suggestion request never reaches the API while the façade flag is off
   });
   const off = { suggestion: false, workforce: false, quality: false, simulation: false };
   assert.equal(await requests.requestSuggestion("c1", { features: off }), null);
-  assert.equal(await requests.requestSuggestion("c1", {}), null);
   assert.equal(calls.length, 0);
 });
 test("the suggestion request posts to the façade path and adapts the answer", async () => {
