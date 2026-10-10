@@ -87,6 +87,15 @@ export default function SupervisorPage() {
     ["Taux d'abandon", percent(kpi?.abandonRate)],
   ];
   const mainMetrics = metrics.slice(0, 4);
+  const openConversation = (id: string) => {
+    setSelectedId(id);
+    // After the panel renders, bring it into view.
+    requestAnimationFrame(() =>
+      document
+        .getElementById("conversation-panel")
+        ?.scrollIntoView({ behavior: "smooth" }),
+    );
+  };
   return (
     <AppShell role="Superviseur" initials="SV" title="Vue d’ensemble">
       <div className="cv-page-heading" id="workspace">
@@ -250,10 +259,7 @@ export default function SupervisorPage() {
                   <button
                     className="cv-button cv-button-secondary cv-button-small mt-3"
                     onClick={() => {
-                      setSelectedId(alert.conversationId);
-                      document
-                        .getElementById("conversation")
-                        ?.scrollIntoView({ behavior: "smooth" });
+                      openConversation(alert.conversationId!);
                     }}
                   >
                     Ouvrir la conversation
@@ -267,14 +273,7 @@ export default function SupervisorPage() {
       </div>
       <SupervisedConversations
         refreshKey={(kpi?.at ?? "") + "|" + (alerts[0]?.occurredAt ?? "")}
-        onOpen={(id) => {
-          setSelectedId(id);
-          requestAnimationFrame(() =>
-            document
-              .getElementById("conversation-panel")
-              ?.scrollIntoView({ behavior: "smooth" }),
-          );
-        }}
+        onOpen={openConversation}
       />
       {selectedId && (
         <div className="cv-section" id="conversation-panel">
