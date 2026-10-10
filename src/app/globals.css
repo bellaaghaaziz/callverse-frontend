@@ -313,7 +313,7 @@ svg {
   gap: 12px;
   align-items: center;
   font-size: 12px;
-  color: #8b989e;
+  color: #69777e;
 }
 .cv-breadcrumb strong {
   font-weight: 500;
@@ -325,7 +325,7 @@ svg {
   gap: 6px;
   font-size: 10px;
   font-weight: 600;
-  color: #708176;
+  color: #69796f;
 }
 .cv-account-trigger {
   background: transparent;
@@ -352,7 +352,7 @@ svg {
 }
 .cv-account-menu p {
   font-size: 11px;
-  color: #71808a;
+  color: #6a7882;
   margin: 7px 0 14px;
   overflow-wrap: anywhere;
 }
@@ -376,7 +376,7 @@ svg {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-  color: #94a29d;
+  color: #65746f;
   font-size: 10px;
   padding: 18px 32px;
   border-top: 1px solid var(--border);
@@ -412,7 +412,7 @@ svg {
   font-size: 10px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  color: #6c8a7b;
+  color: #5d7669;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
@@ -466,19 +466,19 @@ svg {
   line-height: 1.2;
 }
 .cv-badge-green {
-  color: #288060;
+  color: #277c5d;
   background: #eaf5ee;
 }
 .cv-badge-amber {
-  color: #a27a20;
+  color: #8e6b1c;
   background: #fcf5e2;
 }
 .cv-badge-rose {
-  color: #b94e5f;
+  color: #b7495b;
   background: #fceef0;
 }
 .cv-badge-gray {
-  color: #73818b;
+  color: #647179;
   background: #f0f3f4;
 }
 .cv-button {
@@ -585,7 +585,7 @@ textarea.cv-input {
 .cv-empty {
   padding: 38px 24px;
   text-align: center;
-  color: #889894;
+  color: #6a7a76;
   font-size: 12px;
   line-height: 1.8;
 }
@@ -645,7 +645,7 @@ textarea.cv-input {
   align-items: center;
   gap: 7px;
   font-size: 10px;
-  color: #35896e;
+  color: #317e65;
 }
 .cv-live:before {
   content: "";
@@ -656,7 +656,7 @@ textarea.cv-input {
   box-shadow: 0 0 0 3px #45a27f15;
 }
 .cv-live-off {
-  color: #ae7a38;
+  color: #956830;
 }
 .cv-live-off:before {
   background: #ca9850;
@@ -681,7 +681,7 @@ textarea.cv-input {
 }
 .cv-section-title p {
   font-size: 11px;
-  color: #83938c;
+  color: #65746e;
 }
 .cv-count {
   display: inline-grid;
@@ -690,7 +690,7 @@ textarea.cv-input {
   height: 22px;
   border-radius: 6px;
   background: #edf3ee;
-  color: #588271;
+  color: #507667;
   font-size: 10px;
   font-weight: 700;
 }
@@ -739,7 +739,7 @@ textarea.cv-input {
 .cv-table th {
   font-size: 10px;
   font-weight: 600;
-  color: #82938c;
+  color: #667670;
   background: #f7f9f6;
   padding: 13px 18px;
   border-bottom: 1px solid #e9eee8;
@@ -765,7 +765,7 @@ textarea.cv-input {
 .cv-tabs button {
   padding: 12px 15px;
   font-size: 12px;
-  color: #809088;
+  color: #66746d;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -858,7 +858,7 @@ textarea.cv-input {
   white-space: nowrap;
 }
 .cv-positive {
-  color: #328668;
+  color: #318467;
 }
 .cv-negative {
   color: #ab5964;
@@ -887,7 +887,7 @@ textarea.cv-input {
 .cv-queue-section > p {
   font-size: 9px;
   font-weight: 700;
-  color: #96a499;
+  color: #6a7a6e;
   letter-spacing: 1px;
   margin: 6px 4px 9px;
 }
@@ -1037,7 +1037,7 @@ textarea.cv-input {
   justify-content: center;
   text-align: center;
   gap: 10px;
-  color: #90a196;
+  color: #697b6f;
   font-size: 12px;
   padding: 20px;
 }
@@ -1061,7 +1061,7 @@ textarea.cv-input {
   gap: 14px;
   justify-content: center;
   font-size: 9px;
-  color: #99a49c;
+  color: #6c7970;
   margin: 10px 0 23px;
 }
 .cv-day-separator:before,
@@ -1093,7 +1093,7 @@ textarea.cv-input {
   place-items: center;
   font-size: 9px;
   background: #eef2ec;
-  color: #6c8574;
+  color: #5e7365;
   flex-shrink: 0;
 }
 .cv-message-grouped .cv-message-avatar {
@@ -1203,14 +1203,14 @@ textarea.cv-input {
   height: 47px;
   font-size: 15px;
   background: #eef2e7;
-  color: #6c8056;
+  color: #61734e;
 }
 .cv-customer-header h2 {
   font-size: 16px;
 }
 .cv-customer-header p {
   font-size: 10px;
-  color: #9aa59b;
+  color: #6d7a6e;
   margin-top: 6px;
 }
 .cv-profile-section {
@@ -1485,7 +1485,7 @@ textarea.cv-input {
   display: flex;
   gap: 36px;
   font-size: 12px;
-  color: #7a8a81;
+  color: #69776f;
 }
 .cv-landing-nav nav a:hover {
   color: #087f70;
@@ -1541,19 +1541,19 @@ textarea.cv-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #627e6c;
+  color: #5f7a69;
 }
 .cv-hero-footnote {
   display: flex;
   align-items: center;
   gap: 15px;
   font-size: 10px;
-  color: #9ca59b;
+  color: #6c776b;
   line-height: 1.7;
 }
 .cv-hero-footnote strong {
   font-weight: 500;
-  color: #6a806e;
+  color: #647968;
 }
 .cv-hero-avatars {
   display: flex;
@@ -1569,7 +1569,7 @@ textarea.cv-input {
   background: #d9e7d8;
   margin-left: -5px;
   font-size: 8px;
-  color: #789379;
+  color: #566b57;
   font-style: normal;
 }
 .cv-hero-avatars i:nth-child(2) {
@@ -1578,7 +1578,7 @@ textarea.cv-input {
 }
 .cv-hero-avatars i:nth-child(3) {
   background: #edd7bd;
-  color: #967b57;
+  color: #715d41;
 }
 .cv-hero-visual {
   position: relative;
@@ -1684,7 +1684,7 @@ textarea.cv-input {
 }
 .cv-preview-chat-header p {
   font-size: 8px;
-  color: #9ca693;
+  color: #6f7a65;
   margin-top: 4px;
 }
 .cv-preview-chat-header > .cv-avatar {
@@ -1701,7 +1701,7 @@ textarea.cv-input {
 }
 .cv-preview-day {
   text-align: center;
-  color: #a3ada0;
+  color: #6d7a6a;
   font-size: 8px;
   margin: 16px 0;
 }
@@ -1717,7 +1717,7 @@ textarea.cv-input {
 .cv-preview-bubble small {
   display: block;
   font-size: 7px;
-  color: #9bab94;
+  color: #63745b;
   text-align: right;
   margin-top: 3px;
 }
@@ -1728,7 +1728,7 @@ textarea.cv-input {
   border-radius: 9px 9px 2px 9px;
 }
 .cv-preview-bubble-own small {
-  color: #b1d6ba;
+  color: #f8fbf8;
   display: flex;
   justify-content: flex-end;
   gap: 5px;
@@ -1740,7 +1740,7 @@ textarea.cv-input {
   justify-content: center;
   align-items: center;
   font-size: 8px;
-  color: #8ba180;
+  color: #677d5c;
   margin: 18px 0;
 }
 .cv-preview-compose {
@@ -1750,7 +1750,7 @@ textarea.cv-input {
   border: 1px solid #e8eddf;
   border-radius: 7px;
   padding: 7px 8px 7px 10px;
-  color: #a3ae97;
+  color: #6e7b60;
   font-size: 8px;
 }
 .cv-preview-compose > span:last-child {
@@ -1784,7 +1784,7 @@ textarea.cv-input {
 }
 .cv-floating-card p {
   font-size: 9px;
-  color: #9aa68f;
+  color: #6d7a61;
   margin-top: 4px;
 }
 .cv-preview-disclaimer {
@@ -1801,7 +1801,7 @@ textarea.cv-input {
   justify-content: center;
   gap: 75px;
   padding: 23px 25px;
-  color: #799170;
+  color: #62765b;
   font-size: 11px;
   background: #f3f6ee;
 }
@@ -1858,7 +1858,7 @@ textarea.cv-input {
 .cv-feature-number {
   font-size: 8px;
   letter-spacing: 1.6px;
-  color: #95a289;
+  color: #616d56;
   font-weight: 600;
 }
 .cv-feature-card h3 {
@@ -1889,14 +1889,14 @@ textarea.cv-input {
   font-size: 9px;
   border-radius: 7px 7px 7px 1px;
   background: #fff;
-  color: #8b9b81;
+  color: #6c7b62;
   padding: 11px 14px;
   box-shadow: 0 2px 3px #82987505;
 }
 .cv-feature-mini-chat > span:nth-child(2) {
   margin-left: auto;
   background: #397c5d;
-  color: #ecf5e5;
+  color: #eef6e7;
   border-radius: 7px 7px 1px 7px;
 }
 .cv-feature-mini-chat > span.cv-feature-typing {
@@ -1952,7 +1952,7 @@ textarea.cv-input {
 }
 .cv-role-card-top > span {
   font-size: 9px;
-  color: #b0bbaa;
+  color: #6b7b63;
 }
 .cv-role-card h3 {
   font-size: 20px;
@@ -1969,7 +1969,7 @@ textarea.cv-input {
   align-items: center;
   gap: 5px;
   font-size: 10px;
-  color: #5f8b69;
+  color: #578061;
 }
 .cv-landing-cta {
   max-width: 1220px;
@@ -2012,12 +2012,12 @@ textarea.cv-input {
 }
 .cv-landing-footer p {
   font-size: 10px;
-  color: #8a9c83;
+  color: #677961;
 }
 .cv-landing-footer > span {
   margin-left: auto;
   font-size: 9px;
-  color: #a0ab97;
+  color: #6b7861;
 }
 .cv-login {
   display: grid;
@@ -2088,11 +2088,11 @@ textarea.cv-input {
   height: 26px;
   font-size: 8px;
   background: #517762;
-  color: #cde0c1;
+  color: #eef4e9;
 }
 .cv-login-note span:not(.cv-avatar) {
   display: block;
-  color: #91b197;
+  color: #92b298;
   font-size: 8px;
   margin-bottom: 6px;
 }
@@ -2108,7 +2108,7 @@ textarea.cv-input {
 }
 .cv-login-note-own p {
   background: #adcaa2;
-  color: #345a3e;
+  color: #33583d;
   border-radius: 8px 8px 1px 8px;
 }
 .cv-login-note-own span:not(.cv-avatar) {
@@ -2119,7 +2119,7 @@ textarea.cv-input {
   gap: 7px;
   align-items: center;
   justify-content: center;
-  color: #819e81;
+  color: #99b099;
   font-size: 8px;
   margin-top: 22px;
 }
@@ -2127,7 +2127,7 @@ textarea.cv-input {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  color: #6c9481;
+  color: #82a493;
   font-size: 9px;
 }
 .cv-login-form-side {
@@ -2139,7 +2139,7 @@ textarea.cv-input {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #91a08b;
+  color: #697863;
   font-size: 11px;
   align-self: flex-start;
 }
@@ -2182,7 +2182,7 @@ textarea.cv-input {
   gap: 14px;
   font-size: 8px;
   letter-spacing: 1.5px;
-  color: #9da98f;
+  color: #6b785c;
   margin: 32px 0 13px;
 }
 .cv-demo-heading:after {
@@ -2238,7 +2238,7 @@ textarea.cv-input {
 }
 .cv-login-legal {
   font-size: 9px;
-  color: #a4ae9b;
+  color: #6c7761;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2540,7 +2540,7 @@ textarea.cv-input {
 }
 .cv-stat-top {
   font-size: 12px;
-  color: #75867c;
+  color: #6b7a71;
 }
 .cv-meta-list dt {
   color: #77877b;
@@ -2569,7 +2569,7 @@ textarea.cv-input {
 }
 .cv-demo-account small {
   font-size: 10px;
-  color: #758a6c;
+  color: #697c61;
 }
 .cv-landing-nav nav,
 .cv-hero-more,
@@ -2579,14 +2579,14 @@ textarea.cv-input {
 .cv-feature-card > p,
 .cv-role-card > p {
   font-size: 13px;
-  color: #6e8063;
+  color: #5f6e55;
 }
 .cv-section-intro > p:last-child:not(.cv-eyebrow) {
   font-size: 14px;
-  color: #73836a;
+  color: #6a7861;
 }
 .cv-hero-description {
-  color: #72816b;
+  color: #6a7864;
 }
 .cv-login-form-container > .cv-muted {
   font-size: 11px;
@@ -2654,23 +2654,23 @@ textarea.cv-input {
 .cv-chat-person p,
 .cv-conversation-item p,
 .cv-list-row p {
-  color: #64756d;
+  color: #63736b;
 }
 .cv-message-name,
 .cv-message-body time,
 .cv-bank-card p,
 .cv-account-card > p {
-  color: #657561;
+  color: #657461;
 }
 .cv-message-own .cv-message-body time {
-  color: #e0f2e8;
+  color: #edf8f2;
 }
 .cv-chat-context {
-  color: #69796b;
+  color: #68786a;
 }
 .cv-composer > p {
-  color: #73826f;
+  color: #6c7a68;
 }
 .cv-input::placeholder {
-  color: #75846e;
+  color: #6c7965;
 }
