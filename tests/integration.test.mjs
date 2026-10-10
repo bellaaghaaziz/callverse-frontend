@@ -340,3 +340,81 @@ test("health can only downgrade a feature whose façade exists", () => {
     assert.equal(capabilityFor("suggestion", health, flags), "down");
   assert.equal(capabilityFor("quality", "UP", flags), "soon");
 });
+// Test-only fixtures shaped like the provisional ai-service contracts (48afba8).
+const SENTINEL = "CV_FIXTURE_SENTINEL_7f3a";
+test("suggestion adapter keeps confidence, sources, tools and action, and rejects bad values", () => {
+  const { adaptSuggestion } = compile("ai");
+  const raw = {
+    reply: "Je bloque votre carte. " + SENTINEL,
+    intent: "FRAUD",
+    confidence: 0.82,
+    tool_calls: [{ tool: "get_customer", args: {}, result_summary: "Client trouvé", ok: true }],
+    sources: [{ kb_article_id: "a1", score: 0.9 }, { score: 0.4 }],
+    action: { type: "BLOCK_CARD", payload: { cardId: "c1" } },
+    latency_ms: 840,
+  };
+  const view = adaptSuggestion(raw);
+  assert.equal(view.reply, raw.reply);
+  assert.equal(view.intent, "FRAUD");
+  assert.equal(view.confidence, 0.82);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.sources)), [{ articleId: "a1", score: 0.9 }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.toolCalls)), [{ tool: "get_customer", ok: true, summary: "Client trouvé" }]);
+  assert.equal(view.suggestedAction.type, "BLOCK_CARD");
+  assert.equal(view.suggestedAction.payload.cardId, "c1");
+  assert.equal(view.latencyMs, 840);
+  const odd = adaptSuggestion({ reply: "Bonjour", intent: "WEATHER", confidence: 1.4, action: { type: "WIRE_MONEY" }, latency_ms: -3 });
+  assert.equal(odd.intent, null);
+  assert.equal(odd.confidence, null);
+  assert.equal(odd.suggestedAction.type, "NONE");
+  assert.equal(odd.latencyMs, null);
+  assert.equal(odd.sources.length, 0);
+  assert.equal(adaptSuggestion({ confidence: 0.5 }), null);
+  assert.equal(adaptSuggestion("not an object"), null);
+});
+test("workforce adapter keeps the expected gain per metric and needs an action type", () => {
+  const { adaptWorkforce } = compile("ai");
+  const view = adaptWorkforce({
+    type: "REASSIGN", from_pool: "CARDS", to_pool: "FRAUD", count: 2,
+    reason: "File fraude saturée " + SENTINEL, expected_gain: { wait_seconds: -45, sla: 0.12, label: "x" },
+  });
+  assert.equal(view.action, "REASSIGN");
+  assert.equal(view.fromPool, "CARDS");
+  assert.equal(view.toPool, "FRAUD");
+  assert.equal(view.count, 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.expectedGain)), { wait_seconds: -45, sla: 0.12 });
+  const partial = adaptWorkforce({ type: "HOLD", count: -1 });
+  assert.equal(partial.fromPool, null);
+  assert.equal(partial.count, null);
+  assert.equal(partial.reason, null);
+  assert.equal(adaptWorkforce({ reason: "no type" }), null);
+});
+test("quality adapter turns scores into criteria and keeps evidence, flags and recommendations", () => {
+  const { adaptQuality } = compile("ai");
+  const view = adaptQuality({
+    conversation_id: "conv-1", global_score: 7.5, scores: { empathy: 8, accuracy: 7, tone: "x" },
+    explanation: "Bonne prise en charge " + SENTINEL,
+    evidence: [{ criterion: "empathy", score: 8, evidence: "« Je comprends »" }, { score: 3 }],
+    flags: { compliance: false }, recommendations: ["Reformuler", 4],
+  });
+  assert.equal(view.globalScore, 7.5);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.criteria)), [{ name: "empathy", score: 8 }, { name: "accuracy", score: 7 }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.evidence)), [{ criterion: "empathy", score: 8, text: "« Je comprends »" }]);
+  assert.equal(view.flags.compliance, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(view.recommendations)), ["Reformuler"]);
+  assert.equal(adaptQuality({ scores: {} }), null);
+});
+test("simulation adapter maps the simulated customer's turn and state", () => {
+  const { adaptSimulationTurn } = compile("ai");
+  const view = adaptSimulationTurn({
+    content: "Ma carte est bloquée ! " + SENTINEL, status: "en_cours",
+    state: { profile: "impatient", patience: 35, satisfaction: 120, objective: "débloquer la carte", objective_met: false },
+  });
+  assert.equal(view.status, "ONGOING");
+  assert.equal(view.state.profile, "impatient");
+  assert.equal(view.state.patience, 35);
+  assert.equal(view.state.satisfaction, null);
+  assert.equal(view.state.objectiveMet, false);
+  assert.equal(adaptSimulationTurn({ content: null, status: "resolu", state: { profile: "calme" } }).status, "RESOLVED");
+  assert.equal(adaptSimulationTurn({ content: "x", status: "en_cours" }), null);
+  assert.equal(adaptSimulationTurn({ status: "toString", state: { profile: "calme" } }).status, null);
+});

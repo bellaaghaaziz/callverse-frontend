@@ -45,3 +45,166 @@ export function capabilityFor(
   if (health === null) return "checking";
   return health === "UP" ? "available" : "down";
 }
+
+// View models and adapters.
+// Provisional: from ai-service @ 48afba8 (2026-10-02); confirm on 2026-10-11.
+// Each adapter takes the façade's JSON and returns null when the required
+// fields are missing, so a slot shows an error instead of a broken result.
+type Json = Record<string, unknown>;
+const isRecord = (value: unknown): value is Json =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const text = (value: unknown) =>
+  typeof value === "string" && value.trim() ? value : null;
+const numberIn = (value: unknown, min: number, max: number) =>
+  typeof value === "number" && value >= min && value <= max ? value : null;
+const list = (value: unknown) => (Array.isArray(value) ? value : []);
+const INTENTS = ["BALANCE", "CARD", "CREDIT", "FRAUD", "ACCOUNT_CLOSURE", "OTHER"];
+export const AI_ACTIONS = [
+  "NONE",
+  "CREATE_CASE",
+  "APPLY_CREDIT",
+  "ESCALATE",
+  "TRANSFER",
+  "BLOCK_CARD",
+] as const;
+export type AiActionType = (typeof AI_ACTIONS)[number];
+
+export interface SuggestionViewModel {
+  reply: string;
+  intent: string | null;
+  confidence: number | null;
+  sources: { articleId: string; score: number | null }[];
+  toolCalls: { tool: string; ok: boolean; summary: string }[];
+  suggestedAction: { type: AiActionType; payload: Json };
+  latencyMs: number | null;
+}
+export function adaptSuggestion(raw: unknown): SuggestionViewModel | null {
+  if (!isRecord(raw)) return null;
+  const reply = text(raw.reply);
+  if (!reply) return null;
+  const intent = text(raw.intent);
+  const action = isRecord(raw.action) ? raw.action : {};
+  return {
+    reply,
+    intent: intent && INTENTS.includes(intent) ? intent : null,
+    confidence: numberIn(raw.confidence, 0, 1),
+    sources: list(raw.sources).flatMap((source) =>
+      isRecord(source) && text(source.kb_article_id)
+        ? [{ articleId: String(source.kb_article_id), score: numberIn(source.score, 0, 1) }]
+        : [],
+    ),
+    toolCalls: list(raw.tool_calls).flatMap((call) =>
+      isRecord(call) && text(call.tool)
+        ? [{ tool: String(call.tool), ok: call.ok === true, summary: text(call.result_summary) ?? "" }]
+        : [],
+    ),
+    suggestedAction: {
+      type: AI_ACTIONS.find((type) => type === action.type) ?? "NONE",
+      payload: isRecord(action.payload) ? action.payload : {},
+    },
+    latencyMs: numberIn(raw.latency_ms, 0, Number.MAX_SAFE_INTEGER),
+  };
+}
+
+export interface WorkforceViewModel {
+  action: string;
+  fromPool: string | null;
+  toPool: string | null;
+  count: number | null;
+  reason: string | null;
+  // One number per metric, e.g. { wait_seconds: -45 }.
+  expectedGain: Record<string, number>;
+}
+export function adaptWorkforce(raw: unknown): WorkforceViewModel | null {
+  if (!isRecord(raw)) return null;
+  const action = text(raw.type);
+  if (!action) return null;
+  const gain = isRecord(raw.expected_gain) ? raw.expected_gain : {};
+  return {
+    action,
+    fromPool: text(raw.from_pool),
+    toPool: text(raw.to_pool),
+    count:
+      Number.isInteger(raw.count) && (raw.count as number) >= 0
+        ? (raw.count as number)
+        : null,
+    reason: text(raw.reason),
+    expectedGain: Object.fromEntries(
+      Object.entries(gain).filter(([, value]) => typeof value === "number"),
+    ) as Record<string, number>,
+  };
+}
+
+export interface QualityViewModel {
+  conversationId: string | null;
+  globalScore: number;
+  criteria: { name: string; score: number }[];
+  explanation: string | null;
+  evidence: { criterion: string; score: number | null; text: string | null }[];
+  flags: Json;
+  recommendations: string[];
+}
+export function adaptQuality(raw: unknown): QualityViewModel | null {
+  if (!isRecord(raw) || typeof raw.global_score !== "number") return null;
+  const scores = isRecord(raw.scores) ? raw.scores : {};
+  return {
+    conversationId: text(raw.conversation_id),
+    globalScore: raw.global_score,
+    criteria: Object.entries(scores).flatMap(([name, score]) =>
+      typeof score === "number" ? [{ name, score }] : [],
+    ),
+    explanation: text(raw.explanation),
+    evidence: list(raw.evidence).flatMap((item) =>
+      isRecord(item) && text(item.criterion)
+        ? [{
+            criterion: String(item.criterion),
+            score: typeof item.score === "number" ? item.score : null,
+            text: text(item.evidence),
+          }]
+        : [],
+    ),
+    flags: isRecord(raw.flags) ? raw.flags : {},
+    recommendations: list(raw.recommendations).filter(
+      (item): item is string => typeof item === "string",
+    ),
+  };
+}
+
+export interface SimulationTurnViewModel {
+  content: string | null;
+  status: "ONGOING" | "RESOLVED" | "ABANDONED" | null;
+  state: {
+    profile: string;
+    // 0-100 in the contract
+    patience: number | null;
+    satisfaction: number | null;
+    objective: string | null;
+    objectiveMet: boolean;
+  };
+}
+const SIMULATION_STATUS = {
+  en_cours: "ONGOING",
+  resolu: "RESOLVED",
+  abandonne: "ABANDONED",
+} as const;
+export function adaptSimulationTurn(raw: unknown): SimulationTurnViewModel | null {
+  if (!isRecord(raw) || !isRecord(raw.state)) return null;
+  const profile = text(raw.state.profile);
+  if (!profile) return null;
+  const status = raw.status;
+  return {
+    content: text(raw.content),
+    status:
+      typeof status === "string" &&
+      Object.prototype.hasOwnProperty.call(SIMULATION_STATUS, status)
+        ? SIMULATION_STATUS[status as keyof typeof SIMULATION_STATUS]
+        : null,
+    state: {
+      profile,
+      patience: numberIn(raw.state.patience, 0, 100),
+      satisfaction: numberIn(raw.state.satisfaction, 0, 100),
+      objective: text(raw.state.objective),
+      objectiveMet: raw.state.objective_met === true,
+    },
+  };
+}
