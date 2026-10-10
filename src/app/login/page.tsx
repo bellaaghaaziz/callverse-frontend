@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, errorMessage } from "@/lib/api";
-import { clearSession } from "@/lib/auth";
+import { clearSession, sessionNotice } from "@/lib/auth";
 import { roleHome, type Role } from "@/lib/contracts";
 import {
   Lock,
@@ -26,9 +26,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const router = useRouter();
 
+  // Read in an effect, not useSearchParams, so /login stays statically prerendered.
+  useEffect(() => {
+    setNotice(sessionNotice(window.location.search));
+  }, []);
+
   async function performLogin(targetEmail: string, targetPass: string) {
+    setNotice(null);
     setError(null);
     setLoading(true);
     try {
@@ -175,6 +182,9 @@ export default function LoginPage() {
                 />
               </div>
             </label>
+            <div role="status">
+              {notice && <p className="cv-notice mb-4">{notice}</p>}
+            </div>
             {error && (
               <p role="alert" className="cv-error mb-4">
                 {error}

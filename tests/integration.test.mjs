@@ -197,3 +197,37 @@ test("STOMP keeps all subscriptions across reconnects and does not restore remov
   stomp.disconnectStomp();
   assert.equal(instance.active, false);
 });
+test("login notice explains an expired session only when the query says so", () => {
+  const { sessionNotice } = compile(
+    "auth",
+    { URLSearchParams },
+    { "./stomp": { disconnectStomp() {} } },
+  );
+  const expired = "Votre session a expiré. Reconnectez-vous.";
+  assert.equal(sessionNotice("?expired=1"), expired);
+  assert.equal(sessionNotice("?next=%2Fadvisor&expired=1"), expired);
+  assert.equal(sessionNotice(""), null);
+  assert.equal(sessionNotice("?expired=0"), null);
+});
+test("expireSession redirects to a login URL that shows the expired notice", () => {
+  let target;
+  const storage = { removeItem() {} };
+  const auth = compile(
+    "auth",
+    {
+      URLSearchParams,
+      sessionStorage: storage,
+      localStorage: storage,
+      document: {},
+      window: { location: { replace: (url) => (target = url) } },
+    },
+    { "./stomp": { disconnectStomp() {} } },
+  );
+  auth.expireSession();
+  const url = new URL(target, "http://localhost");
+  assert.equal(url.pathname, "/login");
+  assert.equal(
+    auth.sessionNotice(url.search),
+    "Votre session a expiré. Reconnectez-vous.",
+  );
+});
