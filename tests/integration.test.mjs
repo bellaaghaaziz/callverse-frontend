@@ -422,3 +422,29 @@ test("simulation adapter maps the simulated customer's turn and state", () => {
   assert.equal(adaptSimulationTurn({ content: "x", status: "en_cours" }), null);
   assert.equal(adaptSimulationTurn({ status: "toString", state: { profile: "calme" } }).status, null);
 });
+test("suggestion labels show confidence, latency and the proposed action in French", () => {
+  const { confidenceLabel, latencyLabel, actionLabel } = compile("ai");
+  assert.equal(confidenceLabel(0.82), "82 %");
+  assert.equal(confidenceLabel(0.005), "1 %");
+  assert.equal(confidenceLabel(null), "—");
+  assert.equal(latencyLabel(840), "840 ms");
+  assert.equal(latencyLabel(1240), "1,2 s");
+  assert.equal(latencyLabel(null), "—");
+  assert.equal(actionLabel("BLOCK_CARD"), "Bloquer la carte");
+  assert.equal(actionLabel("APPLY_CREDIT"), "Geste commercial");
+  assert.equal(actionLabel("NONE"), null);
+});
+test("using a suggestion keeps what the advisor typed and never exceeds the message limit", () => {
+  const { draftWithSuggestion } = compile("ai");
+  assert.equal(draftWithSuggestion("", "Je bloque votre carte."), "Je bloque votre carte.");
+  assert.equal(draftWithSuggestion("  ", "Je bloque votre carte."), "Je bloque votre carte.");
+  assert.equal(draftWithSuggestion("Bonjour,", "je bloque votre carte."), "Bonjour, je bloque votre carte.");
+  const long = draftWithSuggestion("x".repeat(1990), "y".repeat(50));
+  assert.equal(long.length, 2000);
+  assert.ok(long.startsWith("x".repeat(1990)));
+});
+test("AI slot waits idle while there is nothing to answer", () => {
+  const { aiSlotState } = compile("ai");
+  assert.equal(aiSlotState("available", "idle"), "idle");
+  assert.equal(aiSlotState("soon", "idle"), "unavailable-soon");
+});

@@ -30,6 +30,7 @@ export default function AiSlot({
   );
 }
 const messages: Record<AiSlotState, string> = {
+  idle: "En attente d’un message du client",
   "unavailable-soon": "Bientôt disponible",
   "unavailable-down": "Service IA indisponible",
   loading: "Préparation en cours…",

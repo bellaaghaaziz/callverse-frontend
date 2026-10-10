@@ -4,8 +4,10 @@ export type AiFeature = "suggestion" | "workforce" | "quality" | "simulation";
 // soon: no façade yet · checking: health not known yet · down: AI unusable ·
 // available: the façade exists and the AI service is configured.
 export type AiCapability = "soon" | "checking" | "down" | "available";
-export type AiRequest = "pending" | "done" | "failed";
+// idle: nothing to answer yet (e.g. no customer message).
+export type AiRequest = "idle" | "pending" | "done" | "failed";
 export type AiSlotState =
+  | "idle"
   | "unavailable-soon"
   | "unavailable-down"
   | "loading"
@@ -18,6 +20,7 @@ export function aiSlotState(
   if (capability === "soon") return "unavailable-soon";
   if (capability === "down") return "unavailable-down";
   if (capability === "checking") return "loading";
+  if (request === "idle") return "idle";
   return request === "done"
     ? "ready"
     : request === "failed"
@@ -212,4 +215,31 @@ export function adaptSimulationTurn(raw: unknown): SimulationTurnViewModel | nul
       objectiveMet: raw.state.objective_met === true,
     },
   };
+}
+
+// Suggestion presentation and use.
+export const MESSAGE_MAX_LENGTH = 2000; // MessageRequest.content maxLength
+export const confidenceLabel = (confidence: number | null) =>
+  confidence === null ? "—" : Math.round(confidence * 100) + " %";
+export const latencyLabel = (ms: number | null) =>
+  ms === null
+    ? "—"
+    : ms < 1000
+      ? Math.round(ms) + " ms"
+      : new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(
+          ms / 1000,
+        ) + " s";
+const ACTION_LABELS: Record<AiActionType, string | null> = {
+  NONE: null,
+  CREATE_CASE: "Ouvrir un dossier",
+  APPLY_CREDIT: "Geste commercial",
+  ESCALATE: "Escalader",
+  TRANSFER: "Transférer",
+  BLOCK_CARD: "Bloquer la carte",
+};
+export const actionLabel = (type: AiActionType) => ACTION_LABELS[type];
+// Never overwrite what the advisor typed: append, within the message limit.
+export function draftWithSuggestion(draft: string, reply: string): string {
+  const typed = draft.trim();
+  return (typed ? typed + " " + reply : reply).slice(0, MESSAGE_MAX_LENGTH);
 }
