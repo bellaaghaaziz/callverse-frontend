@@ -18,6 +18,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { skillLabel, timeLabel } from "@/lib/presentation";
+import { alertCustomerLabel } from "@/lib/supervision";
+import { useCustomerNames } from "@/hooks/useCustomerNames";
 const percent = (value: number | null | undefined) =>
   value == null
     ? "—"
@@ -28,6 +30,7 @@ const percent = (value: number | null | undefined) =>
 export default function SupervisorPage() {
   const [kpi, setKpi] = useState<LiveKpi | null>(null);
   const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
+  const alertNames = useCustomerNames(alerts);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const connection = useConnection();
@@ -114,7 +117,7 @@ export default function SupervisorPage() {
             }
           >
             {connection === "connected"
-              ? "Flux live connecté"
+              ? "Flux en direct connecté"
               : "Connexion interrompue"}
           </span>
           <button
@@ -260,7 +263,12 @@ export default function SupervisorPage() {
                     {timeLabel(alert.occurredAt)}
                   </span>
                 </div>
-                <p className="cv-key">Client : {alert.customerId}</p>
+                <p className="cv-key">
+                  {alertCustomerLabel(
+                    alert.customerId,
+                    alertNames[alert.customerId],
+                  )}
+                </p>
                 {alert.conversationId && (
                   <button
                     className="cv-button cv-button-secondary cv-button-small mt-3"

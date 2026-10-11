@@ -177,7 +177,7 @@ export default function ConversationPanel({
             onClick={reconnectStomp}
           >
             <RefreshCw size={12} />
-            Reconnecter le flux live
+            Reconnecter le flux en direct
           </button>
         </div>
       )}

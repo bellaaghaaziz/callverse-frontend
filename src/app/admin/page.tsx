@@ -248,7 +248,7 @@ export default function AdminPage() {
                 className="cv-input grow"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Rechercher un nom ou un email"
+                placeholder="Rechercher un nom ou une adresse e-mail"
               />
               <button className="cv-button">
                 <Search size={13} />
@@ -460,7 +460,7 @@ export default function AdminPage() {
                       <span className="cv-label">
                         {
                           {
-                            email: "Email",
+                            email: "Adresse e-mail",
                             firstName: "Prénom",
                             lastName: "Nom",
                             password: "Mot de passe temporaire",
@@ -528,7 +528,7 @@ export default function AdminPage() {
               </div>
               <p className="cv-muted mt-4 !leading-relaxed">
                 Le mot de passe doit contenir 12 caractères minimum, 72 octets
-                maximum et exclure le nom de l’adresse email. Pour un
+                maximum et exclure le nom de l’adresse e-mail. Pour un
                 conseiller, le profil et les compétences doivent aussi être
                 configurés.
               </p>

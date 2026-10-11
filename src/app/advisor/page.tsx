@@ -102,7 +102,7 @@ export default function AdvisorPage() {
             }
           >
             {connection === "connected"
-              ? "Flux live connecté"
+              ? "Flux en direct connecté"
               : "Connexion interrompue"}
           </span>
           <button

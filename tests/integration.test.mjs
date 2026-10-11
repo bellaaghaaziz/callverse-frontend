@@ -739,3 +739,39 @@ test("advisor notices name the queue in French", () => {
     "Aucun contact en attente dans la file OTHER.",
   );
 });
+test("error messages say « adresse e-mail », as the forms do", () => {
+  const api = compile(
+    "api",
+    {
+      process: { env: {} },
+      window: {},
+      sessionStorage: { getItem: () => null },
+      Headers,
+    },
+    { "./auth": { expireSession: () => {} } },
+  );
+  const message = (code) => api.errorMessage(new api.ApiError(400, code, ""));
+  assert.equal(
+    message("INVALID_CREDENTIALS"),
+    "Adresse e-mail ou mot de passe incorrect.",
+  );
+  assert.equal(
+    message("EMAIL_ALREADY_USED"),
+    "Cette adresse e-mail est déjà utilisée.",
+  );
+});
+test("an alert names its customer, or shows a short reference until the name is known", () => {
+  const { alertCustomerLabel } = compile(
+    "supervision",
+    { URLSearchParams },
+    { "./presentation": compile("presentation") },
+  );
+  assert.equal(
+    alertCustomerLabel("3646d864-0fd5-4333-8a6b-8fe326e745a7", "Amina Haddad"),
+    "Client\u00a0: Amina Haddad",
+  );
+  assert.equal(
+    alertCustomerLabel("3646d864-0fd5-4333-8a6b-8fe326e745a7", undefined),
+    "Client · 3646d864",
+  );
+});

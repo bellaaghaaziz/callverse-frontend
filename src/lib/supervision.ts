@@ -23,6 +23,9 @@ const isoOrNull = (value: string) => {
   const time = value ? new Date(value).getTime() : NaN;
   return Number.isNaN(time) ? null : new Date(time).toISOString();
 };
+// Alerts carry only the customer's id: show the name once loaded, a short reference before.
+export const alertCustomerLabel = (customerId: string, name?: string) =>
+  name ? "Client : " + name : "Client · " + customerId.slice(0, 8);
 // The backend rejects a range whose end is not after its start (400).
 export function invalidRange(from: string, to: string): boolean {
   const start = isoOrNull(from);

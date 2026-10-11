@@ -90,7 +90,7 @@ export default function LoginPage() {
       desc: "Suivre l’activité en direct",
     },
     {
-      role: "Admin",
+      role: "Administrateur",
       email: "admin@callverse.local",
       icon: Settings,
       desc: "Gérer les utilisateurs",
@@ -157,7 +157,7 @@ export default function LoginPage() {
           </p>
           <form onSubmit={handleSubmit} className="cv-login-form">
             <label className="cv-field">
-              <span className="cv-label">Adresse email</span>
+              <span className="cv-label">Adresse e-mail</span>
               <div className="cv-input-icon">
                 <Mail size={17} />
                 <input
