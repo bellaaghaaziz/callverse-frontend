@@ -3,12 +3,23 @@
   --ink: #172d3b;
   --paper: #f5f6f4;
   --text: #172d3b;
-  --text-muted: #71808a;
+  --text-muted: #63736b;
   --border: #e4e9e6;
   --indigo: #087f70;
   --emerald: #087f70;
   --rose: #bc4557;
   --amber: #ad761a;
+  --surface: #fff;
+  --surface-soft: #fafbf8;
+  --surface-landing: #fafbf7;
+  --text-inverse: #fff;
+  --navy: #142b39;
+  --border-soft: #edf0e9;
+  --border-landing: #e4eade;
+  --border-input: #dfe5e0;
+  --sidebar-divider: #ffffff10;
+  --focus-ring: #087f70;
+  --focus-ring-on-dark: #4db6a4;
 }
 * {
   box-sizing: border-box;
@@ -53,20 +64,20 @@ a {
 button:focus-visible,
 a:focus-visible,
 [tabindex="0"]:focus-visible {
-  outline: 3px solid #087f70;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 /* On dark surfaces the lighter teal keeps the ring at 3:1 or more. */
 .cv-sidebar :focus-visible,
 .cv-landing-cta :focus-visible,
 .cv-login-story :focus-visible {
-  outline-color: #4db6a4;
+  outline-color: var(--focus-ring-on-dark);
 }
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #087f70 !important;
+  border-color: var(--emerald) !important;
   box-shadow: 0 0 0 3px #087f7014;
 }
 h1,
@@ -121,7 +132,7 @@ svg {
 }
 .cv-sidebar {
   width: 240px;
-  background: #142b39;
+  background: var(--navy);
   color: #bac7cf;
   position: fixed;
   inset: 0 auto 0 0;
@@ -144,10 +155,10 @@ svg {
   font-size: 25px;
   font-weight: 700;
   letter-spacing: -1px;
-  color: #142b39;
+  color: var(--navy);
 }
 .cv-brand-dark {
-  color: #fff;
+  color: var(--text-inverse);
 }
 .cv-brand > span:last-child > span {
   color: #65c9ad;
@@ -194,7 +205,7 @@ svg {
 .cv-sidebar-account strong {
   display: block;
   font-size: 12px;
-  color: #fff;
+  color: var(--text-inverse);
   font-weight: 600;
 }
 .cv-workspace-switch small,
@@ -238,7 +249,7 @@ svg {
 }
 .cv-nav-item:hover {
   background: #ffffff09;
-  color: #fff;
+  color: var(--text-inverse);
 }
 .cv-nav-active {
   background: #2a4c50 !important;
@@ -257,7 +268,7 @@ svg {
 }
 .cv-sidebar-help {
   padding: 16px 12px;
-  border-top: 1px solid #ffffff10;
+  border-top: 1px solid var(--sidebar-divider);
 }
 .cv-sidebar-help > svg {
   color: #7cb3a4;
@@ -280,7 +291,7 @@ svg {
   align-items: center;
   margin-top: 20px;
   padding: 14px 6px 0;
-  border-top: 1px solid #ffffff10;
+  border-top: 1px solid var(--sidebar-divider);
 }
 .cv-sidebar-account div {
   min-width: 0;
@@ -365,7 +376,7 @@ svg {
   position: absolute;
   right: 0;
   top: 46px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 10px 40px #17382c16;
   border-radius: 12px;
@@ -454,7 +465,7 @@ svg {
   margin-top: 7px;
 }
 .cv-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 13px;
   box-shadow: 0 2px 4px #243b2903;
@@ -512,9 +523,9 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid #087f70;
-  background: #087f70;
-  color: #fff;
+  border: 1px solid var(--emerald);
+  background: var(--emerald);
+  color: var(--text-inverse);
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 12px;
@@ -525,8 +536,8 @@ svg {
   background: #066f62;
 }
 .cv-button-secondary {
-  background: #fff;
-  border-color: #dfe5e0;
+  background: var(--surface);
+  border-color: var(--border-input);
   color: #425c62;
 }
 .cv-button-secondary:hover {
@@ -534,7 +545,7 @@ svg {
 }
 .cv-button-danger {
   color: #ac4054;
-  background: #fff;
+  background: var(--surface);
   border-color: #edd3d9;
 }
 .cv-button-danger:hover {
@@ -549,15 +560,15 @@ svg {
   place-items: center;
   border: 1px solid #e6ebe6;
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
   color: #7e9294;
   width: 32px;
   height: 32px;
 }
 .cv-input,
 .glass-input {
-  background: #fff;
-  border: 1px solid #dfe5e0;
+  background: var(--surface);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   color: #213b46;
   padding: 10px 12px;
@@ -657,7 +668,7 @@ textarea.cv-input {
   max-width: calc(100vw - 48px);
   padding: 14px 18px;
   background: #163e36;
-  color: #fff;
+  color: var(--text-inverse);
   border-radius: 10px;
   box-shadow: 0 5px 30px #183e3628;
   z-index: 60;
@@ -1034,8 +1045,8 @@ textarea.cv-input {
   gap: 14px;
   justify-content: space-between;
   align-items: center;
-  background: #fafbf8;
-  border-bottom: 1px solid #edf0e9;
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--border-soft);
   font-size: 10px;
   color: #87978d;
 }
@@ -1056,7 +1067,7 @@ textarea.cv-input {
   flex: 1;
   padding: 16px 20px;
   scroll-behavior: auto;
-  background: #fff;
+  background: var(--surface);
 }
 .cv-chat-empty {
   height: 100%;
@@ -1152,7 +1163,7 @@ textarea.cv-input {
 }
 .cv-message-own .cv-message-bubble {
   background: #137f6c;
-  color: #fff;
+  color: var(--text-inverse);
   border-radius: 11px 11px 2px 11px;
 }
 .cv-message-body time {
@@ -1177,7 +1188,7 @@ textarea.cv-input {
   left: 50%;
   transform: translateX(-50%);
   border: 1px solid #b4d7c3;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 20px #274b3515;
   border-radius: 20px;
   padding: 8px 12px;
@@ -1191,7 +1202,7 @@ textarea.cv-input {
 .cv-composer {
   padding: 15px 18px;
   border-top: 1px solid #e8ede5;
-  background: #fff;
+  background: var(--surface);
 }
 .cv-composer > form {
   display: flex;
@@ -1215,8 +1226,8 @@ textarea.cv-input {
   flex-wrap: wrap;
   gap: 6px;
   padding: 12px 18px;
-  background: #fafbf8;
-  border-top: 1px solid #edf0e9;
+  background: var(--surface-soft);
+  border-top: 1px solid var(--border-soft);
 }
 .cv-chat-actions .cv-button {
   font-size: 10px;
@@ -1225,7 +1236,7 @@ textarea.cv-input {
 .cv-customer-header {
   text-align: center;
   padding: 22px;
-  border-bottom: 1px solid #edf0e9;
+  border-bottom: 1px solid var(--border-soft);
 }
 .cv-customer-header .cv-avatar {
   margin: 0 auto 12px;
@@ -1245,7 +1256,7 @@ textarea.cv-input {
 }
 .cv-profile-section {
   padding: 18px;
-  border-bottom: 1px solid #edf0e9;
+  border-bottom: 1px solid var(--border-soft);
 }
 .cv-profile-section h3 {
   font-size: 11px;
@@ -1500,7 +1511,7 @@ textarea.cv-input {
 }
 
 .cv-landing {
-  background: #fafbf7;
+  background: var(--surface-landing);
 }
 .cv-landing-nav {
   max-width: 1320px;
@@ -1518,7 +1529,7 @@ textarea.cv-input {
   color: #69776f;
 }
 .cv-landing-nav nav a:hover {
-  color: #087f70;
+  color: var(--emerald);
 }
 .cv-landing-nav .cv-button {
   font-size: 11px;
@@ -1593,7 +1604,7 @@ textarea.cv-input {
   width: 31px;
   height: 31px;
   border-radius: 50%;
-  border: 3px solid #fafbf7;
+  border: 3px solid var(--surface-landing);
   display: grid;
   place-items: center;
   background: #d9e7d8;
@@ -1642,7 +1653,7 @@ textarea.cv-input {
 .cv-product-preview {
   width: 100%;
   max-width: 430px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #d6dfd0;
   box-shadow: 0 18px 35px #35543b14;
   border-radius: 10px;
@@ -1694,7 +1705,7 @@ textarea.cv-input {
   height: 25px;
   font-size: 8px;
   background: #a9c5a1;
-  color: #fff;
+  color: var(--text-inverse);
 }
 .cv-preview-chat {
   flex: 1;
@@ -1754,7 +1765,7 @@ textarea.cv-input {
 .cv-preview-bubble-own {
   margin: 12px 0 0 auto;
   background: #2a8264;
-  color: #fff;
+  color: var(--text-inverse);
   border-radius: 9px 9px 2px 9px;
 }
 .cv-preview-bubble-own small {
@@ -1785,7 +1796,7 @@ textarea.cv-input {
 }
 .cv-preview-compose > span:last-child {
   background: #328264;
-  color: #fff;
+  color: var(--text-inverse);
   border-radius: 5px;
   padding: 6px;
 }
@@ -1796,7 +1807,7 @@ textarea.cv-input {
   position: absolute;
   bottom: 37px;
   left: -24px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #dfe7d9;
   padding: 15px 18px;
   border-radius: 9px;
@@ -1825,8 +1836,8 @@ textarea.cv-input {
   right: 15px;
 }
 .cv-value-strip {
-  border-top: 1px solid #e4eade;
-  border-bottom: 1px solid #e4eade;
+  border-top: 1px solid var(--border-landing);
+  border-bottom: 1px solid var(--border-landing);
   display: flex;
   justify-content: center;
   gap: 75px;
@@ -1918,7 +1929,7 @@ textarea.cv-input {
 .cv-feature-mini-chat > span {
   font-size: 9px;
   border-radius: 7px 7px 7px 1px;
-  background: #fff;
+  background: var(--surface);
   color: #6c7b62;
   padding: 11px 14px;
   box-shadow: 0 2px 3px #82987505;
@@ -1962,9 +1973,9 @@ textarea.cv-input {
 }
 .cv-role-card {
   padding: 25px;
-  border: 1px solid #e4eade;
+  border: 1px solid var(--border-landing);
   border-radius: 9px;
-  background: #fff;
+  background: var(--surface);
   transition:
     transform 0.2s,
     border-color 0.2s;
@@ -2032,7 +2043,7 @@ textarea.cv-input {
   max-width: 1320px;
   margin: auto;
   padding: 30px 50px;
-  border-top: 1px solid #e4eade;
+  border-top: 1px solid var(--border-landing);
   display: flex;
   align-items: center;
   gap: 25px;
@@ -2053,7 +2064,7 @@ textarea.cv-input {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  background: #fafbf8;
+  background: var(--surface-soft);
 }
 .cv-login-story {
   background: #163a35;
@@ -2203,7 +2214,7 @@ textarea.cv-input {
 }
 .cv-input-icon input {
   padding: 13px 14px 13px 40px;
-  background: #fff;
+  background: var(--surface);
   font-size: 12px;
 }
 .cv-demo-heading {
@@ -2231,7 +2242,7 @@ textarea.cv-input {
   gap: 11px;
   align-items: center;
   text-align: left;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #e3eadd;
   border-radius: 8px;
   padding: 15px 13px;
@@ -2684,7 +2695,7 @@ textarea.cv-input {
 .cv-chat-person p,
 .cv-conversation-item p,
 .cv-list-row p {
-  color: #63736b;
+  color: var(--text-muted);
 }
 .cv-message-name,
 .cv-message-body time,
