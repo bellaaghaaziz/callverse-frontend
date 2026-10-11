@@ -416,7 +416,10 @@ export default function AdminPage() {
                 <button
                   onClick={() => {
                     setDetail(null);
-                    detailTrigger.current?.focus();
+                    // The row may be gone (new page or filter): use the panel.
+                    const trigger = detailTrigger.current;
+                    if (trigger?.isConnected) trigger.focus();
+                    else document.getElementById("admin-panel")?.focus();
                   }}
                   className="cv-button cv-button-secondary cv-button-small"
                 >

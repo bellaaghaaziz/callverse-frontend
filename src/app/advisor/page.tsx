@@ -127,8 +127,15 @@ export default function AdvisorPage() {
     const target = returnFocus.current;
     if (ticketOpen || escalationOpen || busy || !target) return;
     returnFocus.current = null;
-    // After an escalation the button is disabled; the ticket button is not.
-    (target.disabled ? ticketButton.current : target)?.focus();
+    // Only recover focus the closed form took with it, never take it back
+    // from wherever the advisor has moved since.
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    // After an escalation its button is disabled; the ticket button is not.
+    (target.isConnected && !target.disabled
+      ? target
+      : ticketButton.current
+    )?.focus();
   }, [ticketOpen, escalationOpen, busy]);
   const activeConv = myConversations.find((c) => c.id === activeConvId) || null;
 
