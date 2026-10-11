@@ -511,8 +511,11 @@ test("contrast ratio follows WCAG relative luminance", () => {
   const { contrastRatio } = compile("contrast");
   assert.equal(contrastRatio("#000000", "#ffffff"), 21);
   assert.equal(contrastRatio("#ffffff", "#000000"), 21);
-  // Audit tools truncate to two decimals: the landing nav reads 3.49:1.
-  assert.equal(Math.floor(contrastRatio("#7a8a81", "#fafbf7") * 100) / 100, 3.49);
+  // Audit tools truncate to two decimals: the landing nav read 3.49:1 before R4.1.
+  assert.equal(
+    Math.floor(contrastRatio("#7a8a81", "#fafbf7") * 100) / 100,
+    3.49,
+  );
   // The 4.5:1 boundary: #767676 is the lightest grey that passes on white.
   assert.ok(contrastRatio("#767676", "#ffffff") >= 4.5);
   assert.ok(contrastRatio("#777777", "#ffffff") < 4.5);
@@ -528,4 +531,48 @@ test("tab keys move to the next, previous, first and last tab and wrap around", 
   assert.equal(tabKeyTarget("End", 1, 6), 5);
   assert.equal(tabKeyTarget("Enter", 1, 6), null);
   assert.equal(tabKeyTarget("ArrowDown", 1, 6), null);
+});
+// The last colour the stylesheet gives a selector (rules inside @media included).
+const cssValue = (css, selector, property) => {
+  let value;
+  for (const [, selectors, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!selectors.split(",").some((item) => item.trim() === selector))
+      continue;
+    const match = body.match(
+      new RegExp("(?:^|;|\\s)" + property + ":\\s*([^;]+)"),
+    );
+    if (match) value = match[1].match(/#[0-9a-f]{3,6}\b/i)?.[0];
+  }
+  return value;
+};
+test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surfaces", () => {
+  const { contrastRatio } = compile("contrast");
+  const css = fs
+    .readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "");
+  const check = (selector, property, backgrounds, minimum) => {
+    const colour = cssValue(css, selector, property);
+    assert.ok(colour, `${selector} has no ${property}`);
+    for (const background of backgrounds)
+      assert.ok(
+        contrastRatio(colour, background) >= minimum,
+        `${selector} ${colour} on ${background}: ${contrastRatio(colour, background).toFixed(2)}`,
+      );
+  };
+  check(".cv-eyebrow", "color", ["#fafbf7", "#f5f6f4"], 4.5);
+  check(".cv-muted", "color", ["#ffffff", "#f5f6f4"], 4.5);
+  check(".cv-system-message", "color", ["#ffffff"], 4.5);
+  check(".cv-live-off", "color", ["#ffffff", "#f5f6f4"], 4.5);
+  check(".cv-badge-gray", "color", ["#f0f3f4"], 4.5);
+  check(".cv-badge-amber", "color", ["#fcf5e2"], 4.5);
+  check(".cv-login-legal", "color", ["#fafbf8"], 4.5);
+  check("a:focus-visible", "outline", ["#ffffff", "#fafbf7", "#f5f6f4"], 3);
+  check(
+    ".cv-sidebar :focus-visible",
+    "outline-color",
+    ["#142b39", "#2a4c50"],
+    3,
+  );
+  check(".cv-landing-cta :focus-visible", "outline-color", ["#173d35"], 3);
+  check(".cv-login-story :focus-visible", "outline-color", ["#163a35"], 3);
 });
