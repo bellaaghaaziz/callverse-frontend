@@ -1,0 +1,191 @@
+/* App breakpoints and reduced motion. */
+@media (min-width: 1700px) {
+  .cv-advisor-grid {
+    grid-template-columns: 270px minmax(380px, 1fr) 310px;
+  }
+  .cv-chat-panel {
+    height: 740px;
+  }
+}
+@media (max-width: 1250px) {
+  .cv-sidebar {
+    width: 210px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .cv-app-content {
+    margin-left: 210px;
+    width: calc(100% - 210px);
+  }
+  .cv-main {
+    padding: 26px 22px;
+  }
+  .cv-app-header {
+    padding: 0 22px;
+  }
+  .cv-advisor-grid {
+    grid-template-columns: 200px minmax(300px, 1fr);
+  }
+  .cv-customer-column {
+    grid-column: 1/-1;
+    grid-template-columns: 1fr 1fr;
+  }
+  .cv-customer-column > .cv-card {
+    align-self: start;
+  }
+  .cv-stat-grid {
+    gap: 12px;
+  }
+  .cv-stat {
+    padding: 17px;
+  }
+}
+@media (max-width: 900px) {
+  .cv-sidebar {
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+  }
+  .cv-sidebar-open {
+    transform: translateX(0);
+  }
+  .cv-app-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  .cv-mobile-toggle,
+  .cv-mobile-close {
+    display: grid;
+  }
+  .cv-mobile-close {
+    border: 0;
+    background: transparent;
+    color: #a3b7c1;
+  }
+  .cv-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: #10273860;
+    z-index: 39;
+    border: 0;
+  }
+  .cv-two-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-page-heading h1 {
+    font-size: 26px;
+  }
+  .cv-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cv-breadcrumb > span:first-child,
+  .cv-breadcrumb > span:nth-child(2) {
+    display: none;
+  }
+  .cv-header-role {
+    display: none;
+  }
+  .cv-chat-panel {
+    max-height: none;
+  }
+}
+@media (max-width: 600px) {
+  .cv-main {
+    padding: 22px 16px;
+  }
+  .cv-app-header {
+    height: 65px;
+    padding: 0 16px;
+  }
+  .cv-header-left {
+    gap: 12px;
+  }
+  .cv-breadcrumb {
+    font-size: 11px;
+  }
+  .cv-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .cv-page-heading h1 {
+    font-size: 25px;
+  }
+  .cv-advisor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-customer-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-chat-panel {
+    height: 620px;
+    min-height: 480px;
+  }
+  .cv-queue-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .cv-queue-section > p {
+    grid-column: 1/-1;
+  }
+  .cv-queue-button {
+    margin: 0;
+  }
+  .cv-conversation-list {
+    max-height: 220px;
+    overflow: auto;
+  }
+  .cv-form-row {
+    grid-template-columns: 1fr;
+  }
+  .cv-app-footer {
+    padding: 16px;
+    font-size: 9px;
+  }
+  .cv-app-footer > span:last-child {
+    display: none;
+  }
+  .cv-toolbar {
+    align-items: stretch;
+  }
+  .cv-toolbar .cv-input {
+    width: 100%;
+  }
+  .cv-inline-form {
+    flex-wrap: wrap;
+  }
+  .cv-inline-form .cv-input {
+    flex: 1;
+    min-width: 140px;
+  }
+  .cv-chat-header {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .cv-thread {
+    padding: 12px 14px;
+  }
+  .cv-card-pad {
+    padding: 18px;
+  }
+  .cv-stat-value {
+    font-size: 26px;
+  }
+  .cv-chat-context {
+    padding: 10px 16px;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,17 @@
+/* Own-message time, the loader and its spin animation. */
+.cv-message-own .cv-message-body time {
+  color: #edf8f2;
+}
+.cv-loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #dfe9df;
+  border-top-color: #509a76;
+  border-radius: 50%;
+  animation: cv-spin 0.8s linear infinite;
+}
+@keyframes cv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

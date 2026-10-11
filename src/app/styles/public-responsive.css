@@ -1,0 +1,209 @@
+/* Landing and login breakpoints. */
+@media (min-width: 1600px) {
+  .cv-login-story-content {
+    max-width: 500px;
+  }
+  .cv-login-story h1 {
+    font-size: 76px;
+  }
+  .cv-login-story {
+    padding: 45px 70px;
+  }
+  .cv-login-form-container {
+    max-width: 460px;
+  }
+}
+@media (max-width: 1000px) {
+  .cv-hero {
+    padding: 35px 30px 55px;
+    gap: 25px;
+  }
+  .cv-hero-copy h1 {
+    font-size: 60px;
+    letter-spacing: -3px;
+  }
+  .cv-hero-visual {
+    min-height: 420px;
+    padding: 55px 18px;
+  }
+  .cv-landing-nav {
+    padding: 25px 30px;
+  }
+  .cv-value-strip {
+    gap: 30px;
+  }
+  .cv-experience,
+  .cv-roles-section {
+    padding: 65px 30px;
+  }
+  .cv-feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .cv-feature-card {
+    padding: 20px;
+  }
+  .cv-feature-card h3 {
+    font-size: 21px;
+  }
+  .cv-role-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cv-landing-cta {
+    margin: 0 30px 40px;
+    padding: 35px;
+  }
+  .cv-login-story {
+    padding: 30px;
+  }
+  .cv-login-story h1 {
+    font-size: 50px;
+  }
+  .cv-login-form-side {
+    padding: 30px;
+  }
+  .cv-login-form-container h2 {
+    font-size: 28px;
+  }
+  .cv-demo-account {
+    gap: 8px;
+    padding: 12px 10px;
+  }
+  .cv-demo-account > svg:last-child {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .cv-landing-nav {
+    padding: 23px 20px;
+  }
+  .cv-landing-nav .cv-brand {
+    font-size: 23px;
+  }
+  .cv-landing-nav nav {
+    display: none;
+  }
+  .cv-hero {
+    grid-template-columns: 1fr;
+    padding: 30px 24px 55px;
+    gap: 40px;
+  }
+  .cv-hero-copy h1 {
+    font-size: 65px;
+    letter-spacing: -3px;
+  }
+  .cv-hero-description {
+    font-size: 13px;
+  }
+  .cv-hero-visual {
+    min-height: 400px;
+    margin: 0 0 0 10px;
+  }
+  .cv-floating-card {
+    left: -12px;
+    bottom: 24px;
+    padding: 12px;
+  }
+  .cv-preview-disclaimer {
+    font-size: 7px;
+    bottom: 7px;
+  }
+  .cv-value-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 25px;
+  }
+  .cv-experience,
+  .cv-roles-section {
+    padding: 55px 24px;
+  }
+  .cv-section-intro {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+  .cv-section-intro h2 {
+    font-size: 31px;
+  }
+  .cv-section-intro > p:last-child:not(.cv-eyebrow) {
+    justify-self: start;
+    max-width: 100%;
+  }
+  .cv-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .cv-feature-card {
+    padding: 25px;
+  }
+  .cv-feature-mini-chat {
+    max-width: 270px;
+  }
+  .cv-feature-symbol {
+    height: 90px;
+  }
+  .cv-role-grid {
+    gap: 12px;
+  }
+  .cv-role-card {
+    padding: 19px;
+  }
+  .cv-role-card h3 {
+    font-size: 18px;
+  }
+  .cv-landing-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 24px 35px;
+    padding: 28px;
+  }
+  .cv-landing-cta h2 {
+    font-size: 29px;
+  }
+  .cv-landing-footer {
+    padding: 25px 24px;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+  }
+  .cv-landing-footer > span {
+    margin: 0;
+    width: 100%;
+    font-size: 8px;
+  }
+  .cv-login {
+    grid-template-columns: 1fr;
+  }
+  .cv-login-story {
+    padding: 28px 24px;
+  }
+  .cv-login-story-content {
+    padding: 35px 0 5px;
+    margin: 0;
+  }
+  .cv-login-story h1 {
+    font-size: 43px;
+    margin: 15px 0;
+  }
+  .cv-login-story h1 br:nth-child(2) {
+    display: none;
+  }
+  .cv-login-illustration,
+  .cv-login-story-bottom {
+    display: none;
+  }
+  .cv-login-story-content > p:not(.cv-eyebrow) {
+    font-size: 11px;
+  }
+  .cv-login-story-content > p br {
+    display: none;
+  }
+  .cv-login-form-side {
+    padding: 25px 24px;
+  }
+  .cv-login-form-container {
+    padding: 32px 0;
+  }
+  .cv-login-form-container h2 {
+    font-size: 28px;
+  }
+}
