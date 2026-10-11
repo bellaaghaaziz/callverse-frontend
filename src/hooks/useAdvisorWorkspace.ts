@@ -41,7 +41,7 @@ export function useAdvisorWorkspace() {
         if (!controller.signal.aborted)
           setCustomerNames((previous) => ({
             ...previous,
-            [id]: profile.firstName + " " + profile.lastName,
+            [id]: customerDisplayName(profile),
           }));
       }),
     );

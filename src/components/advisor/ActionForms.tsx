@@ -1,20 +1,20 @@
 import { ESCALATION_REASON_MAX_LENGTH } from "@/lib/contracts";
 import type { ActionForms } from "@/hooks/useActionForms";
+import type { AdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 
 // Ticket and escalation forms. Focus moves into them and back through useActionForms.
 export default function AdvisorActionForms({
+  workspace,
   forms,
-  busy,
-  perform,
   handleOpenTicket,
   handleEscalate,
 }: {
+  workspace: AdvisorWorkspace;
   forms: ActionForms;
-  busy: boolean;
-  perform: (action: () => Promise<void>) => Promise<void>;
   handleOpenTicket: () => Promise<void>;
   handleEscalate: () => Promise<void>;
 }) {
+  const { busy, perform } = workspace;
   const {
     ticketOpen,
     setTicketOpen,

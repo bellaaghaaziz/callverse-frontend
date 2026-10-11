@@ -131,9 +131,8 @@ export default function AdvisorPage() {
         />
         <AdvisorCustomerColumn workspace={workspace}>
           <AdvisorActionForms
+            workspace={workspace}
             forms={forms}
-            busy={busy}
-            perform={perform}
             handleOpenTicket={handleOpenTicket}
             handleEscalate={handleEscalate}
           />
