@@ -584,14 +584,17 @@ const cssValue = (css, selector, property) => {
 };
 // Tokens used by colour-bearing properties but defined nowhere in :root.
 const undefinedTokens = (css) => {
-  const values = tokens(css);
+  // A token counts as defined wherever it is declared (e.g. a local unit).
+  const defined = new Set(
+    Array.from(css.matchAll(/(--[\w-]+)\s*:/g), (m) => m[1]),
+  );
   const used = Array.from(
     css.matchAll(
       /(?:color|background|border|outline|shadow|fill)[\w-]*:[^;{}]*?var\((--[\w-]+)\)/g,
     ),
     (m) => m[1],
   );
-  return [...new Set(used)].filter((name) => !(name in values));
+  return [...new Set(used)].filter((name) => !defined.has(name));
 };
 test("the stylesheet reader follows local imports in order and resolves tokens", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cv-css-"));
