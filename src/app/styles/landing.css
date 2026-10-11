@@ -142,7 +142,7 @@
 .cv-landing h2 em {
   font-style: normal;
   color: var(--lp-brand);
-  background: linear-gradient(95deg, #05765d, #0c9170);
+  background: linear-gradient(95deg, var(--lp-brand), var(--lp-brand-light));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

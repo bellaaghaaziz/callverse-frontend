@@ -118,7 +118,6 @@
   position: absolute;
   border: 1px solid #ffffffe6;
   background: linear-gradient(150deg, #ffffffd9, #cdeee0b3);
-  backdrop-filter: blur(4px);
   box-shadow: 0 16px 34px #0b4a401f;
 }
 .cv-glass-slab {
@@ -332,10 +331,10 @@
     radial-gradient(420px 220px at 62% 120%, #1f9a7a73 0%, transparent 70%),
     linear-gradient(
       100deg,
-      #022a26 0%,
+      var(--lp-night-deep) 0%,
       var(--lp-night) 40%,
-      #0b4e44 72%,
-      #05342f 100%
+      var(--lp-night-2) 72%,
+      var(--lp-night) 100%
     );
   color: var(--text-inverse);
 }

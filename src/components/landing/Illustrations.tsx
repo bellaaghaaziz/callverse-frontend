@@ -52,9 +52,17 @@ export function CtaArt() {
       <svg viewBox="0 0 520 130" preserveAspectRatio="none">
         <defs>
           <linearGradient id="cv-cta-arc" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" stopColor="#29a387" stopOpacity="0" />
+            <stop
+              offset="0"
+              style={{ stopColor: "var(--lp-accent)" }}
+              stopOpacity="0"
+            />
             <stop offset="0.6" stopColor="#5fd3ae" stopOpacity="0.85" />
-            <stop offset="1" stopColor="#c5eedd" stopOpacity="0.25" />
+            <stop
+              offset="1"
+              style={{ stopColor: "var(--lp-mint-strong)" }}
+              stopOpacity="0.25"
+            />
           </linearGradient>
           <radialGradient id="cv-cta-orb" cx="0.55" cy="0.9" r="0.6">
             <stop offset="0" stopColor="#3dbe8b" stopOpacity="0.45" />

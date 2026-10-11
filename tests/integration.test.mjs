@@ -640,9 +640,14 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
     ["#142b39", "#2a4c50"],
     3,
   );
-  check(".cv-landing-cta :focus-visible", "outline-color", ["#173d35"], 3);
+  const values = tokens(css);
+  // The landing CTA band is a gradient of these three stops.
+  const night = ["--lp-night-deep", "--lp-night", "--lp-night-2"].map(
+    (name) => values[name],
+  );
+  check(".cv-landing-cta :focus-visible", "outline-color", night, 3);
   check(".cv-login-story :focus-visible", "outline-color", ["#163a35"], 3);
-  // Landing (2026-10-11 mockup): text on the page, the hero tint and the cards.
+  // Landing (2026-10-11 mockup): text on the page, its mint tint and the cards.
   const landing = ["#fbfcf9", "#f2f8f4"];
   check(".cv-landing .cv-eyebrow", "color", landing, 4.5);
   check(".cv-hero-description", "color", landing, 4.5);
@@ -650,9 +655,14 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   check(".cv-feature-card p", "color", ["#ffffff", "#ecf7f1"], 4.5);
   check(".cv-role-card p", "color", ["#ffffff"], 4.5);
   check(".cv-role-card-link", "color", ["#ffffff"], 4.5);
-  check(".cv-landing-cta .cv-eyebrow", "color", ["#02302b", "#0a4840"], 4.5);
+  check(".cv-landing-cta .cv-eyebrow", "color", night, 4.5);
+  // The green headline words are large text (≥ 24 px): 3:1 at the light end.
+  for (const background of landing)
+    assert.ok(
+      contrastRatio(values["--lp-brand-light"], background) >= 3,
+      `--lp-brand-light on ${background}`,
+    );
   // White button text must pass on both ends of the landing gradient.
-  const values = tokens(css);
   for (const stop of ["--lp-brand-strong", "--lp-brand-soft"]) {
     assert.ok(values[stop], `${stop} is not defined`);
     assert.ok(
