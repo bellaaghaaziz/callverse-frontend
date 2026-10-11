@@ -10,10 +10,10 @@ import {
 } from "@/lib/contracts";
 import { useConnection, useTopic } from "@/hooks/useTopic";
 import { useQueueTopics } from "@/hooks/useQueueTopic";
+import { useCustomerNames } from "@/hooks/useCustomerNames";
 import {
   canReply as canReplyTo,
   customerDisplayName,
-  customerIdsKey,
   messageFromEvent,
   takeNextNotice,
   withEventStatus,
@@ -26,27 +26,7 @@ type Transaction = Schema["Transaction"];
 // with its customer, live updates, the busy guard and the actions.
 export function useAdvisorWorkspace() {
   const [myConversations, setMyConversations] = useState<Conversation[]>([]);
-  const [customerNames, setCustomerNames] = useState<Record<string, string>>(
-    {},
-  );
-  const customerIds = customerIdsKey(myConversations);
-  useEffect(() => {
-    if (!customerIds) return;
-    const controller = new AbortController();
-    void Promise.allSettled(
-      customerIds.split(",").map(async (id) => {
-        const profile = await apiFetch<Customer>("/customers/" + id, {
-          signal: controller.signal,
-        });
-        if (!controller.signal.aborted)
-          setCustomerNames((previous) => ({
-            ...previous,
-            [id]: customerDisplayName(profile),
-          }));
-      }),
-    );
-    return () => controller.abort();
-  }, [customerIds]);
+  const customerNames = useCustomerNames(myConversations);
   const [queues, setQueues] = useState<Queue[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
