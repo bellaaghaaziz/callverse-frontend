@@ -140,6 +140,7 @@ svg {
   flex-direction: column;
   padding: 28px 18px 18px;
   z-index: 40;
+  overflow-y: auto;
 }
 .cv-sidebar-brand {
   padding: 0 12px 30px;
@@ -241,11 +242,11 @@ svg {
   border: 0;
   border-radius: 8px;
   padding: 12px;
-  font-size: 12px;
   font-weight: 500;
   margin: 4px 0;
   color: #b5c5ce;
   background: transparent;
+  font-size: 13px;
 }
 .cv-nav-item:hover {
   background: #ffffff09;
@@ -459,10 +460,10 @@ svg {
   line-height: 1.25;
 }
 .cv-subtitle {
-  font-size: 12px;
-  color: #78888e;
   line-height: 1.8;
   margin-top: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 .cv-card {
   background: var(--surface);
@@ -488,7 +489,6 @@ svg {
 }
 .cv-card-heading p {
   font-size: 11px;
-  color: #81908d;
   margin-top: 5px;
 }
 .cv-badge {
@@ -498,9 +498,9 @@ svg {
   white-space: nowrap;
   padding: 5px 8px;
   border-radius: 5px;
-  font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
+  font-size: 11px;
 }
 .cv-badge-green {
   color: #277c5d;
@@ -528,7 +528,6 @@ svg {
   color: var(--text-inverse);
   padding: 10px 15px;
   border-radius: 8px;
-  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -577,19 +576,16 @@ svg {
   font-size: 12px;
   transition: border-color 0.15s;
 }
-.cv-input::placeholder {
-  color: #a0aaa9;
-}
 textarea.cv-input {
   min-height: 94px;
   resize: vertical;
 }
 .cv-label {
   display: block;
-  font-size: 11px;
   font-weight: 600;
   color: #566d70;
   margin-bottom: 7px;
+  font-size: 12px;
 }
 .cv-field {
   margin-bottom: 15px;
@@ -700,8 +696,8 @@ textarea.cv-input {
   box-shadow: none;
 }
 .cv-muted {
-  color: #8a9798;
-  font-size: 11px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 .cv-section {
   scroll-margin-top: 20px;
@@ -744,8 +740,8 @@ textarea.cv-input {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #85978d;
-  font-size: 11px;
+  font-size: 12px;
+  color: #6b7a71;
 }
 .cv-stat-top svg {
   color: #6d9886;
@@ -759,9 +755,9 @@ textarea.cv-input {
   line-height: 1;
 }
 .cv-stat-foot {
-  color: #8f9c97;
   font-size: 10px;
   line-height: 1.6;
+  color: var(--text-muted);
 }
 .cv-table-wrap {
   overflow-x: auto;
@@ -861,10 +857,6 @@ textarea.cv-input {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-  font-size: 11px;
-}
-.cv-meta-list dt {
-  color: #8c9892;
 }
 .cv-meta-list dd {
   margin: 0;
@@ -886,12 +878,7 @@ textarea.cv-input {
   flex: 1;
   min-width: 0;
 }
-.cv-list-row strong {
-  font-size: 12px;
-}
 .cv-list-row p {
-  font-size: 10px;
-  color: #8b9a94;
   margin-top: 5px;
 }
 .cv-list-row > span {
@@ -943,7 +930,7 @@ textarea.cv-input {
   border-radius: 7px;
   background: #fbfcfa;
   color: #4e6a61;
-  font-size: 11px;
+  font-size: 12px;
 }
 .cv-queue-button:hover {
   background: #edf6ef;
@@ -991,17 +978,14 @@ textarea.cv-input {
 }
 .cv-conversation-item strong {
   display: block;
-  font-size: 11px;
   color: #365458;
   margin: 1px 0 5px;
 }
 .cv-conversation-item p {
-  font-size: 10px;
-  color: #8c9b94;
   margin: 5px 0;
 }
 .cv-conversation-item .cv-badge {
-  font-size: 9px;
+  font-size: 10px;
 }
 .cv-chat-panel {
   display: flex;
@@ -1029,8 +1013,6 @@ textarea.cv-input {
   font-weight: 600;
 }
 .cv-chat-person p {
-  font-size: 10px;
-  color: #8e9d96;
   margin-top: 5px;
 }
 .cv-chat-status {
@@ -1048,7 +1030,7 @@ textarea.cv-input {
   background: var(--surface-soft);
   border-bottom: 1px solid var(--border-soft);
   font-size: 10px;
-  color: #87978d;
+  color: #68786a;
 }
 .cv-chat-context span {
   display: flex;
@@ -1144,9 +1126,9 @@ textarea.cv-input {
   min-width: 0;
 }
 .cv-message-name {
-  font-size: 9px;
-  color: #92a293;
   margin-bottom: 5px;
+  font-size: 11px;
+  color: #657461;
 }
 .cv-message-own .cv-message-name {
   text-align: right;
@@ -1156,10 +1138,10 @@ textarea.cv-input {
   border-radius: 11px 11px 11px 2px;
   background: #f2f5ef;
   color: #3f5750;
-  font-size: 12px;
   line-height: 1.8;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  font-size: 13px;
 }
 .cv-message-own .cv-message-bubble {
   background: #137f6c;
@@ -1168,8 +1150,6 @@ textarea.cv-input {
 }
 .cv-message-body time {
   display: block;
-  font-size: 8px;
-  color: #99a59c;
   margin-top: 5px;
 }
 .cv-message-own time {
@@ -1218,7 +1198,6 @@ textarea.cv-input {
   justify-content: space-between;
   gap: 10px;
   font-size: 9px;
-  color: #a0aaa2;
   margin-top: 8px;
 }
 .cv-chat-actions {
@@ -1230,7 +1209,6 @@ textarea.cv-input {
   border-top: 1px solid var(--border-soft);
 }
 .cv-chat-actions .cv-button {
-  font-size: 10px;
   padding: 7px 9px;
 }
 .cv-customer-header {
@@ -1274,8 +1252,6 @@ textarea.cv-input {
   margin-top: 10px;
 }
 .cv-account-card > p {
-  font-size: 9px;
-  color: #8d9b88;
   overflow-wrap: anywhere;
 }
 .cv-account-card > strong {
@@ -1291,10 +1267,6 @@ textarea.cv-input {
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-}
-.cv-bank-card p {
-  font-size: 10px;
-  color: #758570;
 }
 .cv-bank-card .cv-button {
   padding: 5px 7px;
@@ -1344,9 +1316,7 @@ textarea.cv-input {
   }
   .cv-customer-column {
     grid-column: 1/-1;
-    display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px;
   }
   .cv-customer-column > .cv-card {
     align-self: start;
@@ -1430,14 +1400,10 @@ textarea.cv-input {
   .cv-page-heading h1 {
     font-size: 25px;
   }
-  .cv-subtitle {
-    font-size: 11px;
-  }
   .cv-advisor-grid {
     grid-template-columns: minmax(0, 1fr);
   }
   .cv-customer-column {
-    display: grid;
     grid-template-columns: minmax(0, 1fr);
   }
   .cv-chat-panel {
@@ -1484,6 +1450,7 @@ textarea.cv-input {
   }
   .cv-chat-header {
     padding: 16px;
+    align-items: flex-start;
   }
   .cv-thread {
     padding: 12px 14px;
@@ -1498,6 +1465,7 @@ textarea.cv-input {
     padding: 10px 16px;
     gap: 5px;
     flex-wrap: wrap;
+    font-size: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1525,7 +1493,6 @@ textarea.cv-input {
 .cv-landing-nav nav {
   display: flex;
   gap: 36px;
-  font-size: 12px;
   color: #69776f;
 }
 .cv-landing-nav nav a:hover {
@@ -1563,10 +1530,10 @@ textarea.cv-input {
   color: #26806a;
 }
 .cv-hero-description {
-  color: #839084;
   font-size: 14px;
   line-height: 1.95;
   max-width: 400px;
+  color: #6a7864;
 }
 .cv-hero-actions {
   display: flex;
@@ -1578,11 +1545,11 @@ textarea.cv-input {
   padding: 14px 18px;
 }
 .cv-hero-more {
-  font-size: 11px;
   display: flex;
   align-items: center;
   gap: 8px;
   color: #5f7a69;
+  font-size: 13px;
 }
 .cv-hero-footnote {
   display: flex;
@@ -1843,8 +1810,8 @@ textarea.cv-input {
   gap: 75px;
   padding: 23px 25px;
   color: #62765b;
-  font-size: 11px;
   background: #f3f6ee;
+  font-size: 13px;
 }
 .cv-value-strip span {
   display: flex;
@@ -1874,12 +1841,12 @@ textarea.cv-input {
   letter-spacing: -1.8px;
 }
 .cv-section-intro > p:last-child:not(.cv-eyebrow) {
-  font-size: 12px;
   line-height: 1.9;
-  color: #8a9783;
   max-width: 320px;
   justify-self: end;
   padding-bottom: 3px;
+  font-size: 14px;
+  color: #6a7861;
 }
 .cv-feature-grid {
   display: grid;
@@ -1910,8 +1877,6 @@ textarea.cv-input {
   margin-top: 25px;
 }
 .cv-feature-card > p {
-  font-size: 11px;
-  color: #88977d;
   line-height: 1.85;
   margin: 15px 0 32px;
   max-width: 270px;
@@ -2000,8 +1965,6 @@ textarea.cv-input {
   font-weight: 500;
 }
 .cv-role-card > p {
-  font-size: 11px;
-  color: #929d8b;
   line-height: 1.9;
   margin: 12px 0 25px;
 }
@@ -2009,8 +1972,8 @@ textarea.cv-input {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10px;
   color: #578061;
+  font-size: 12px;
 }
 .cv-landing-cta {
   max-width: 1220px;
@@ -2255,13 +2218,10 @@ textarea.cv-input {
 .cv-demo-account strong {
   display: block;
   color: #5e7457;
-  font-size: 11px;
   font-weight: 600;
 }
 .cv-demo-account small {
   display: block;
-  font-size: 8px;
-  color: #a0ae95;
   margin-top: 4px;
 }
 .cv-demo-account > svg:last-child {
@@ -2399,7 +2359,6 @@ textarea.cv-input {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    font-size: 10px;
     padding: 25px;
   }
   .cv-experience,
@@ -2438,9 +2397,6 @@ textarea.cv-input {
   }
   .cv-role-card h3 {
     font-size: 18px;
-  }
-  .cv-role-card > p {
-    font-size: 10px;
   }
   .cv-landing-cta {
     flex-direction: column;
@@ -2497,13 +2453,10 @@ textarea.cv-input {
   .cv-login-form-container h2 {
     font-size: 28px;
   }
-  .cv-demo-account small {
-    font-size: 8px;
-  }
 }
 
 .cv-message-own .cv-message-body time {
-  color: #b6dacd;
+  color: #edf8f2;
 }
 .cv-loader {
   width: 20px;
@@ -2523,33 +2476,14 @@ textarea.cv-input {
 .cv-mobile-toggle.cv-icon-button {
   display: none;
 }
-.cv-subtitle,
-.cv-muted,
-.cv-card-heading p,
-.cv-card-heading p,
-.cv-stat-foot {
-  color: #6e8077;
-}
-.cv-subtitle {
-  font-size: 13px;
-}
-.cv-muted {
-  font-size: 12px;
-}
-.cv-label,
 .cv-meta-list > div {
   font-size: 12px;
 }
 .cv-input,
-.cv-button,
-.cv-nav-item {
+.cv-button {
   font-size: 13px;
 }
-.cv-input::placeholder {
-  color: #7e8c84;
-}
 .cv-conversation-item strong,
-.cv-queue-button,
 .cv-list-row strong {
   font-size: 12px;
 }
@@ -2557,39 +2491,16 @@ textarea.cv-input {
 .cv-list-row p,
 .cv-chat-person p {
   font-size: 11px;
-  color: #74857b;
-}
-.cv-message-bubble {
-  font-size: 13px;
-}
-.cv-message-name {
-  font-size: 11px;
-  color: #74887a;
 }
 .cv-message-body time {
-  font-size: 10px;
-  color: #81917e;
-}
-.cv-badge {
-  font-size: 11px;
-}
-.cv-conversation-item .cv-badge {
   font-size: 10px;
 }
 .cv-chat-actions .cv-button {
   font-size: 11px;
 }
-.cv-stat-top {
-  font-size: 12px;
-  color: #6b7a71;
-}
-.cv-meta-list dt {
-  color: #77877b;
-}
 .cv-bank-card p,
 .cv-account-card > p {
   font-size: 11px;
-  color: #73876b;
 }
 .cv-customer-column {
   display: flex;
@@ -2612,9 +2523,7 @@ textarea.cv-input {
   font-size: 10px;
   color: #697c61;
 }
-.cv-landing-nav nav,
-.cv-hero-more,
-.cv-value-strip {
+.cv-landing-nav nav {
   font-size: 13px;
 }
 .cv-feature-card > p,
@@ -2622,18 +2531,8 @@ textarea.cv-input {
   font-size: 13px;
   color: #5f6e55;
 }
-.cv-section-intro > p:last-child:not(.cv-eyebrow) {
-  font-size: 14px;
-  color: #6a7861;
-}
-.cv-hero-description {
-  color: #6a7864;
-}
 .cv-login-form-container > .cv-muted {
   font-size: 11px;
-}
-.cv-role-card-link {
-  font-size: 12px;
 }
 .cv-main .cv-inline-form > .cv-input {
   flex: 1;
@@ -2654,9 +2553,6 @@ textarea.cv-input {
   }
 }
 @media (max-width: 600px) {
-  .cv-chat-header {
-    align-items: flex-start;
-  }
   .cv-chat-person strong {
     font-size: 12px;
   }
@@ -2664,9 +2560,6 @@ textarea.cv-input {
     min-width: 0;
   }
   .cv-chat-status .cv-badge {
-    font-size: 10px;
-  }
-  .cv-chat-context {
     font-size: 10px;
   }
   .cv-composer {
@@ -2683,31 +2576,17 @@ textarea.cv-input {
     font-size: 12px;
   }
 }
-
-.cv-sidebar {
-  overflow-y: auto;
-}
-.cv-subtitle,
-.cv-muted,
 .cv-card-heading p,
-.cv-stat-foot,
 .cv-meta-list dt,
 .cv-chat-person p,
 .cv-conversation-item p,
 .cv-list-row p {
   color: var(--text-muted);
 }
-.cv-message-name,
 .cv-message-body time,
 .cv-bank-card p,
 .cv-account-card > p {
   color: #657461;
-}
-.cv-message-own .cv-message-body time {
-  color: #edf8f2;
-}
-.cv-chat-context {
-  color: #68786a;
 }
 .cv-composer > p {
   color: #6c7a68;
