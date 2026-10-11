@@ -642,6 +642,24 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   );
   check(".cv-landing-cta :focus-visible", "outline-color", ["#173d35"], 3);
   check(".cv-login-story :focus-visible", "outline-color", ["#163a35"], 3);
+  // Landing (2026-10-11 mockup): text on the page, the hero tint and the cards.
+  const landing = ["#fbfcf9", "#f2f8f4"];
+  check(".cv-landing .cv-eyebrow", "color", landing, 4.5);
+  check(".cv-hero-description", "color", landing, 4.5);
+  check(".cv-landing h1 em", "color", landing, 4.5);
+  check(".cv-feature-card p", "color", ["#ffffff", "#ecf7f1"], 4.5);
+  check(".cv-role-card p", "color", ["#ffffff"], 4.5);
+  check(".cv-role-card-link", "color", ["#ffffff"], 4.5);
+  check(".cv-landing-cta .cv-eyebrow", "color", ["#02302b", "#0a4840"], 4.5);
+  // White button text must pass on both ends of the landing gradient.
+  const values = tokens(css);
+  for (const stop of ["--lp-brand-strong", "--lp-brand-soft"]) {
+    assert.ok(values[stop], `${stop} is not defined`);
+    assert.ok(
+      contrastRatio("#ffffff", values[stop]) >= 4.5,
+      `white on ${stop} ${values[stop]}`,
+    );
+  }
 });
 test("advisor rules: who can reply or abandon, and the customer name shown", () => {
   const advisor = compile(
