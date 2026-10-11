@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import vm from "node:vm";
 import ts from "typescript";
 const compile = (name, globals = {}, imports = {}) => {
@@ -532,24 +535,88 @@ test("tab keys move to the next, previous, first and last tab and wrap around", 
   assert.equal(tabKeyTarget("Enter", 1, 6), null);
   assert.equal(tabKeyTarget("ArrowDown", 1, 6), null);
 });
-// The last colour the stylesheet gives a selector (rules inside @media included).
+// The stylesheet as the browser receives it: local imports inlined in order, comments removed.
+const readStylesheet = (url) =>
+  fs
+    .readFileSync(url, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/@import\s+"(\.[^"]+)";/g, (_, file) =>
+      readStylesheet(new URL(file, url)),
+    );
+const rules = (css) =>
+  Array.from(css.matchAll(/([^{}]+)\{([^{}]*)\}/g), ([, selectors, body]) => ({
+    // Statements such as @import "tailwindcss"; end with ";" before a selector.
+    selectors: selectors
+      .split(";")
+      .pop()
+      .split(",")
+      .map((item) => item.trim()),
+    body,
+  }));
+const tokens = (css) =>
+  Object.fromEntries(
+    rules(css)
+      .filter((rule) => rule.selectors.includes(":root"))
+      .flatMap((rule) =>
+        Array.from(rule.body.matchAll(/(--[\w-]+):\s*([^;]+)/g), (m) => [
+          m[1],
+          m[2].trim(),
+        ]),
+      ),
+  );
+// The last colour the stylesheet gives a selector (rules inside @media included), tokens resolved.
 const cssValue = (css, selector, property) => {
+  const values = tokens(css);
   let value;
-  for (const [, selectors, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    if (!selectors.split(",").some((item) => item.trim() === selector))
-      continue;
+  for (const { selectors, body } of rules(css)) {
+    if (!selectors.includes(selector)) continue;
     const match = body.match(
       new RegExp("(?:^|;|\\s)" + property + ":\\s*([^;]+)"),
     );
-    if (match) value = match[1].match(/#[0-9a-f]{3,6}\b/i)?.[0];
+    if (!match) continue;
+    const resolved = match[1].replace(
+      /var\((--[\w-]+)\)/g,
+      (_, name) => values[name] ?? "",
+    );
+    value = resolved.match(/#[0-9a-f]{3,6}\b/i)?.[0];
   }
   return value;
 };
+// Tokens used by colour-bearing properties but defined nowhere in :root.
+const undefinedTokens = (css) => {
+  const values = tokens(css);
+  const used = Array.from(
+    css.matchAll(
+      /(?:color|background|border|outline|shadow|fill)[\w-]*:[^;{}]*?var\((--[\w-]+)\)/g,
+    ),
+    (m) => m[1],
+  );
+  return [...new Set(used)].filter((name) => !(name in values));
+};
+test("the stylesheet reader follows local imports in order and resolves tokens", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cv-css-"));
+  fs.writeFileSync(
+    path.join(dir, "main.css"),
+    '@import "tailwindcss";\n@import "./a.css";\n.x { color: #000; }\n',
+  );
+  fs.writeFileSync(
+    path.join(dir, "a.css"),
+    ":root { --ink: #123456; }\n/* note */\n.y { color: var(--ink); }\n.x { color: #fff; }\n",
+  );
+  const css = readStylesheet(pathToFileURL(path.join(dir, "main.css")));
+  assert.equal(cssValue(css, ".y", "color"), "#123456");
+  assert.equal(cssValue(css, ".x", "color"), "#000");
+  assert.deepEqual(undefinedTokens(css), []);
+  assert.deepEqual(undefinedTokens(css + ".z { color: var(--missing); }"), [
+    "--missing",
+  ]);
+});
 test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surfaces", () => {
   const { contrastRatio } = compile("contrast");
-  const css = fs
-    .readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, "");
+  const css = readStylesheet(
+    new URL("../src/app/globals.css", import.meta.url),
+  );
+  assert.deepEqual(undefinedTokens(css), []);
   const check = (selector, property, backgrounds, minimum) => {
     const colour = cssValue(css, selector, property);
     assert.ok(colour, `${selector} has no ${property}`);
