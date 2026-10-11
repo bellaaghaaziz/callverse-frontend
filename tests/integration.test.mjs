@@ -643,3 +643,99 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   check(".cv-landing-cta :focus-visible", "outline-color", ["#173d35"], 3);
   check(".cv-login-story :focus-visible", "outline-color", ["#163a35"], 3);
 });
+test("advisor rules: who can reply or abandon, and the customer name shown", () => {
+  const advisor = compile(
+    "advisor",
+    {},
+    { "./presentation": compile("presentation") },
+  );
+  assert.deepEqual(
+    ["QUEUED", "ASSIGNED", "ACTIVE", "ESCALATED", "RESOLVED", "ABANDONED"].map(
+      (status) => [advisor.canReply(status), advisor.canAbandon(status)],
+    ),
+    [
+      [false, true],
+      [true, true],
+      [true, true],
+      [true, false],
+      [false, false],
+      [false, false],
+    ],
+  );
+  assert.equal(advisor.canReply(undefined), false);
+  assert.equal(
+    advisor.customerDisplayName({ firstName: "Amina", lastName: "Haddad" }),
+    "Amina Haddad",
+  );
+  assert.equal(advisor.customerDisplayName(null), "Conversation client");
+  assert.equal(
+    advisor.customerIdsKey([
+      { customerId: "b" },
+      { customerId: "a" },
+      { customerId: "b" },
+    ]),
+    "a,b",
+  );
+});
+test("advisor events: a posted message is kept only when complete, closed conversations leave the inbox", () => {
+  const advisor = compile(
+    "advisor",
+    {},
+    { "./presentation": compile("presentation") },
+  );
+  const event = {
+    type: "MESSAGE_POSTED",
+    conversationId: "c1",
+    sender: "CUSTOMER",
+    messageId: 7,
+    content: "Bonjour",
+    sentAt: "2026-10-11T09:00:00Z",
+  };
+  assert.deepEqual(
+    { ...advisor.messageFromEvent(event) },
+    {
+      id: 7,
+      conversationId: "c1",
+      sender: "CUSTOMER",
+      content: "Bonjour",
+      sentAt: "2026-10-11T09:00:00Z",
+    },
+  );
+  assert.equal(
+    advisor.messageFromEvent({ ...event, type: "STATUS_CHANGED" }),
+    null,
+  );
+  assert.equal(advisor.messageFromEvent({ ...event, messageId: null }), null);
+  assert.equal(advisor.messageFromEvent({ ...event, content: null }), null);
+  const list = [
+    { id: "c1", status: "ASSIGNED" },
+    { id: "c2", status: "ACTIVE" },
+  ];
+  assert.deepEqual(
+    Array.from(advisor.withEventStatus(list, "c1", "ACTIVE"), (c) => c.status),
+    ["ACTIVE", "ACTIVE"],
+  );
+  assert.deepEqual(
+    Array.from(advisor.withEventStatus(list, "c2", "RESOLVED"), (c) => c.id),
+    ["c1"],
+  );
+});
+test("advisor notices name the queue in French", () => {
+  const advisor = compile(
+    "advisor",
+    {},
+    { "./presentation": compile("presentation") },
+  );
+  assert.equal(
+    advisor.takeNextNotice("CARDS", true),
+    "Contact pris en charge · Cartes bancaires",
+  );
+  assert.equal(
+    advisor.takeNextNotice("FRAUD", false),
+    "Aucun contact en attente dans la file Fraude.",
+  );
+  assert.equal(
+    advisor.takeNextNotice("OTHER", false),
+    "Aucun contact en attente dans la file OTHER.",
+  );
+});
