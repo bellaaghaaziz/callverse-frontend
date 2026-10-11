@@ -1,0 +1,263 @@
+/* Landing breakpoints. */
+/* Between 1000 and 1360 px the 770 px hero canvas scales to fit its column. */
+@media (max-width: 1360px) {
+  .cv-hero-visual {
+    min-height: 546px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.88);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1240px) {
+  .cv-hero-visual {
+    min-height: 471px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.76);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1200px) {
+  .cv-hero-visual {
+    min-height: 446px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.72);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1150px) {
+  .cv-hero-visual {
+    min-height: 422px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.68);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1100px) {
+  .cv-hero-visual {
+    min-height: 397px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.64);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1045px) {
+  .cv-hero-visual {
+    min-height: 372px;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: scale(0.6);
+    transform-origin: left top;
+  }
+}
+@media (max-width: 1000px) {
+  .cv-landing-nav {
+    grid-template-columns: auto 1fr auto;
+  }
+  .cv-landing-nav nav {
+    justify-content: center;
+    gap: 28px;
+  }
+  .cv-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 48px;
+  }
+  .cv-hero-visual {
+    min-height: 640px;
+    transform: none;
+    width: min(780px, 100%);
+    margin-inline: auto;
+  }
+  .cv-hero-stage,
+  .cv-hero-art {
+    transform: none;
+  }
+  .cv-preview-disclaimer {
+    bottom: 0;
+  }
+  .cv-section-intro {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .cv-section-intro > p {
+    margin-top: 0;
+  }
+  .cv-section-intro-lined {
+    margin-left: 0;
+  }
+  .cv-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .cv-feature-card {
+    min-height: 300px;
+  }
+  .cv-feature-card p {
+    max-width: 58%;
+  }
+  .cv-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cv-architecture {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .cv-architecture-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .cv-landing-nav {
+    grid-template-columns: 1fr auto;
+  }
+  .cv-landing-nav nav {
+    display: none;
+  }
+}
+@media (max-width: 820px) {
+  .cv-hero-visual {
+    min-height: auto;
+    height: 560px;
+  }
+  .cv-hero-stage {
+    transform: scale(0.82);
+    transform-origin: top left;
+    width: 122%;
+  }
+  .cv-hero-art {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .cv-landing-nav {
+    grid-template-columns: 1fr auto;
+    padding-block: 16px;
+  }
+  .cv-landing-nav nav {
+    display: none;
+  }
+  .cv-landing-nav .cv-brand,
+  .cv-landing-footer .cv-brand {
+    gap: clamp(8px, 2.6vw, 16px);
+    font-size: clamp(21px, 6.2vw, 24px);
+  }
+  .cv-landing-nav .cv-brand-mark,
+  .cv-landing-footer .cv-brand-mark {
+    transform: none;
+    margin-right: 0;
+  }
+  .cv-landing-nav .cv-button {
+    gap: clamp(6px, 2vw, 12px);
+    height: 40px;
+    padding: 0 clamp(12px, 4vw, 16px);
+    font-size: clamp(13px, 3.6vw, 14px);
+  }
+  .cv-hero {
+    padding: 36px 0 24px;
+  }
+  .cv-hero-copy h1 {
+    font-size: 46px;
+  }
+  .cv-hero-description {
+    margin-top: 22px;
+    font-size: 16px;
+  }
+  .cv-hero-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cv-hero-actions > * {
+    justify-content: center;
+  }
+  .cv-hero-visual {
+    height: auto;
+  }
+  .cv-hero-stage {
+    position: relative;
+    transform: none;
+    width: auto;
+    display: grid;
+    gap: 14px;
+  }
+  .cv-hero-stage::before,
+  .cv-glass-queue,
+  .cv-glass-resolved {
+    display: none;
+  }
+  .cv-product-preview {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: auto;
+  }
+  .cv-preview-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-preview-menu {
+    display: none;
+  }
+  .cv-glass-clear {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+  }
+  .cv-preview-disclaimer {
+    position: static;
+    margin-top: 12px;
+  }
+  .cv-experience,
+  .cv-roles-section {
+    padding-top: 52px;
+  }
+  .cv-feature-card p {
+    max-width: none;
+  }
+  .cv-feature-art {
+    width: 40%;
+    opacity: 0.6;
+  }
+  .cv-role-grid,
+  .cv-architecture-list {
+    grid-template-columns: 1fr;
+  }
+  .cv-landing-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 32px 24px;
+  }
+  .cv-landing-cta .cv-button {
+    width: 100%;
+  }
+  .cv-landing-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .cv-landing-footer p {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .cv-landing-footer nav {
+    margin-left: 0;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-landing .cv-button,
+  .cv-hero-more,
+  .cv-role-card {
+    transition: none;
+  }
+}

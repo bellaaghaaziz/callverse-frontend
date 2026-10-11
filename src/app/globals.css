@@ -7,6 +7,9 @@
 @import "./styles/workspace.css";
 @import "./styles/app-responsive.css";
 @import "./styles/landing.css";
+@import "./styles/landing-preview.css";
+@import "./styles/landing-sections.css";
+@import "./styles/landing-responsive.css";
 @import "./styles/login.css";
 @import "./styles/public-responsive.css";
 @import "./styles/loader.css";
