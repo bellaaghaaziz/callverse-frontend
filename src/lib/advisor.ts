@@ -1,9 +1,4 @@
-import type {
-  Conversation,
-  ConversationEvent,
-  Customer,
-  Message,
-} from "./contracts";
+import type { Conversation, ConversationEvent, Message } from "./contracts";
 import { skillLabel } from "./presentation";
 
 // The advisor can write while the conversation is held, live or escalated.
@@ -14,17 +9,9 @@ export const canReply = (status?: string) =>
 export const canAbandon = (status?: string) =>
   !!status && ["QUEUED", "ASSIGNED", "ACTIVE"].includes(status);
 
-export const customerDisplayName = (
-  customer: Pick<Customer, "firstName" | "lastName"> | null,
-) =>
-  customer
-    ? customer.firstName + " " + customer.lastName
-    : "Conversation client";
-
-// One stable key per set of customers, so their names load once per change.
-export const customerIdsKey = (
-  conversations: Pick<Conversation, "customerId">[],
-) => [...new Set(conversations.map((c) => c.customerId))].sort().join(",");
+// Escalating and resolving need a live conversation (the advisor has written).
+export const canEscalate = (status?: string) => status === "ACTIVE";
+export const canResolve = (status?: string) => status === "ACTIVE";
 
 // A live MESSAGE_POSTED event becomes a transcript message only when complete.
 export function messageFromEvent(event: ConversationEvent): Message | null {

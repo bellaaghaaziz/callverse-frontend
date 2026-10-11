@@ -263,7 +263,7 @@ export default function SupervisorPage() {
                     {timeLabel(alert.occurredAt)}
                   </span>
                 </div>
-                <p className="cv-key">
+                <p className="cv-key" title={alert.customerId}>
                   {alertCustomerLabel(
                     alert.customerId,
                     alertNames[alert.customerId],

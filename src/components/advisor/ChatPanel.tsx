@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useRef } from "react";
 import {
   CheckCircle2,
   Clock,
@@ -20,24 +20,21 @@ import {
   intentLabel,
   skillLabel,
 } from "@/lib/presentation";
-import { canAbandon } from "@/lib/advisor";
+import { canAbandon, canEscalate, canResolve } from "@/lib/advisor";
 import type { AdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 import type { ActionForms } from "@/hooks/useActionForms";
-import type { useSuggestion } from "@/hooks/useSuggestion";
+import { useSuggestion } from "@/hooks/useSuggestion";
 
 // The open conversation: header, transcript, reply suggestion, composer and actions.
 export default function AdvisorChatPanel({
   workspace,
   forms,
-  suggestion,
-  composerInput,
 }: {
   workspace: AdvisorWorkspace;
   forms: ActionForms;
-  suggestion: ReturnType<typeof useSuggestion>;
-  composerInput: RefObject<HTMLInputElement | null>;
 }) {
   const {
+    activeConvId,
     activeConv,
     customerName,
     messages,
@@ -61,6 +58,9 @@ export default function AdvisorChatPanel({
     escalationOpen,
     setEscalationOpen,
   } = forms;
+  // Only conversations the advisor can answer get a suggestion.
+  const suggestion = useSuggestion(canReply ? activeConvId : null, messages);
+  const composerInput = useRef<HTMLInputElement>(null);
   return (
     <section className="cv-card cv-chat-panel" aria-label="Conversation active">
       {activeConv ? (
@@ -194,7 +194,7 @@ export default function AdvisorChatPanel({
             <button
               ref={escalationButton}
               className="cv-button cv-button-secondary"
-              disabled={busy || activeConv.status !== "ACTIVE"}
+              disabled={busy || !canEscalate(activeConv.status)}
               aria-expanded={escalationOpen}
               onClick={() => {
                 returnFocus.current = escalationButton.current;
@@ -207,7 +207,7 @@ export default function AdvisorChatPanel({
             </button>
             <button
               className="cv-button cv-button-secondary"
-              disabled={busy || activeConv.status !== "ACTIVE"}
+              disabled={busy || !canResolve(activeConv.status)}
               onClick={() => perform(handleResolve)}
             >
               <CheckCircle2 size={12} />

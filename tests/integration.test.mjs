@@ -649,30 +649,37 @@ test("advisor rules: who can reply or abandon, and the customer name shown", () 
     {},
     { "./presentation": compile("presentation") },
   );
+  const presentation = compile("presentation");
   assert.deepEqual(
     ["QUEUED", "ASSIGNED", "ACTIVE", "ESCALATED", "RESOLVED", "ABANDONED"].map(
-      (status) => [advisor.canReply(status), advisor.canAbandon(status)],
+      (status) => [
+        advisor.canReply(status),
+        advisor.canAbandon(status),
+        advisor.canEscalate(status),
+        advisor.canResolve(status),
+      ],
     ),
     [
-      [false, true],
-      [true, true],
-      [true, true],
-      [true, false],
-      [false, false],
-      [false, false],
+      [false, true, false, false],
+      [true, true, false, false],
+      [true, true, true, true],
+      [true, false, false, false],
+      [false, false, false, false],
+      [false, false, false, false],
     ],
   );
   assert.equal(advisor.canReply(undefined), false);
   assert.equal(
-    advisor.customerDisplayName({ firstName: "Amina", lastName: "Haddad" }),
+    presentation.customerDisplayName({ firstName: "Amina", lastName: "Haddad" }),
     "Amina Haddad",
   );
-  assert.equal(advisor.customerDisplayName(null), "Conversation client");
+  assert.equal(presentation.customerDisplayName(null), "Conversation client");
   assert.equal(
-    advisor.customerIdsKey([
+    presentation.customerIdsKey([
       { customerId: "b" },
       { customerId: "a" },
       { customerId: "b" },
+      { customerId: undefined },
     ]),
     "a,b",
   );
@@ -774,4 +781,6 @@ test("an alert names its customer, or shows a short reference until the name is 
     alertCustomerLabel("3646d864-0fd5-4333-8a6b-8fe326e745a7", undefined),
     "Client · 3646d864",
   );
+  // A live payload is not validated: a missing id must not break the page.
+  assert.equal(alertCustomerLabel(undefined, undefined), "Client");
 });

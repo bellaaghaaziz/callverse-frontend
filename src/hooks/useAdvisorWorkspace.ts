@@ -13,11 +13,11 @@ import { useQueueTopics } from "@/hooks/useQueueTopic";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
 import {
   canReply as canReplyTo,
-  customerDisplayName,
   messageFromEvent,
   takeNextNotice,
   withEventStatus,
 } from "@/lib/advisor";
+import { customerDisplayName } from "@/lib/presentation";
 
 type Queue = Schema["Queue"];
 type Transaction = Schema["Transaction"];

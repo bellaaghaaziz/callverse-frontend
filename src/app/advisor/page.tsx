@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import AppShell from "@/components/AppShell";
 import { apiFetch, errorMessage } from "@/lib/api";
 import {
@@ -10,7 +9,6 @@ import {
 } from "@/components/IntegrationTools";
 import { reconnectStomp } from "@/lib/stomp";
 import { CheckCircle2, RefreshCw } from "lucide-react";
-import { useSuggestion } from "@/hooks/useSuggestion";
 import { useAdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 import { useActionForms } from "@/hooks/useActionForms";
 import AdvisorInbox from "@/components/advisor/Inbox";
@@ -22,10 +20,7 @@ export default function AdvisorPage() {
   const workspace = useAdvisorWorkspace();
   const {
     activeConv,
-    activeConvId,
     customer,
-    messages,
-    canReply,
     activeNotification,
     connection,
     busy,
@@ -76,9 +71,6 @@ export default function AdvisorPage() {
     showToast("Dossier escaladé au superviseur en charge");
   }
 
-  // Only conversations the advisor can answer get a suggestion.
-  const suggestion = useSuggestion(canReply ? activeConvId : null, messages);
-  const composerInput = useRef<HTMLInputElement>(null);
   return (
     <AppShell role="Conseiller" initials="CO" title="Espace de travail">
       {activeNotification && (
@@ -123,12 +115,7 @@ export default function AdvisorPage() {
       </div>
       <div className="cv-advisor-grid">
         <AdvisorInbox workspace={workspace} />
-        <AdvisorChatPanel
-          workspace={workspace}
-          forms={forms}
-          suggestion={suggestion}
-          composerInput={composerInput}
-        />
+        <AdvisorChatPanel workspace={workspace} forms={forms} />
         <AdvisorCustomerColumn workspace={workspace}>
           <AdvisorActionForms
             workspace={workspace}
