@@ -46,6 +46,6 @@ See [the frontend design notes](docs/FRONTEND_DESIGN.md) for the interface, reus
 
 ## Styles
 
-`src/app/globals.css` imports Tailwind, then the files in `src/app/styles/` in a fixed order: tokens, base, shell, components, workspace, app-responsive, landing, login, public-responsive, loader, refinements. The order is the cascade, so add a rule to the file for its area rather than at the end of the list. Colours that carry a role (surfaces, borders, brand, focus rings, muted text) are tokens in `tokens.css`.
+`src/app/globals.css` imports Tailwind, then the files in `src/app/styles/` in a fixed order: tokens, base, shell, components, workspace, app-responsive, landing, landing-preview, landing-sections, landing-responsive, login, public-responsive, loader, refinements. The landing page has its own `--lp-*` tokens; the app screens do not use them. The order is the cascade, so add a rule to the file for its area rather than at the end of the list. Colours that carry a role (surfaces, borders, brand, focus rings, muted text) are tokens in `tokens.css`.
 
 `npm test` reads the stylesheet through these imports, resolves the tokens and checks that key text keeps a 4.5:1 contrast and every focus ring 3:1.
