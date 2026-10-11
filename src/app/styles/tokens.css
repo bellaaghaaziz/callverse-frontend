@@ -20,4 +20,19 @@
   --sidebar-divider: #ffffff10;
   --focus-ring: #087f70;
   --focus-ring-on-dark: #4db6a4;
+  /* Landing page only (2026-10-11 mockup); the app screens keep the tokens above. */
+  --lp-bg: #fbfcf9;
+  --lp-bg-tint: #f2f8f4;
+  --lp-ink: #05262e;
+  --lp-brand: #067a61;
+  --lp-brand-strong: #056f58;
+  --lp-brand-soft: #0a8466;
+  --lp-eyebrow: #0a7258;
+  --lp-muted: #4e7480;
+  --lp-accent: #29a387;
+  --lp-mint: #e3f3ec;
+  --lp-mint-strong: #c5eedd;
+  --lp-border: #dbe9e4;
+  --lp-night: #02302b;
+  --lp-night-2: #0a4840;
 }
