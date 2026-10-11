@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Brand from "@/components/Brand";
 import HeroVisual from "@/components/landing/HeroVisual";
+import LandingNav from "@/components/landing/LandingNav";
 import { CtaArt, FeatureArt } from "@/components/landing/Illustrations";
 import {
   ArrowUpRight,
@@ -101,13 +102,7 @@ export default function Home() {
     <div className="cv-landing">
       <header className="cv-landing-nav">
         <Brand />
-        <nav aria-label="Navigation du site">
-          <a href="#experience" className="cv-landing-nav-current">
-            L’expérience
-          </a>
-          <a href="#roles">Vos espaces</a>
-          <a href="#architecture">Architecture</a>
-        </nav>
+        <LandingNav />
         <Link href="/login" className="cv-button">
           Se connecter
           <ArrowUpRight size={15} />

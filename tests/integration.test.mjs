@@ -815,3 +815,18 @@ test("an alert names its customer, or shows a short reference until the name is 
   // A live payload is not validated: a missing id must not break the page.
   assert.equal(alertCustomerLabel(undefined, undefined), "Client");
 });
+test("the landing nav marks the last section past the reading line, and the last one at the page end", () => {
+  const { currentSection } = compile("landing");
+  const at = (...tops) =>
+    ["experience", "roles", "architecture"].map((id, i) => ({
+      id,
+      top: tops[i],
+    }));
+  // Hero on screen, no section reached yet: the first link stays marked.
+  assert.equal(currentSection(at(700, 1600, 2600), 360, false), "experience");
+  assert.equal(currentSection(at(-900, 100, 1100), 360, false), "roles");
+  assert.equal(currentSection(at(-900, 360, 1100), 360, false), "roles");
+  // A short last section never reaches the line: the page end marks it.
+  assert.equal(currentSection(at(-2000, -900, 500), 360, true), "architecture");
+  assert.equal(currentSection([], 360, false), null);
+});
