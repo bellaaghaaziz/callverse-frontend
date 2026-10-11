@@ -11,7 +11,7 @@ The landing page, login and all four role spaces now share an original CallVerse
 - Clearer customer onboarding, live supervision and user-management screens.
 - Hardcoded AI reply removed. The public-page example is explicitly illustrative; authenticated screens use backend data.
 
-Reusable components live in src/components (AppShell, Brand, StatusBadge, ChatThread). Presentation labels and date/duration helpers live in src/lib/presentation.ts. Styling lives in src/app/globals.css.
+Reusable components live in src/components (AppShell, Brand, StatusBadge, ChatThread); the advisor workspace is split into src/components/advisor (Inbox, ChatPanel, CustomerColumn, ActionForms) fed by the useAdvisorWorkspace and useActionForms hooks. Presentation labels and date/duration helpers live in src/lib/presentation.ts. Styling is imported by src/app/globals.css from the ordered files in src/app/styles (see the README).
 
 ## Verification
 
