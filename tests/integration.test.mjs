@@ -939,14 +939,35 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
     for (const background of backgrounds)
       pair(colour, background, minimum, selector);
   };
-  // Green shell. The sidebar is the two night stops under a 40 % glow (#0f5a47 → #074136
-  // at its peak); the active pill is #0e4a3d; the space card's glass reads about #1b5046.
-  const sidebar = [values["--lp-night-deep"], values["--lp-night"], "#074136"];
+  // Green shell, backgrounds read from shell-green.css: the two night stops, the glow (an
+  // 8-digit colour) at its peak over the lighter stop, the active pill, and the space card's
+  // first glass stop over that glow.
+  const declared = (selector, pattern) =>
+    rules(css)
+      .filter((rule) => rule.selectors.includes(selector))
+      .map((rule) => rule.body.match(pattern)?.[0])
+      .filter(Boolean)
+      .pop();
+  const over = (top, base) => {
+    const alpha = parseInt(top.slice(7, 9), 16) / 255;
+    const at = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
+    return `#${[1, 3, 5]
+      .map((i) => Math.round(at(top, i) * alpha + at(base, i) * (1 - alpha)))
+      .map((c) => c.toString(16).padStart(2, "0"))
+      .join("")}`;
+  };
+  const glow = over(
+    declared(".cv-shell-green .cv-sidebar", /#[0-9a-f]{8}\b/i),
+    values["--lp-night"],
+  );
+  const pill = cssValue(css, ".cv-shell-green .cv-nav-active", "background");
+  const glass = over(declared(".cv-space-card", /#[0-9a-f]{8}\b/i), glow);
+  const sidebar = [values["--lp-night-deep"], values["--lp-night"], glow];
   check(".cv-shell-green .cv-nav-item", "color", sidebar, 4.5);
-  check(".cv-shell-green .cv-nav-active", "color", ["#0e4a3d"], 4.5);
-  check(".cv-space-card strong", "color", ["#1b5046"], 4.5);
-  check(".cv-space-card p", "color", ["#1b5046"], 4.5);
-  check(".cv-sidebar :focus-visible", "outline-color", [...sidebar, "#0e4a3d"], 3);
+  check(".cv-shell-green .cv-nav-active", "color", [pill], 4.5);
+  check(".cv-space-card strong", "color", [glass], 4.5);
+  check(".cv-space-card p", "color", [glass], 4.5);
+  check(".cv-sidebar :focus-visible", "outline-color", [...sidebar, pill], 3);
   check(".cv-shell-green .cv-breadcrumb strong", "color", ["#ffffff"], 4.5);
   check(".cv-shell-green .cv-avatar-light", "color", [values["--lp-mint"]], 4.5);
   check(".cv-shell-green .cv-account-trigger", "color", ["#ffffff"], 3);
