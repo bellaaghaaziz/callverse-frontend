@@ -18,7 +18,7 @@
   --sidebar-divider: #ffffff10;
   --focus-ring: #087f70;
   --focus-ring-on-dark: #4db6a4;
-  /* Landing page only (2026-10-11 mockup); the app screens keep the tokens above. */
+  /* Public pages only, landing and login (2026-10-11 mockups); the app screens keep the tokens above. */
   --lp-bg: #fbfcf9;
   --lp-ink: #05262e;
   --lp-brand: #067a61;
@@ -34,4 +34,7 @@
   --lp-night-deep: #022a26;
   --lp-night: #02302b;
   --lp-night-2: #0b4e44;
+  --lp-glow: #1df5bc;
+  --lp-mist: #a5d1cb;
+  --lp-deep: #11504a;
 }
