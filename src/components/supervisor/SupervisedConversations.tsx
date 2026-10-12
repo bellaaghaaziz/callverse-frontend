@@ -6,8 +6,9 @@ import {
   LIVE_STATUSES,
   invalidRange,
   supervisionQuery,
+  waitLabel,
 } from "@/lib/supervision";
-import { durationLabel, skillLabel } from "@/lib/presentation";
+import { skillLabel } from "@/lib/presentation";
 import StatusBadge from "@/components/StatusBadge";
 import { ArrowUpRight, MessageSquare, RefreshCw } from "lucide-react";
 import CardHeading from "./CardHeading";
@@ -210,11 +211,7 @@ export default function SupervisedConversations({
                 </td>
                 <td>{conversation.advisor?.name ?? "—"}</td>
                 <td>{dateTime.format(new Date(conversation.queuedAt))}</td>
-                <td>
-                  {conversation.waitSeconds == null
-                    ? "—"
-                    : durationLabel(Math.round(conversation.waitSeconds))}
-                </td>
+                <td>{waitLabel(conversation.waitSeconds)}</td>
                 <td>
                   {conversation.slaMet == null
                     ? "—"
