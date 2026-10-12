@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, errorMessage } from "@/lib/api";
@@ -69,8 +70,8 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Hide the password again on submit, so password managers see a password field.
-    setShowPassword(false);
+    // Hide the password again before the submit goes on, so password managers see a password field.
+    flushSync(() => setShowPassword(false));
     await performLogin(email, password);
   }
 
