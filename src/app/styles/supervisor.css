@@ -10,7 +10,8 @@
     0 10px 28px #0b3b310d;
 }
 .cv-supervisor .cv-button {
-  border: 0;
+  /* Transparent, not none: the same height as the bordered secondary buttons beside it. */
+  border: 1px solid transparent;
   border-radius: 10px;
   padding: 9px 18px;
   background: linear-gradient(
