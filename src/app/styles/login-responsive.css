@@ -64,8 +64,11 @@
   }
   .cv-login-headline {
     margin-top: 16px;
-    font-size: 56px;
+    font-size: 48px;
     line-height: 1;
+  }
+  .cv-login-break {
+    display: none;
   }
   .cv-login-lead {
     margin-top: 16px;
@@ -94,10 +97,6 @@
   }
   .cv-login-headline {
     font-size: 40px;
-    line-height: 1;
-  }
-  .cv-login-break {
-    display: none;
   }
   .cv-login-lead {
     font-size: 16px;
