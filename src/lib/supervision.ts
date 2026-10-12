@@ -39,13 +39,12 @@ export function waitLabel(seconds?: number | null) {
   const minutes = Math.floor(total / 60);
   return (minutes ? minutes + " min " : "") + (total % 60) + " s";
 }
+const percent = new Intl.NumberFormat("fr-FR", {
+  style: "percent",
+  maximumFractionDigits: 1,
+});
 export const percentLabel = (value?: number | null) =>
-  value == null
-    ? "—"
-    : new Intl.NumberFormat("fr-FR", {
-        style: "percent",
-        maximumFractionDigits: 1,
-      }).format(value);
+  value == null ? "—" : percent.format(value);
 // The backend rejects a range whose end is not after its start (400).
 export function invalidRange(from: string, to: string): boolean {
   const start = isoOrNull(from);
