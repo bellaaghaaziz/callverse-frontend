@@ -41,19 +41,19 @@ export default function LoginStory() {
           </defs>
           <path
             className="cv-login-swoosh"
-            d="M520 -20 C 690 90, 720 260, 640 420 S 560 760, 790 900"
+            d="M520 -20 C 690 90, 720 260, 640 420 S 560 760, 790 900 S 1000 1000, 1200 960"
           />
           <path
             className="cv-login-swoosh cv-login-swoosh-thin"
-            d="M600 -10 C 760 120, 770 300, 700 470 S 690 700, 800 760"
+            d="M600 -10 C 760 120, 770 300, 700 470 S 690 700, 800 760 S 1000 760, 1200 700"
           />
           <path
             className="cv-login-swoosh cv-login-swoosh-thin"
-            d="M-20 1000 C 160 900, 360 960, 520 880 S 720 760, 790 640"
+            d="M-20 1000 C 160 900, 360 960, 520 880 S 720 760, 790 640 S 1000 520, 1200 520"
           />
           <path
             className="cv-login-swoosh"
-            d="M-30 1080 C 180 960, 420 1030, 600 950 S 760 860, 800 820"
+            d="M-30 1080 C 180 960, 420 1030, 600 950 S 760 860, 800 820 S 1000 700, 1200 690"
           />
           <path className="cv-login-thread" d="M726 0 V125" />
           <path className="cv-login-thread" d="M660 300 V365" />
