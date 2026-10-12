@@ -830,3 +830,18 @@ test("the landing nav marks the last section past the reading line, and the last
   assert.equal(currentSection(at(-2000, -900, 500), 360, true), "architecture");
   assert.equal(currentSection([], 360, false), null);
 });
+test("the login health line keeps its texts and names its state for the dot", () => {
+  const { serviceStatus } = compile("login");
+  const at = (status, unavailable) =>
+    JSON.stringify(serviceStatus(status, unavailable));
+  assert.equal(at(null, false), JSON.stringify({ state: "checking", text: "Vérification du service…" }));
+  assert.equal(at("UP", false), JSON.stringify({ state: "up", text: "Service disponible" }));
+  assert.equal(
+    at("DEGRADED", false),
+    JSON.stringify({ state: "degraded", text: "Service disponible · fonctions IA indisponibles" }),
+  );
+  assert.equal(at("DOWN", false), JSON.stringify({ state: "down", text: "Service indisponible" }));
+  // A failed request wins over a stale status.
+  assert.equal(at(null, true), JSON.stringify({ state: "down", text: "Service indisponible" }));
+  assert.equal(at("UP", true), JSON.stringify({ state: "down", text: "Service indisponible" }));
+});
