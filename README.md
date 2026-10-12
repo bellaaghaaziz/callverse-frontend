@@ -44,6 +44,8 @@ See [the integration review](docs/BACKEND_INTEGRATION_STATUS.md) for connected f
 
 See [the frontend design notes](docs/FRONTEND_DESIGN.md) for the interface, reusable components and browser checks.
 
+See [the green direction guide](docs/GREEN_DIRECTION.md) for the R4.7 redesign (landing, login, supervisor): tokens, components, scoping, and how to bring the other screens into it.
+
 ## Styles
 
 `src/app/globals.css` imports Tailwind, then the files in `src/app/styles/` in a fixed order: tokens, base, shell, components, workspace, app-responsive, shell-green, supervisor, landing, landing-preview, landing-sections, landing-responsive, login, login-story, login-responsive, loader, refinements. The green-direction proposal (R4.7) has its own `--lp-*` tokens: the landing, the login and the supervisor screen use them; the other app screens do not. `shell-green.css` styles `AppShell variant="green"` (under `.cv-shell-green`) and `supervisor.css` the supervisor dashboard: shared classes under `.cv-supervisor`, its own classes rendered only by `src/components/supervisor/`. Keep those class names out of other screens. The order is the cascade, so add a rule to the file for its area rather than at the end of the list. Colours that carry a role (surfaces, borders, brand, focus rings, muted text) are tokens in `tokens.css`.
