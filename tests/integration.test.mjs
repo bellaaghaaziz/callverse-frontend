@@ -946,4 +946,54 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   check(".cv-shell-green .cv-avatar-light", "color", [values["--lp-mint"]], 4.5);
   check(".cv-shell-green .cv-account-trigger", "color", ["#ffffff"], 3);
   check(".cv-shell-green .cv-app-footer", "color", [wash], 4.5);
+  // Dashboard content: text on the wash, on white cards and on the tinted strips (--lp-wash);
+  // icons and the ring at 3:1 on white and on the mint wells.
+  const card = ["#ffffff", wash];
+  const mint = values["--lp-mint"];
+  check(".cv-supervisor .cv-eyebrow", "color", [wash], 4.5);
+  check(".cv-supervisor .cv-page-heading h1", "color", [wash], 4.5);
+  check(".cv-supervisor .cv-subtitle", "color", [wash], 4.5);
+  check(".cv-supervisor .cv-live", "color", [wash], 4.5);
+  check(".cv-supervisor .cv-live-off", "color", [wash], 4.5);
+  check(".cv-kpi-label", "color", ["#ffffff"], 4.5);
+  check(".cv-kpi-value", "color", ["#ffffff"], 4.5);
+  // On narrow tiles the caption can sit over the art's fill: --lp-mint at its opacity over white.
+  const fill = Number(
+    rules(css)
+      .filter((rule) => rule.selectors.includes(".cv-kpi-art-fill"))
+      .map((rule) => rule.body.match(/opacity:\s*([\d.]+)/)?.[1])
+      .filter(Boolean)
+      .pop(),
+  );
+  assert.ok(fill > 0 && fill <= 1, "the KPI art fill has no opacity");
+  const art = `#${[1, 3, 5]
+    .map((i) => parseInt(mint.slice(i, i + 2), 16))
+    .map((c) => Math.round(255 - (255 - c) * fill).toString(16).padStart(2, "0"))
+    .join("")}`;
+  check(".cv-kpi-foot", "color", ["#ffffff", art], 4.5);
+  check(".cv-kpi-icon", "color", ["#ffffff", mint], 3);
+  check(".cv-kpi-rose .cv-kpi-icon", "color", ["#ffffff"], 3);
+  check(".cv-supervisor .cv-card-heading h2", "color", ["#ffffff"], 4.5);
+  check(".cv-supervisor .cv-card-heading p", "color", ["#ffffff"], 4.5);
+  check(".cv-card-icon", "color", [mint], 3);
+  check(".cv-supervisor .cv-count", "color", [mint], 4.5);
+  check(".cv-supervisor .cv-table th", "color", card, 4.5);
+  check(".cv-supervisor .cv-table td", "color", card, 4.5);
+  check(".cv-indicators dt", "color", [wash], 4.5);
+  check(".cv-indicators dd", "color", [wash], 4.5);
+  check(".cv-footnote", "color", ["#ffffff"], 4.5);
+  check(".cv-alerts-empty", "color", card, 4.5);
+  check(".cv-alerts-empty strong", "color", card, 4.5);
+  check(".cv-conv-name", "color", ["#ffffff"], 4.5);
+  check(".cv-conv-ref", "color", ["#ffffff"], 4.5);
+  check(".cv-pager span", "color", ["#ffffff"], 4.5);
+  check(".cv-supervisor .cv-input::placeholder", "color", ["#ffffff"], 4.5);
+  check(".cv-supervisor .cv-button-secondary", "color", ["#ffffff"], 4.5);
+  check(".cv-supervisor .cv-icon-button", "color", ["#ffffff"], 3);
+  check(".cv-search svg", "color", ["#ffffff"], 3);
+  // The opened conversation (not in the mockup), restyled in the same grammar.
+  check(".cv-supervisor .cv-notice", "color", [wash], 4.5);
+  check(".cv-supervisor .cv-chat-person strong", "color", ["#ffffff"], 4.5);
+  // White text on both ends of the green gradient the supervisor buttons use.
+  check(".cv-supervisor .cv-button", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
 });

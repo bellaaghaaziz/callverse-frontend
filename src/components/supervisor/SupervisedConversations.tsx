@@ -4,13 +4,14 @@ import { apiFetch, errorMessage } from "@/lib/api";
 import type { SupervisedConversationPage } from "@/lib/contracts";
 import {
   LIVE_STATUSES,
-  SUPERVISED_STATUSES,
   invalidRange,
   supervisionQuery,
 } from "@/lib/supervision";
-import { durationLabel, skillLabel, statusLabel } from "@/lib/presentation";
-import StatusBadge from "./StatusBadge";
-import { ArrowUpRight, MessageSquare, RefreshCw, Search } from "lucide-react";
+import { durationLabel, skillLabel } from "@/lib/presentation";
+import StatusBadge from "@/components/StatusBadge";
+import { ArrowUpRight, MessageSquare, RefreshCw } from "lucide-react";
+import CardHeading from "./CardHeading";
+import ConversationFilters from "./ConversationFilters";
 const dateTime = new Intl.DateTimeFormat("fr-FR", {
   day: "2-digit",
   month: "short",
@@ -110,106 +111,56 @@ export default function SupervisedConversations({
   const totalPages = Math.max(1, current?.page.totalPages || 0);
   return (
     <section className="cv-section cv-card" id="conversation">
-      <div className="cv-card-heading">
-        <div>
-          <h2>Conversations</h2>
-          <p role="status">
-            {current
-              ? current.page.totalElements +
-                " conversation" +
-                (current.page.totalElements > 1 ? "s" : "") +
-                " · les plus récentes d’abord"
-              : error || rangeInvalid
-                ? "Liste indisponible"
-                : "Chargement des conversations…"}
-          </p>
-        </div>
-        <button
-          className="cv-icon-button"
-          aria-label="Actualiser les conversations"
-          onClick={() => setReload((value) => value + 1)}
-        >
-          <RefreshCw size={14} />
-        </button>
-      </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          update(setSearch)(query);
-        }}
-        className="cv-toolbar p-5"
-      >
-        <input
-          aria-label="Rechercher un client ou une référence"
-          className="cv-input grow"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un client ou une référence"
-        />
-        <button className="cv-button">
-          <Search size={13} />
-          Rechercher
-        </button>
-        <select
-          aria-label="Filtrer par statut"
-          className="cv-input"
-          value={choice}
-          onChange={(e) => update(setChoice)(e.target.value)}
-        >
-          <option value="live">Non clôturées</option>
-          <option value="escalated">Escalades en attente</option>
-          <option value="all">Toutes</option>
-          {SUPERVISED_STATUSES.filter((status) => status !== "ESCALATED").map(
-            (status) => (
-              <option key={status} value={status}>
-                {statusLabel[status]}
-              </option>
-            ),
-          )}
-        </select>
-        <select
-          aria-label="Filtrer par file"
-          className="cv-input"
-          value={skill}
-          onChange={(e) => update(setSkill)(e.target.value)}
-        >
-          <option value="">Toutes les files</option>
-          {Object.entries(skillLabel).map(([code, label]) => (
-            <option key={code} value={code}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <input
-          type="datetime-local"
-          aria-label="Arrivées depuis"
-          className="cv-input"
-          max={to || undefined}
-          value={from}
-          onChange={(e) => update(setFrom)(e.target.value)}
-        />
-        <input
-          type="datetime-local"
-          aria-label="Arrivées avant"
-          className="cv-input"
-          min={from || undefined}
-          value={to}
-          onChange={(e) => update(setTo)(e.target.value)}
-        />
-      </form>
+      <CardHeading
+        icon={MessageSquare}
+        title="Conversations"
+        live
+        subtitle={
+          current
+            ? current.page.totalElements +
+              " conversation" +
+              (current.page.totalElements > 1 ? "s" : "") +
+              " · les plus récentes d’abord"
+            : error || rangeInvalid
+              ? "Liste indisponible"
+              : "Chargement des conversations…"
+        }
+        action={
+          <button
+            className="cv-icon-button"
+            aria-label="Actualiser les conversations"
+            onClick={() => setReload((value) => value + 1)}
+          >
+            <RefreshCw size={16} />
+          </button>
+        }
+      />
+      <ConversationFilters
+        query={query}
+        onQuery={setQuery}
+        onSearch={() => update(setSearch)(query)}
+        choice={choice}
+        onChoice={update(setChoice)}
+        skill={skill}
+        onSkill={update(setSkill)}
+        from={from}
+        onFrom={update(setFrom)}
+        to={to}
+        onTo={update(setTo)}
+      />
       {rangeInvalid ? (
-        <p role="alert" className="cv-error mx-5 mb-5">
+        <p role="alert" className="cv-error cv-conv-error">
           « Arrivées avant » doit être postérieure à « Arrivées depuis ».
         </p>
       ) : (
         error && (
-          <p role="alert" className="cv-error mx-5 mb-5">
+          <p role="alert" className="cv-error cv-conv-error">
             {error}
           </p>
         )
       )}
       <div className="cv-table-wrap">
-        <table className="cv-table">
+        <table className="cv-table cv-conv-table">
           <caption className="sr-only">
             Conversations supervisées, page {page + 1} sur {totalPages}
           </caption>
@@ -233,17 +184,17 @@ export default function SupervisedConversations({
             {current?.content.map((conversation) => (
               <tr key={conversation.id}>
                 <td>
-                  <strong className="font-semibold">
+                  <strong className="cv-conv-name">
                     {conversation.customer.name}
                   </strong>
                   {conversation.customer.reference && (
-                    <p className="cv-muted mt-1">
+                    <p className="cv-conv-ref">
                       {conversation.customer.reference}
                     </p>
                   )}
                 </td>
                 <td>
-                  <div className="flex flex-col items-start gap-1">
+                  <div className="cv-conv-status">
                     <StatusBadge status={conversation.status} />
                     {conversation.pendingEscalation && (
                       <span className="cv-badge cv-badge-rose">
@@ -278,15 +229,15 @@ export default function SupervisedConversations({
                     : "—"}
                 </td>
                 <td>
+                  {/* One action per row: a named button, not a ⋮ menu. */}
                   <button
-                    className="cv-button cv-button-secondary cv-button-small"
+                    className="cv-icon-button cv-row-open"
                     aria-label={
                       "Ouvrir la conversation de " + conversation.customer.name
                     }
                     onClick={() => onOpen(conversation.id)}
                   >
-                    Ouvrir
-                    <ArrowUpRight size={12} />
+                    <ArrowUpRight size={16} />
                   </button>
                 </td>
               </tr>
@@ -301,11 +252,11 @@ export default function SupervisedConversations({
           recherche.
         </div>
       )}
-      <div className="flex items-center justify-between gap-3 p-4 border-t border-[#e8ede5]">
+      <div className="cv-pager">
         <span className="cv-muted">
           Page {page + 1} / {totalPages}
         </span>
-        <div className="flex gap-2">
+        <div>
           <button
             className="cv-button cv-button-secondary cv-button-small"
             disabled={page === 0}
