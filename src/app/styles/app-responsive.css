@@ -36,9 +36,6 @@
   .cv-stat-grid {
     gap: 12px;
   }
-  .cv-stat {
-    padding: 17px;
-  }
 }
 @media (max-width: 900px) {
   .cv-sidebar {
@@ -169,9 +166,6 @@
   }
   .cv-card-pad {
     padding: 18px;
-  }
-  .cv-stat-value {
-    font-size: 26px;
   }
   .cv-chat-context {
     padding: 10px 16px;
