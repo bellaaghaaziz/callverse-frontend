@@ -1,0 +1,166 @@
+/* Green shell (R4.7 proposal, 2026-10-11 dashboard mockup): AppShell variant="green", supervisor only.
+   Every rule sits under .cv-shell-green; sizes for the desktop sit in min-width: 901px, so the
+   drawer and stacking rules of app-responsive.css still apply below. */
+.cv-shell-green .cv-sidebar {
+  color: var(--lp-mist);
+  background:
+    radial-gradient(120% 34% at 0% 82%, #0f5a4766 0%, transparent 100%),
+    linear-gradient(180deg, var(--lp-night-deep), var(--lp-night));
+}
+.cv-shell-green .cv-sidebar > :not(.cv-shell-art) {
+  position: relative;
+}
+.cv-shell-art {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 520px;
+  pointer-events: none;
+}
+.cv-shell-swoosh {
+  fill: none;
+  stroke: url(#cv-shell-swoosh);
+  stroke-width: 14;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+.cv-shell-swoosh-thin {
+  stroke-width: 2;
+  opacity: 0.8;
+}
+.cv-shell-green .cv-sidebar-brand {
+  padding: 0 10px 34px;
+}
+.cv-shell-green .cv-brand {
+  font-size: 22px;
+  gap: 8px;
+}
+.cv-shell-green .cv-brand-mark i {
+  background: var(--lp-glow);
+}
+.cv-shell-green .cv-brand > span:last-child > span {
+  color: var(--lp-glow);
+}
+.cv-shell-green .cv-mobile-close {
+  color: var(--lp-mist);
+}
+.cv-shell-green .cv-nav-item {
+  gap: 14px;
+  padding: 9px 12px;
+  margin: 0 0 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--lp-mist);
+}
+.cv-shell-green .cv-nav-item svg {
+  width: 18px;
+  height: 18px;
+}
+.cv-shell-green .cv-nav-item:hover {
+  background: #ffffff0d;
+  color: var(--text-inverse);
+}
+.cv-shell-green .cv-nav-active {
+  background: #0e4a3d !important;
+  border-color: #1df5bc33;
+  box-shadow: 0 6px 18px #0000002e;
+  color: var(--text-inverse) !important;
+}
+.cv-shell-green .cv-nav-active-dot {
+  display: none;
+}
+
+/* « Espace superviseur »: a glass card at the foot of the sidebar. */
+.cv-space-card {
+  margin-top: auto;
+  padding: 18px 16px 20px;
+  border: 1px solid #ffffff1f;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #ffffff14, #ffffff05);
+  backdrop-filter: blur(6px);
+}
+.cv-space-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff14;
+  color: var(--text-inverse);
+}
+.cv-space-card strong {
+  display: block;
+  margin: 14px 0 8px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text-inverse);
+}
+.cv-space-card p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--lp-mist);
+}
+
+/* Top bar and page: white bar with a hairline, mint wash with a glow at the top right. */
+.cv-shell-green .cv-app-content {
+  background:
+    radial-gradient(42% 300px at 100% 0%, #d6f1e5 0%, transparent 100%),
+    var(--lp-wash);
+  min-height: 100vh;
+}
+.cv-shell-green .cv-app-header {
+  background: #ffffffd9;
+  border-bottom-color: var(--lp-border);
+}
+.cv-shell-green .cv-breadcrumb strong {
+  font-size: 13px;
+  color: var(--lp-ink);
+}
+.cv-shell-green .cv-account-trigger {
+  color: var(--lp-muted);
+}
+.cv-shell-green .cv-avatar-light {
+  width: 32px;
+  height: 32px;
+  background: var(--lp-mint);
+  color: var(--lp-ink);
+  font-size: 12px;
+}
+.cv-shell-green .cv-account-menu {
+  border-color: var(--lp-border);
+}
+.cv-shell-green .cv-account-menu button {
+  background: var(--lp-wash);
+  color: var(--lp-ink);
+}
+.cv-shell-green .cv-app-footer {
+  border-top-color: var(--lp-border);
+  color: var(--lp-muted);
+}
+.cv-shell-green .cv-footer-dot {
+  background: var(--lp-accent);
+}
+@media (min-width: 901px) {
+  .cv-shell-green .cv-skip-link {
+    left: 224px;
+  }
+  .cv-shell-green .cv-sidebar {
+    width: 208px;
+    padding: 22px 12px 28px;
+  }
+  .cv-shell-green .cv-app-content {
+    margin-left: 208px;
+    width: calc(100% - 208px);
+  }
+  .cv-shell-green .cv-app-header {
+    height: 52px;
+    padding: 0 36px 0 34px;
+  }
+  .cv-shell-green .cv-main {
+    padding: 26px 36px 40px 34px;
+  }
+}

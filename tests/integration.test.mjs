@@ -928,4 +928,22 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   pair(values["--lp-muted"], wash, 4.5, "--lp-muted on --lp-wash");
   pair(values["--lp-ink"], wash, 4.5, "--lp-ink on --lp-wash");
   pair(values["--focus-ring"], wash, 3, "--focus-ring on --lp-wash");
+  const check = (selector, property, backgrounds, minimum) => {
+    const colour = cssValue(css, selector, property);
+    assert.ok(colour, `${selector} has no ${property}`);
+    for (const background of backgrounds)
+      pair(colour, background, minimum, selector);
+  };
+  // Green shell. The sidebar is the two night stops under a 40 % glow (#0f5a47 → #074136
+  // at its peak); the active pill is #0e4a3d; the space card's glass reads about #1b5046.
+  const sidebar = [values["--lp-night-deep"], values["--lp-night"], "#074136"];
+  check(".cv-shell-green .cv-nav-item", "color", sidebar, 4.5);
+  check(".cv-shell-green .cv-nav-active", "color", ["#0e4a3d"], 4.5);
+  check(".cv-space-card strong", "color", ["#1b5046"], 4.5);
+  check(".cv-space-card p", "color", ["#1b5046"], 4.5);
+  check(".cv-sidebar :focus-visible", "outline-color", [...sidebar, "#0e4a3d"], 3);
+  check(".cv-shell-green .cv-breadcrumb strong", "color", ["#ffffff"], 4.5);
+  check(".cv-shell-green .cv-avatar-light", "color", [values["--lp-mint"]], 4.5);
+  check(".cv-shell-green .cv-account-trigger", "color", ["#ffffff"], 3);
+  check(".cv-shell-green .cv-app-footer", "color", [wash], 4.5);
 });

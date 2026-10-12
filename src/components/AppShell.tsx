@@ -14,18 +14,23 @@ import {
 import SessionGuard from "./SessionGuard";
 import Brand from "./Brand";
 import { itemsByRole } from "./shell/navItems";
+import { SidebarArt, SpaceCard } from "./shell/GreenSidebar";
 import { clearSession } from "@/lib/auth";
 export default function AppShell({
   role,
   initials,
   title,
+  variant,
   children,
 }: {
   role: string;
   initials: string;
   title: string;
+  // "green": the R4.7 proposal's shell (supervisor only for now).
+  variant?: "green";
   children: ReactNode;
 }) {
+  const green = variant === "green";
   const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,7 +124,7 @@ export default function AppShell({
   }
   return (
     <SessionGuard>
-      <div className="cv-app">
+      <div className={green ? "cv-app cv-shell-green" : "cv-app"}>
         <a href="#main-content" className="cv-button cv-skip-link">
           Aller au contenu principal
         </a>
@@ -137,6 +142,7 @@ export default function AppShell({
           aria-hidden={isMobile && !mobileOpen}
           className={"cv-sidebar " + (mobileOpen ? "cv-sidebar-open" : "")}
         >
+          {green && <SidebarArt />}
           <div className="cv-sidebar-brand">
             <Brand dark />
             <button
@@ -147,17 +153,21 @@ export default function AppShell({
               <X size={20} />
             </button>
           </div>
-          <div className="cv-workspace-switch">
-            <span className="cv-workspace-logo">
-              <Headphones size={18} />
-            </span>
-            <div>
-              <strong>Espace CallVerse</strong>
-              <small>Relation client bancaire</small>
-            </div>
-            <ChevronDown size={14} />
-          </div>
-          <p className="cv-nav-caption">VOTRE ESPACE</p>
+          {!green && (
+            <>
+              <div className="cv-workspace-switch">
+                <span className="cv-workspace-logo">
+                  <Headphones size={18} />
+                </span>
+                <div>
+                  <strong>Espace CallVerse</strong>
+                  <small>Relation client bancaire</small>
+                </div>
+                <ChevronDown size={14} />
+              </div>
+              <p className="cv-nav-caption">VOTRE ESPACE</p>
+            </>
+          )}
           <nav aria-label="Navigation principale">
             {items.map((item) => (
               <button
@@ -175,31 +185,36 @@ export default function AppShell({
               </button>
             ))}
           </nav>
-          <div className="cv-sidebar-bottom">
-            <div className="cv-sidebar-help">
-              <LifeBuoy size={20} />
-              <strong>Un espace, chaque échange.</strong>
-              <p>
-                Retrouvez vos conversations et les outils utiles à votre rôle.
-              </p>
-            </div>
-            <div className="cv-sidebar-account">
-              <span className="cv-avatar">{initials}</span>
-              <div>
-                <strong>
-                  {role === "Analyste / Admin" ? "Administrateur" : role}
-                </strong>
-                <small title={email}>{email || "Session active"}</small>
+          {/* The green shell drops the account card: logout stays in the account menu. */}
+          {green ? (
+            <SpaceCard role={role} />
+          ) : (
+            <div className="cv-sidebar-bottom">
+              <div className="cv-sidebar-help">
+                <LifeBuoy size={20} />
+                <strong>Un espace, chaque échange.</strong>
+                <p>
+                  Retrouvez vos conversations et les outils utiles à votre rôle.
+                </p>
               </div>
-              <button
-                aria-label="Se déconnecter"
-                title="Se déconnecter"
-                onClick={logout}
-              >
-                <LogOut size={17} />
-              </button>
+              <div className="cv-sidebar-account">
+                <span className="cv-avatar">{initials}</span>
+                <div>
+                  <strong>
+                    {role === "Analyste / Admin" ? "Administrateur" : role}
+                  </strong>
+                  <small title={email}>{email || "Session active"}</small>
+                </div>
+                <button
+                  aria-label="Se déconnecter"
+                  title="Se déconnecter"
+                  onClick={logout}
+                >
+                  <LogOut size={17} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </aside>
         <div className="cv-app-content" inert={mobileOpen}>
           <header className="cv-app-header">
@@ -212,19 +227,28 @@ export default function AppShell({
                 <Menu size={21} />
               </button>
               <div className="cv-breadcrumb">
-                <span>CallVerse</span>
-                <span>/</span>
+                {!green && (
+                  <>
+                    <span>CallVerse</span>
+                    <span>/</span>
+                  </>
+                )}
                 <strong>{title}</strong>
               </div>
             </div>
             <div className="cv-header-right">
-              <span className="cv-header-role">
-                <ShieldCheck size={14} />
-                {role === "Analyste / Admin" ? "Administration" : role}
-              </span>
+              {!green && (
+                <span className="cv-header-role">
+                  <ShieldCheck size={14} />
+                  {role === "Analyste / Admin" ? "Administration" : role}
+                </span>
+              )}
               <div className="relative cv-account-container">
                 <button
-                  aria-label="Menu du compte"
+                  // Green shell: the name starts with the visible initials (WCAG 2.5.3).
+                  aria-label={
+                    green ? initials + ", menu du compte" : "Menu du compte"
+                  }
                   aria-expanded={profileOpen}
                   onClick={() => setProfileOpen(!profileOpen)}
                   className="cv-account-trigger"

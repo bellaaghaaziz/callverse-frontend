@@ -88,7 +88,12 @@ export default function SupervisorPage() {
     });
   };
   return (
-    <AppShell role="Superviseur" initials="SV" title="Vue d’ensemble">
+    <AppShell
+      role="Superviseur"
+      initials="SV"
+      title="Vue d’ensemble"
+      variant="green"
+    >
       <div className="cv-page-heading" id="workspace">
         <div>
           <p className="cv-eyebrow">PILOTAGE DE L’ACTIVITÉ</p>

@@ -7,7 +7,8 @@ import {
   Package,
   Headphones,
   Activity,
-  Inbox,
+  House,
+  Bell,
 } from "lucide-react";
 
 // Sidebar items per role: each id is a section on the page (or an admin tab).
@@ -19,8 +20,8 @@ export const itemsByRole = {
     { id: "incidents", label: "Incidents", icon: Activity },
   ],
   Superviseur: [
-    { id: "workspace", label: "Vue d’ensemble", icon: LayoutDashboard },
-    { id: "alerts", label: "Alertes", icon: Inbox },
+    { id: "workspace", label: "Vue d’ensemble", icon: House },
+    { id: "alerts", label: "Alertes", icon: Bell },
     { id: "conversation", label: "Conversations", icon: MessageSquare },
     { id: "frontdesk", label: "Accueil", icon: Headphones },
   ],
