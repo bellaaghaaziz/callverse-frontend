@@ -1,9 +1,12 @@
-/* Login breakpoints: compact cards at 1001–1240, stacked at ≤ 1000 (the story becomes a short
-   dark band), phone at ≤ 700. */
-@media (min-width: 1001px) and (max-width: 1240px) {
+/* Login breakpoints: compact cards at 1001–1400 (a full card needs a 486 px column), stacked at
+   ≤ 1000 (the story becomes a short dark band), phone at ≤ 700. */
+@media (min-width: 1001px) and (max-width: 1400px) {
   .cv-login-form-side {
     padding-right: 40px;
     padding-left: 48px;
+  }
+  .cv-login-form-side::before {
+    inset: 0 24px 0 28px;
   }
   .cv-login-accounts {
     gap: 12px;
