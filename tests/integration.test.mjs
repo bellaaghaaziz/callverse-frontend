@@ -635,7 +635,6 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   check(".cv-live-off", "color", ["#ffffff", "#f5f6f4"], 4.5);
   check(".cv-badge-gray", "color", ["#f0f3f4"], 4.5);
   check(".cv-badge-amber", "color", ["#fcf5e2"], 4.5);
-  check(".cv-login-legal", "color", ["#fafbf8"], 4.5);
   check("a:focus-visible", "outline", ["#ffffff", "#fafbf7", "#f5f6f4"], 3);
   check(
     ".cv-sidebar :focus-visible",
@@ -649,7 +648,6 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
     (name) => values[name],
   );
   check(".cv-landing-cta :focus-visible", "outline-color", night, 3);
-  check(".cv-login-story :focus-visible", "outline-color", ["#163a35"], 3);
   // Landing (2026-10-11 mockup): text on the page, its mint tint and the cards.
   const landing = ["#fbfcf9", "#f2f8f4"];
   check(".cv-landing .cv-eyebrow", "color", landing, 4.5);
@@ -673,6 +671,55 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
       `white on ${stop} ${values[stop]}`,
     );
   }
+  // Login (2026-10-11 mockup). The night panel is a gradient of the three night stops,
+  // its glass card and client bubble sit on top; the form side text sits on the sheet
+  // (--lp-bg) or on white cards and inputs, never on the outer mint.
+  // Every colour of the panel's own gradient (glows included), then the card's fill stops
+  // and the client bubble.
+  const panel = rules(css)
+    .filter((rule) => rule.selectors.includes(".cv-login-story"))
+    .flatMap((rule) =>
+      Array.from(
+        rule.body.replace(/var\((--[\w-]+)\)/g, (_, name) => values[name] ?? "").matchAll(/#[0-9a-f]{6}\b/gi),
+        (m) => m[0],
+      ),
+    );
+  assert.ok(panel.length >= 3, "the story panel gradient was not found");
+  const story = [...panel, "#14503f", "#0b3b31", "#184b3b"];
+  check(".cv-login-headline", "color", panel, 4.5);
+  check(".cv-login-story .cv-login-eyebrow", "color", panel, 4.5);
+  check(".cv-login-lead", "color", panel, 4.5);
+  check(".cv-login-story-bottom", "color", panel, 4.5);
+  check(".cv-login-chat-label", "color", story, 4.5);
+  check(".cv-login-bubble time", "color", story, 4.5);
+  check(".cv-login-bubble", "color", ["#184b3b"], 4.5);
+  check(".cv-login-bubble-own", "color", [values["--lp-mint-strong"]], 4.5);
+  check(".cv-login-card-note", "color", story, 4.5);
+  // The large headline word: 3:1 on every night stop at both gradient ends.
+  for (const stop of night)
+    for (const end of [values["--lp-mint-strong"], "#7fdfb6"])
+      assert.ok(contrastRatio(end, stop) >= 3, `clarté ${end} on ${stop}`);
+  const sheet = [values["--lp-bg"], "#ffffff"];
+  check(".cv-login-back", "color", sheet, 4.5);
+  check(".cv-login-form-side .cv-login-eyebrow", "color", sheet, 4.5);
+  check(".cv-login-form-side h1", "color", sheet, 4.5);
+  check(".cv-login-intro", "color", sheet, 4.5);
+  check(".cv-login-label", "color", sheet, 4.5);
+  check(".cv-login-input::placeholder", "color", ["#ffffff"], 4.5);
+  check(".cv-login-demo-heading", "color", sheet, 4.5);
+  check(".cv-login-demo-text", "color", sheet, 4.5);
+  check(".cv-login-account strong", "color", ["#ffffff"], 4.5);
+  check(".cv-login-account small", "color", ["#ffffff"], 4.5);
+  check(".cv-login-service", "color", sheet, 4.5);
+  check(".cv-login-legal", "color", sheet, 4.5);
+  // Non-text: the toggle's eye and the input icons are 3:1 on the white field.
+  check(".cv-login-toggle", "color", ["#ffffff"], 3);
+  check(".cv-login-field-icon", "color", ["#ffffff"], 3);
+  // White button text on both ends of the gradient the button really uses.
+  check(".cv-login-submit", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
+  // Focus rings: the app ring on the sheet, the outer mint and white; the light ring on the night.
+  check("a:focus-visible", "outline", [...sheet, values["--lp-mint"]], 3);
+  check(".cv-login-story :focus-visible", "outline-color", night, 3);
 });
 test("advisor rules: who can reply or abandon, and the customer name shown", () => {
   const advisor = compile(
