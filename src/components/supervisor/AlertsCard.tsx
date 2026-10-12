@@ -26,8 +26,8 @@ export default function AlertsCard({
         {!alerts.length && (
           <div className="cv-empty cv-alerts-empty">
             <ShieldCheck size={30} />
-            <strong>Tout est calme pour le moment.</strong>Les nouvelles alertes
-            s’afficheront ici.
+            <strong>Tout est calme pour le moment.</strong>
+            <p>Les nouvelles alertes s’afficheront ici.</p>
             <svg
               className="cv-alerts-wave"
               aria-hidden="true"

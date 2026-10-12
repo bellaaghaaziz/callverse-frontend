@@ -386,7 +386,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 36px 24px 64px;
+  padding: 36px 24px 80px;
   overflow: hidden;
   border: 1px solid var(--lp-border);
   border-radius: 12px;
@@ -403,8 +403,10 @@
   font-size: 15px;
   color: var(--lp-ink);
 }
-.cv-alerts-empty > * {
+/* The text sits above the wave, which stays clear of it: its crest is 70 px from the bottom. */
+.cv-alerts-empty > :not(.cv-alerts-wave) {
   position: relative;
+  z-index: 1;
 }
 .cv-alerts-empty > .cv-alerts-wave {
   position: absolute;
