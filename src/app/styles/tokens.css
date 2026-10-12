@@ -18,7 +18,8 @@
   --sidebar-divider: #ffffff10;
   --focus-ring: #087f70;
   --focus-ring-on-dark: #4db6a4;
-  /* Public pages only, landing and login (2026-10-11 mockups); the app screens keep the tokens above. */
+  /* Green-direction proposal (R4.7, 2026-10-11 mockups): the landing, the login and the supervisor
+     screen. The other app screens keep the tokens above. */
   --lp-bg: #fbfcf9;
   --lp-ink: #05262e;
   --lp-brand: #067a61;
@@ -37,4 +38,5 @@
   --lp-glow: #1df5bc;
   --lp-mist: #a5d1cb;
   --lp-deep: #11504a;
+  --lp-wash: #eff6f2;
 }

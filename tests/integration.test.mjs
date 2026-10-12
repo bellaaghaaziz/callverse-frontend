@@ -910,3 +910,22 @@ test("supervisor waits read as durations and ratios as French percentages, « �
   assert.match(percentLabel(0), /^0[\u00a0\u202f]%$/);
   assert.equal(percentLabel(null), "—");
 });
+test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green surfaces", () => {
+  const { contrastRatio } = compile("contrast");
+  const css = readStylesheet(
+    new URL("../src/app/globals.css", import.meta.url),
+  );
+  const values = tokens(css);
+  const pair = (colour, background, minimum, label) => {
+    assert.ok(colour && background, `${label}: missing colour`);
+    assert.ok(
+      contrastRatio(colour, background) >= minimum,
+      `${label} ${colour} on ${background}: ${contrastRatio(colour, background).toFixed(2)}`,
+    );
+  };
+  // 2026-10-11 dashboard mockup: the page wash behind the cards (sampled #edf7f3 / #f0f6f2).
+  const wash = values["--lp-wash"];
+  pair(values["--lp-muted"], wash, 4.5, "--lp-muted on --lp-wash");
+  pair(values["--lp-ink"], wash, 4.5, "--lp-ink on --lp-wash");
+  pair(values["--focus-ring"], wash, 3, "--focus-ring on --lp-wash");
+});
