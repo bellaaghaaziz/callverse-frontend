@@ -909,7 +909,7 @@ test("supervisor waits read as durations and ratios as French percentages, « �
   assert.equal(waitLabel(-5), "0 s");
   assert.equal(waitLabel(null), "—");
   assert.equal(waitLabel(undefined), "—");
-  // ICU puts a no-break space before \u00ab % \u00bb (U+00A0 or U+202F, by version).
+  // ICU puts a no-break space before « % » (U+00A0 or U+202F, by version).
   assert.match(percentLabel(0.5), /^50[\u00a0\u202f]%$/);
   assert.match(percentLabel(0.1234), /^12,3[\u00a0\u202f]%$/);
   assert.match(percentLabel(0), /^0[\u00a0\u202f]%$/);
