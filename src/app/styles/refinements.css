@@ -40,19 +40,6 @@
 .cv-customer-column .cv-action-form {
   order: -1;
 }
-.cv-login-form-container .cv-subtitle {
-  font-size: 13px;
-}
-.cv-demo-account strong {
-  font-size: 12px;
-}
-.cv-demo-account small {
-  font-size: 10px;
-  color: #697c61;
-}
-.cv-login-form-container > .cv-muted {
-  font-size: 11px;
-}
 .cv-main .cv-inline-form > .cv-input {
   flex: 1;
   min-width: 0;

@@ -1,0 +1,343 @@
+/* Login story panel (2026-10-11 mockup): night gradient, art, headline and the sample exchange. */
+/* Drawn on a 767-unit grid sized to the panel (--u = panel width / 767, capped at 860 px wide). */
+.cv-login-story {
+  --u: calc(min(100cqw, 860px) / 767);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  container-type: inline-size;
+  color: var(--text-inverse);
+  background:
+    radial-gradient(70% 34% at 55% 102%, #0b5c47 0%, transparent 100%),
+    radial-gradient(
+      48% 40% at 104% 30%,
+      var(--lp-night-2) 0%,
+      transparent 100%
+    ),
+    radial-gradient(60% 30% at 0% 100%, #0a4a3e 0%, transparent 100%),
+    linear-gradient(180deg, var(--lp-night-deep), var(--lp-night));
+}
+.cv-login-story > :not(.cv-login-art) {
+  position: relative;
+  margin-left: calc(81 * var(--u));
+}
+
+/* Art: glow, swooshes, threads with glowing nodes, three glass tiles. */
+.cv-login-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cv-login-glow {
+  position: absolute;
+  left: calc(440 * var(--u));
+  top: calc(90 * var(--u));
+  width: calc(380 * var(--u));
+  height: calc(480 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #1df5bc1f, transparent);
+}
+.cv-login-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(1058 * var(--u));
+}
+.cv-login-swoosh {
+  fill: none;
+  stroke: url(#cv-login-swoosh);
+  stroke-width: 16;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+.cv-login-swoosh-thin {
+  stroke-width: 2.5;
+  opacity: 0.75;
+}
+.cv-login-thread {
+  stroke: var(--lp-glow);
+  stroke-width: 1.2;
+  opacity: 0.45;
+}
+.cv-login-node {
+  fill: var(--lp-glow);
+  filter: drop-shadow(0 0 5px var(--lp-glow));
+}
+.cv-login-tile {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ffffff33;
+  border-radius: calc(16 * var(--u));
+  background: linear-gradient(150deg, #2f8a6f8c, #0d4a3d8c);
+  box-shadow:
+    0 calc(18 * var(--u)) calc(40 * var(--u)) #00140f80,
+    inset 0 1px 0 #ffffff40;
+  color: var(--lp-mint-strong);
+}
+.cv-login-tile svg {
+  width: calc(38 * var(--u));
+  height: calc(38 * var(--u));
+  stroke-width: 1.7;
+}
+.cv-login-tile-chat {
+  left: calc(522 * var(--u));
+  top: calc(252 * var(--u));
+  width: calc(76 * var(--u));
+  height: calc(92 * var(--u));
+  transform: rotate(-4deg);
+}
+/* Two glass plates stacked behind the chart tile, up and to the left. */
+.cv-login-tile-chart {
+  left: calc(640 * var(--u));
+  top: calc(192 * var(--u));
+  width: calc(100 * var(--u));
+  height: calc(106 * var(--u));
+  color: var(--lp-glow);
+  box-shadow:
+    calc(-10 * var(--u)) calc(-20 * var(--u)) 0 calc(2 * var(--u)) #2f8a6f59,
+    calc(-18 * var(--u)) calc(-40 * var(--u)) 0 calc(4 * var(--u)) #2f8a6f2e,
+    0 calc(18 * var(--u)) calc(40 * var(--u)) #00140f80,
+    inset 0 1px 0 #ffffff40;
+}
+.cv-login-tile-person {
+  left: calc(592 * var(--u));
+  top: calc(366 * var(--u));
+  width: calc(88 * var(--u));
+  height: calc(110 * var(--u));
+}
+
+/* Wordmark, eyebrow, headline, sub-copy. */
+.cv-login-story .cv-brand {
+  align-self: flex-start;
+  margin-top: calc(52 * var(--u));
+  gap: calc(17 * var(--u));
+  font-size: calc(37 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.cv-login-story .cv-brand-mark {
+  width: calc(38 * var(--u));
+  height: calc(42 * var(--u));
+  gap: calc(4.5 * var(--u));
+}
+.cv-login-story .cv-brand-mark i {
+  width: calc(6 * var(--u));
+  height: calc(24 * var(--u));
+  border-radius: calc(6 * var(--u));
+  background: var(--lp-glow);
+}
+.cv-login-story .cv-brand-mark i:nth-child(2) {
+  height: calc(42 * var(--u));
+}
+.cv-login-story .cv-brand-mark i:nth-child(3) {
+  height: calc(33 * var(--u));
+}
+.cv-login-story .cv-brand-mark i:nth-child(4) {
+  height: calc(18 * var(--u));
+}
+.cv-login-story .cv-brand .cv-brand-dot {
+  color: var(--lp-glow);
+}
+.cv-login-story .cv-status-dot {
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  color: var(--lp-glow);
+  box-shadow: 0 0 calc(10 * var(--u)) var(--lp-glow);
+}
+.cv-login-story .cv-login-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  margin-top: calc(74 * var(--u));
+  font-size: calc(13 * var(--u));
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.3em;
+  color: var(--lp-mist);
+}
+.cv-login-headline {
+  margin-top: calc(14 * var(--u));
+  font-family: var(--font-display), Arial, sans-serif;
+  font-size: calc(77 * var(--u));
+  font-weight: 700;
+  line-height: calc(76.3 * var(--u));
+  letter-spacing: -0.045em;
+  color: var(--text-inverse);
+}
+.cv-login-headline em {
+  font-style: normal;
+  color: var(--lp-mint-strong);
+  background: linear-gradient(180deg, var(--lp-mint-strong), #7fdfb6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.cv-login-lead {
+  margin-top: calc(18 * var(--u));
+  font-size: calc(20 * var(--u));
+  line-height: calc(29 * var(--u));
+  color: var(--lp-mist);
+}
+
+/* The sample exchange: one glass card, children placed on its own 630 × 330 grid. */
+.cv-login-card {
+  flex-shrink: 0;
+  width: calc(630 * var(--u));
+  height: calc(330 * var(--u));
+  margin-top: calc(10 * var(--u));
+  border: 1px solid #ffffff38;
+  border-radius: calc(22 * var(--u));
+  background: linear-gradient(160deg, #14503f, #0b3b31);
+  box-shadow:
+    calc(14 * var(--u)) calc(20 * var(--u)) 0 calc(-1 * var(--u)) #ffffff0f,
+    0 calc(30 * var(--u)) calc(60 * var(--u)) #00140f8c,
+    inset 0 1px 0 #ffffff2e;
+}
+.cv-login-card > * {
+  position: absolute;
+  margin: 0;
+}
+.cv-login-card-label {
+  left: calc(34 * var(--u));
+  top: calc(43 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(15 * var(--u));
+  font-size: calc(13 * var(--u));
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.3em;
+  color: var(--lp-mist);
+}
+.cv-login-card-menu {
+  left: calc(563 * var(--u));
+  top: calc(33 * var(--u));
+  display: flex;
+  gap: calc(7 * var(--u));
+}
+.cv-login-card-menu i {
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+  border-radius: 50%;
+  background: #cfe7df;
+}
+.cv-login-avatar {
+  display: grid;
+  place-items: center;
+  width: calc(44 * var(--u));
+  height: calc(44 * var(--u));
+  border-radius: 50%;
+  background: #3e6a61;
+  font-size: calc(15 * var(--u));
+  font-weight: 700;
+  color: var(--text-inverse);
+}
+.cv-login-avatar-client {
+  left: calc(49 * var(--u));
+  top: calc(114 * var(--u));
+}
+.cv-login-avatar-advisor {
+  left: calc(546 * var(--u));
+  top: calc(200 * var(--u));
+  width: calc(48 * var(--u));
+  height: calc(48 * var(--u));
+}
+.cv-login-chat-label {
+  font-size: calc(15 * var(--u));
+  line-height: 1;
+  color: var(--lp-mist);
+}
+.cv-login-chat-client {
+  left: calc(115 * var(--u));
+  top: calc(80 * var(--u));
+}
+.cv-login-chat-advisor {
+  right: calc(107 * var(--u));
+  top: calc(175 * var(--u));
+}
+.cv-login-bubble {
+  left: calc(115 * var(--u));
+  top: calc(95 * var(--u));
+  display: flex;
+  align-items: center;
+  width: calc(334 * var(--u));
+  height: calc(64 * var(--u));
+  padding: 0 calc(18 * var(--u)) calc(4 * var(--u));
+  border: 1px solid #ffffff1f;
+  border-radius: calc(10 * var(--u));
+  background: #184b3b;
+  box-shadow: 0 calc(10 * var(--u)) calc(24 * var(--u)) #00140f66;
+  font-size: calc(16 * var(--u));
+  white-space: nowrap;
+  color: var(--text-inverse);
+}
+.cv-login-bubble time {
+  position: absolute;
+  right: calc(14 * var(--u));
+  bottom: calc(8 * var(--u));
+  font-size: calc(11 * var(--u));
+  color: var(--lp-mist);
+}
+.cv-login-bubble-own {
+  left: calc(167 * var(--u));
+  top: calc(197 * var(--u));
+  width: calc(356 * var(--u));
+  height: calc(56 * var(--u));
+  border-color: #ffffff80;
+  background: var(--lp-mint-strong);
+  color: #0d4a3a;
+}
+.cv-login-bubble-own time {
+  color: #0d4a3a;
+}
+.cv-login-connector {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cv-login-connector path {
+  fill: none;
+  stroke: var(--lp-glow);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+  opacity: 0.7;
+}
+.cv-login-connector-dot {
+  left: calc(121 * var(--u));
+  top: calc(220 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  border-radius: 50%;
+  background: var(--lp-glow);
+  box-shadow: 0 0 calc(10 * var(--u)) var(--lp-glow);
+}
+.cv-login-card-note {
+  left: calc(160 * var(--u));
+  top: calc(280 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--u));
+  font-size: calc(15.5 * var(--u));
+  color: var(--lp-mist);
+}
+.cv-login-card-note svg {
+  width: calc(26 * var(--u));
+  height: calc(28 * var(--u));
+  color: var(--lp-glow);
+}
+
+/* Panel footer. */
+.cv-login-story-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  margin-right: calc(57 * var(--u));
+  padding: calc(40 * var(--u)) 0 calc(50 * var(--u));
+  font-size: calc(14.5 * var(--u));
+  color: var(--lp-mist);
+}

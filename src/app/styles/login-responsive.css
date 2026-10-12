@@ -1,0 +1,158 @@
+/* Login breakpoints: compact cards at 1001–1240, stacked at ≤ 1000 (the story becomes a short
+   dark band), phone at ≤ 700. */
+@media (min-width: 1001px) and (max-width: 1240px) {
+  .cv-login-form-side {
+    padding-right: 40px;
+    padding-left: 48px;
+  }
+  .cv-login-accounts {
+    gap: 12px;
+  }
+  .cv-login-account {
+    gap: 12px;
+    padding: 12px 10px 12px 12px;
+  }
+  .cv-login-account-icon {
+    width: 44px;
+    height: 44px;
+  }
+  .cv-login-account > svg {
+    display: none;
+  }
+}
+@media (max-width: 1000px) {
+  .cv-login {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .cv-login-story {
+    padding: 30px 40px 36px;
+  }
+  .cv-login-story > :not(.cv-login-art) {
+    margin-left: 0;
+  }
+  .cv-login-lines,
+  .cv-login-tile,
+  .cv-login-card,
+  .cv-login-story-bottom {
+    display: none;
+  }
+  .cv-login-glow {
+    left: auto;
+    right: -120px;
+    top: -80px;
+    width: 420px;
+    height: 360px;
+  }
+  .cv-login-story .cv-brand {
+    margin-top: 0;
+    gap: 13px;
+    font-size: 30px;
+  }
+  .cv-login-story .cv-brand-mark {
+    width: 30px;
+    height: 34px;
+    gap: 3.5px;
+  }
+  .cv-login-story .cv-brand-mark i {
+    width: 5px;
+    height: 19px;
+  }
+  .cv-login-story .cv-brand-mark i:nth-child(2) {
+    height: 34px;
+  }
+  .cv-login-story .cv-brand-mark i:nth-child(3) {
+    height: 27px;
+  }
+  .cv-login-story .cv-brand-mark i:nth-child(4) {
+    height: 15px;
+  }
+  .cv-login-story .cv-status-dot {
+    width: 9px;
+    height: 9px;
+    box-shadow: 0 0 8px var(--lp-glow);
+  }
+  .cv-login-story .cv-login-eyebrow {
+    gap: 12px;
+    margin-top: 36px;
+    font-size: 12px;
+  }
+  .cv-login-headline {
+    margin-top: 16px;
+    font-size: 56px;
+  }
+  .cv-login-lead {
+    margin-top: 16px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .cv-login-form-side {
+    padding: 24px 40px 32px;
+    background: var(--lp-bg);
+  }
+  .cv-login-form-side::before,
+  .cv-login-form-side::after {
+    display: none;
+  }
+  .cv-login-form-container {
+    align-self: center;
+    margin-top: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .cv-login-story {
+    padding: 24px 24px 30px;
+  }
+  .cv-login-story .cv-login-eyebrow {
+    margin-top: 28px;
+  }
+  .cv-login-headline {
+    font-size: 40px;
+    line-height: 1;
+  }
+  .cv-login-break {
+    display: none;
+  }
+  .cv-login-lead {
+    font-size: 16px;
+  }
+  .cv-login-form-side {
+    padding: 16px 24px 28px;
+  }
+  .cv-login-form-container {
+    margin-top: 16px;
+  }
+  .cv-login-form-side h1 {
+    font-size: 34px;
+  }
+  .cv-login-demo-heading {
+    margin-top: 32px;
+  }
+}
+@media (max-width: 560px) {
+  .cv-login-accounts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .cv-login-account {
+    min-height: 76px;
+    padding: 12px 16px 12px 12px;
+  }
+  .cv-login-account-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .cv-login-account small {
+    margin-top: 3px;
+  }
+  /* The shield flows with the wrapped note instead of standing apart from it. */
+  .cv-login-legal {
+    display: block;
+    text-align: center;
+  }
+  .cv-login-legal svg {
+    display: inline;
+    margin-right: 6px;
+    vertical-align: -4px;
+  }
+}

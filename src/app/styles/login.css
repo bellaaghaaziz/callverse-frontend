@@ -1,224 +1,314 @@
-/* Login page. */
+/* Login page (2026-10-11 mockup): page grid and the form side. The story panel is in login-story.css. */
 .cv-login {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 767fr) minmax(0, 720fr);
   min-height: 100vh;
-  background: var(--surface-soft);
+  background: var(--lp-bg);
+  color: var(--lp-ink);
 }
-.cv-login-story {
-  background: #163a35;
-  color: #edf5e8;
-  padding: 40px 50px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-.cv-login-story-content {
-  margin: auto;
-  max-width: 420px;
-  padding: 50px 0;
-}
-.cv-login-story .cv-eyebrow {
-  color: #8caf9a;
-  font-size: 9px;
-  letter-spacing: 2px;
-}
-.cv-login-story h1 {
-  font-size: 62px;
-  line-height: 1.12;
-  font-weight: 400;
-  letter-spacing: -2.8px;
-  margin: 25px 0;
-}
-.cv-login-story h1 em {
-  font-style: normal;
-  color: #b9d8ae;
-}
-.cv-login-story-content > p:not(.cv-eyebrow) {
-  font-size: 13px;
-  line-height: 1.9;
-  color: #86a99a;
-}
-.cv-login-illustration {
-  margin-top: 40px;
-  padding: 24px;
-  background: #20463b;
-  border: 1px solid #ffffff0a;
-  border-radius: 10px;
-  transform: rotate(-2deg);
-}
-.cv-preview-label {
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  color: #98bba3;
-  margin-bottom: 20px;
-}
-.cv-login-note {
-  display: flex;
-  gap: 9px;
-  align-items: flex-end;
-  font-size: 10px;
-}
-.cv-login-note .cv-avatar {
-  width: 26px;
-  height: 26px;
-  font-size: 8px;
-  background: #517762;
-  color: #eef4e9;
-}
-.cv-login-note span:not(.cv-avatar) {
-  display: block;
-  color: #92b298;
-  font-size: 8px;
-  margin-bottom: 6px;
-}
-.cv-login-note p {
-  padding: 12px;
-  background: #375b48;
-  border-radius: 8px 8px 8px 1px;
-  line-height: 1.8;
-}
-.cv-login-note-own {
-  justify-content: flex-end;
-  margin-top: 18px;
-}
-.cv-login-note-own p {
-  background: #adcaa2;
-  color: #33583d;
-  border-radius: 8px 8px 1px 8px;
-}
-.cv-login-note-own span:not(.cv-avatar) {
-  text-align: right;
-}
-.cv-login-note-footer {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  justify-content: center;
-  color: #99b099;
-  font-size: 8px;
-  margin-top: 22px;
-}
-.cv-login-story-bottom {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  color: #82a493;
-  font-size: 9px;
-}
+
+/* Form side: mint, a lighter sheet behind the column, soft arcs top right. */
 .cv-login-form-side {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: 35px 50px;
+  padding: 32px 80px 46px 100px;
+  overflow: hidden;
+  background:
+    radial-gradient(560px 360px at 100% 0%, #dcefe4 0%, transparent 70%),
+    var(--lp-mint);
 }
-.cv-back-link {
+.cv-login-form-side::before,
+.cv-login-form-side::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.cv-login-form-side::before {
+  inset: 0 50px 0 56px;
+  background: linear-gradient(
+    90deg,
+    var(--lp-bg) calc(100% - 40px),
+    transparent
+  );
+}
+.cv-login-form-side::after {
+  top: -260px;
+  right: -250px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  border: 1px solid #ffffffd9;
+  box-shadow:
+    0 0 0 34px #ffffff40,
+    0 0 60px #ffffff80;
+}
+.cv-login-form-side > * {
+  position: relative;
+  z-index: 1;
+}
+.cv-login-back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #697863;
-  font-size: 11px;
+  gap: 14px;
   align-self: flex-start;
+  min-height: 44px;
+  margin-left: -12px;
+  font-size: 15px;
+  color: var(--lp-muted);
+  transition: color 0.15s;
+}
+.cv-login-back svg {
+  color: var(--lp-deep);
+}
+.cv-login-back:hover {
+  color: var(--lp-ink);
 }
 .cv-login-form-container {
-  max-width: 420px;
   width: 100%;
-  margin: auto;
-  padding: 45px 0;
+  max-width: 518px;
+  margin-top: 46px;
 }
-.cv-login-form-container h2 {
-  font-size: 32px;
-  line-height: 1.2;
-  font-weight: 500;
-  margin: 12px 0;
+.cv-login-form-side .cv-login-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  color: var(--lp-deep);
 }
+.cv-login-form-side h1 {
+  margin-top: 13px;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--lp-ink);
+}
+.cv-login-intro {
+  max-width: 400px;
+  margin-top: 9px;
+  font-size: 17px;
+  line-height: 22.5px;
+  color: var(--lp-muted);
+}
+
+/* Fields: visible labels, a decorative icon inside, the toggle at the end. */
 .cv-login-form {
-  margin-top: 30px;
+  margin-top: 26px;
 }
-.cv-login-form .cv-field {
-  margin-bottom: 20px;
+.cv-login-field + .cv-login-field {
+  margin-top: 27px;
+}
+.cv-login-label {
   display: block;
+  margin-bottom: 8px;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--lp-ink);
 }
-.cv-input-icon {
+.cv-login-control {
   position: relative;
 }
-.cv-input-icon svg {
+.cv-login-field-icon {
   position: absolute;
-  left: 13px;
-  top: 14px;
-  color: #8da189;
+  left: 19px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lp-deep);
+  pointer-events: none;
 }
-.cv-input-icon input {
-  padding: 13px 14px 13px 40px;
+.cv-login-input {
+  width: 100%;
+  height: 54px;
+  padding: 0 14px 0 61px;
+  border: 1px solid var(--lp-border);
+  border-radius: 8px;
   background: var(--surface);
-  font-size: 12px;
+  font-size: 16px;
+  color: var(--lp-ink);
+  box-shadow: 0 6px 18px #0b4a400d;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
-.cv-demo-heading {
+.cv-login-input::placeholder {
+  color: var(--lp-muted);
+}
+.cv-login-control .cv-login-input:focus {
+  box-shadow: 0 0 0 4px #087f7024;
+}
+.cv-login-control:has(.cv-login-toggle) .cv-login-input {
+  padding-right: 58px;
+}
+.cv-login-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lp-deep);
+}
+.cv-login-toggle:hover {
+  background: var(--lp-mint);
+}
+.cv-login-form .cv-notice,
+.cv-login-form .cv-error {
+  margin-top: 20px;
+}
+.cv-login-submit {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  color: #6b785c;
-  margin: 32px 0 13px;
+  width: 100%;
+  height: 56px;
+  margin-top: 23px;
+  border: 0;
+  border-radius: 9px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-inverse);
+  background: linear-gradient(
+    100deg,
+    var(--lp-brand-strong),
+    var(--lp-brand-soft)
+  );
+  box-shadow:
+    0 12px 26px #056f5833,
+    inset 0 1px 0 #ffffff26;
 }
-.cv-demo-heading:after {
+.cv-login-submit:hover {
+  background: linear-gradient(100deg, #04624e, #087a5e);
+}
+
+/* Demo accounts: same buttons, white cards with a mint icon well. */
+.cv-login-demo-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 37px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  color: var(--lp-deep);
+}
+.cv-login-demo-heading::after {
   content: "";
-  height: 1px;
-  background: #e4eadd;
   flex: 1;
+  height: 1px;
+  background: var(--lp-border);
 }
-.cv-demo-grid {
+.cv-login-demo-text {
+  max-width: 455px;
+  margin-top: 15px;
+  font-size: 16px;
+  line-height: 21px;
+  color: var(--lp-muted);
+}
+.cv-login-accounts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 14px;
+  margin-top: 7px;
 }
-.cv-demo-account {
+.cv-login-account {
   display: flex;
-  gap: 11px;
   align-items: center;
-  text-align: left;
+  gap: 15px;
+  min-height: 99px;
+  padding: 14px 12px 14px 14px;
+  border: 1px solid #e6efeb;
+  border-radius: 10px;
   background: var(--surface);
-  border: 1px solid #e3eadd;
-  border-radius: 8px;
-  padding: 15px 13px;
-  color: #7a9b72;
+  box-shadow: 0 10px 24px #0b4a400f;
+  text-align: left;
+  color: var(--lp-brand);
 }
-.cv-demo-account > div {
+.cv-login-account > svg {
+  margin-left: -7px;
+}
+.cv-login-account:hover {
+  border-color: #b9dccf;
+}
+.cv-login-account-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--lp-mint);
+  box-shadow:
+    inset 0 0 0 1px #ffffffb3,
+    0 6px 14px #29a3871f;
+}
+.cv-login-account-text {
   flex: 1;
   min-width: 0;
 }
-.cv-demo-account strong {
+.cv-login-account strong {
   display: block;
-  color: #5e7457;
+  font-size: 15.5px;
   font-weight: 600;
+  color: var(--lp-ink);
 }
-.cv-demo-account small {
+.cv-login-account small {
   display: block;
-  margin-top: 4px;
+  margin-top: 5px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--lp-muted);
 }
-.cv-demo-account > svg:last-child {
-  color: #aab89f;
-}
-.cv-demo-account:hover {
-  border-color: #93b48b;
-  background: #f5f9f0;
-}
+
+/* Health line (the real BackendHealth status) and the access note. */
 .cv-login-service {
-  margin-top: 22px;
+  margin-top: 25px;
   text-align: center;
-  font-size: 10px;
-  color: #95a68c;
+  font-size: 15px;
+  color: var(--lp-deep);
+}
+.cv-login-service [role="status"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: inherit;
+  color: inherit;
+}
+.cv-login-service [data-state]::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--lp-border);
+}
+.cv-login-service [data-state="up"]::before {
+  background: var(--lp-accent);
+  box-shadow: 0 0 0 4px #29a3871f;
+}
+.cv-login-service [data-state="degraded"]::before {
+  background: var(--amber);
+}
+.cv-login-service [data-state="down"]::before {
+  background: var(--rose);
 }
 .cv-login-legal {
-  font-size: 9px;
-  color: #6c7761;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding-bottom: 4px;
+  gap: 9px;
+  margin-top: auto;
+  padding-top: 32px;
+  font-size: 13px;
+  color: var(--lp-muted);
+}
+.cv-login-legal svg {
+  color: var(--lp-deep);
 }

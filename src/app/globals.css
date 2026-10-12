@@ -11,6 +11,7 @@
 @import "./styles/landing-sections.css";
 @import "./styles/landing-responsive.css";
 @import "./styles/login.css";
-@import "./styles/public-responsive.css";
+@import "./styles/login-story.css";
+@import "./styles/login-responsive.css";
 @import "./styles/loader.css";
 @import "./styles/refinements.css";

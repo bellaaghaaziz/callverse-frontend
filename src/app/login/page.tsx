@@ -9,21 +9,23 @@ import { roleHome, type Role } from "@/lib/contracts";
 import {
   Lock,
   Mail,
+  Eye,
+  EyeOff,
   ArrowRight,
   ArrowLeft,
-  User,
+  MessageSquare,
   Headphones,
   Activity,
   Settings,
   ShieldCheck,
-  ArrowUpRight,
 } from "lucide-react";
-import Brand from "@/components/Brand";
 import BackendHealth from "@/components/BackendHealth";
+import LoginStory from "@/components/login/LoginStory";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -67,6 +69,8 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Hide the password again on submit, so password managers see a password field.
+    setShowPassword(false);
     await performLogin(email, password);
   }
 
@@ -74,7 +78,7 @@ export default function LoginPage() {
     {
       role: "Client",
       email: "customer@callverse.local",
-      icon: User,
+      icon: MessageSquare,
       desc: "Retrouver votre échange",
     },
     {
@@ -98,94 +102,66 @@ export default function LoginPage() {
   ];
   return (
     <main className="cv-login">
-      <section className="cv-login-story">
-        <Brand dark />
-        <div className="cv-login-story-content">
-          <p className="cv-eyebrow">CHAQUE ÉCHANGE COMPTE.</p>
-          <h1>
-            La relation client,
-            <br />
-            avec plus de
-            <br />
-            <em>clarté.</em>
-          </h1>
-          <p>
-            Conversations, contexte et collaboration.
-            <br />
-            Tout se retrouve au même endroit.
-          </p>
-          <div className="cv-login-illustration" aria-hidden="true">
-            <div className="cv-preview-label">
-              <span className="cv-status-dot" />
-              UN ÉCHANGE, UN LIEN
-            </div>
-            <div className="cv-login-note">
-              <span className="cv-avatar">CL</span>
-              <div>
-                <span>Client</span>
-                <p>Bonjour, j’ai une question sur ma carte.</p>
-              </div>
-            </div>
-            <div className="cv-login-note cv-login-note-own">
-              <div>
-                <span>Conseiller</span>
-                <p>Bonjour ! Regardons cela ensemble.</p>
-              </div>
-              <span className="cv-avatar">CV</span>
-            </div>
-            <div className="cv-login-note-footer">
-              <ShieldCheck size={13} />
-              Le contexte. La réponse. La confiance.
-            </div>
-          </div>
-        </div>
-        <div className="cv-login-story-bottom">
-          <span>CallVerse · Relation client bancaire</span>
-          <span>Simple. Ensemble.</span>
-        </div>
-      </section>
+      <LoginStory />
       <section className="cv-login-form-side">
-        <Link href="/" className="cv-back-link">
-          <ArrowLeft size={15} />
+        <Link href="/" className="cv-login-back">
+          <ArrowLeft size={20} />
           Retour à l’accueil
         </Link>
         <div className="cv-login-form-container">
-          <p className="cv-eyebrow">VOTRE ESPACE VOUS ATTEND</p>
-          <h2>Ravi de vous retrouver.</h2>
-          <p className="cv-subtitle">
+          <p className="cv-login-eyebrow">VOTRE ESPACE VOUS ATTEND</p>
+          <h1>Ravi de vous retrouver.</h1>
+          <p className="cv-login-intro">
             Connectez-vous avec le compte fourni par votre administrateur.
           </p>
           <form onSubmit={handleSubmit} className="cv-login-form">
-            <label className="cv-field">
-              <span className="cv-label">Adresse e-mail</span>
-              <div className="cv-input-icon">
-                <Mail size={17} />
+            <div className="cv-login-field">
+              <label className="cv-login-label" htmlFor="login-email">
+                Adresse e-mail
+              </label>
+              <div className="cv-login-control">
+                <Mail className="cv-login-field-icon" size={22} />
                 <input
+                  id="login-email"
                   type="email"
                   autoComplete="username"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="vous@banque.com"
-                  className="cv-input"
+                  className="cv-login-input"
                 />
               </div>
-            </label>
-            <label className="cv-field">
-              <span className="cv-label">Mot de passe</span>
-              <div className="cv-input-icon">
-                <Lock size={17} />
+            </div>
+            <div className="cv-login-field">
+              <label className="cv-login-label" htmlFor="login-password">
+                Mot de passe
+              </label>
+              <div className="cv-login-control">
+                <Lock className="cv-login-field-icon" size={22} />
                 <input
-                  type="password"
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Votre mot de passe"
-                  className="cv-input"
+                  className="cv-login-input"
                 />
+                {/* One fixed name; the state is aria-pressed (WAI-ARIA toggle button). */}
+                <button
+                  type="button"
+                  className="cv-login-toggle"
+                  aria-label="Afficher le mot de passe"
+                  aria-pressed={showPassword}
+                  aria-controls="login-password"
+                  onClick={() => setShowPassword((shown) => !shown)}
+                >
+                  {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                </button>
               </div>
-            </label>
+            </div>
             <div role="status">
               {notice && <p className="cv-notice mb-4">{notice}</p>}
             </div>
@@ -194,32 +170,32 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
-            <button disabled={loading} className="cv-button w-full !py-3.5">
+            <button disabled={loading} className="cv-login-submit">
               {loading ? "Connexion en cours…" : "Se connecter"}
-              <ArrowRight size={16} />
+              <ArrowRight size={21} />
             </button>
           </form>
-          <div className="cv-demo-heading">
-            <span>EXPLORER LA DÉMONSTRATION</span>
-          </div>
-          <p className="cv-muted mb-4 !leading-relaxed">
+          <h2 className="cv-login-demo-heading">EXPLORER LA DÉMONSTRATION</h2>
+          <p className="cv-login-demo-text">
             Choisissez un rôle pour découvrir son espace avec les comptes de
             démonstration.
           </p>
-          <div className="cv-demo-grid">
+          <div className="cv-login-accounts">
             {accounts.map((account) => (
               <button
                 key={account.role}
                 disabled={loading}
                 onClick={() => performLogin(account.email, "Admin111***")}
-                className="cv-demo-account"
+                className="cv-login-account"
               >
-                <account.icon size={19} />
-                <div>
+                <span className="cv-login-account-icon">
+                  <account.icon size={25} />
+                </span>
+                <span className="cv-login-account-text">
                   <strong>{account.role}</strong>
                   <small>{account.desc}</small>
-                </div>
-                <ArrowUpRight size={13} />
+                </span>
+                <ArrowRight size={19} />
               </button>
             ))}
           </div>
@@ -228,7 +204,7 @@ export default function LoginPage() {
           </div>
         </div>
         <p className="cv-login-legal">
-          <ShieldCheck size={13} />
+          <ShieldCheck size={18} />
           L’accès et les fonctionnalités dépendent de votre rôle.
         </p>
       </section>
