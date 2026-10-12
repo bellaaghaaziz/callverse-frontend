@@ -1,7 +1,9 @@
 /* Login story panel (2026-10-11 mockup): night gradient, art, headline and the sample exchange. */
-/* Drawn on a 767-unit grid sized to the panel (--u = panel width / 767, capped at 860 px wide). */
+/* Drawn on the mockup's 767-unit grid: one unit is a mockup pixel at the page's scale (--p × 1440 / 1487),
+   never wider than the panel allows; --x centres the composition when the panel is wider. */
 .cv-login-story {
-  --u: calc(min(100cqw, 860px) / 767);
+  --u: min(var(--p) * 0.9684, 100cqw / 767);
+  --x: max(0px, (100cqw - 767 * var(--u)) / 2);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -20,13 +22,13 @@
 }
 .cv-login-story > :not(.cv-login-art) {
   position: relative;
-  margin-left: calc(81 * var(--u));
+  margin-left: calc(var(--x) + 81 * var(--u));
 }
 
 /* Art: glow, swooshes, threads with glowing nodes, three glass tiles. */
 .cv-login-art {
   position: absolute;
-  inset: 0;
+  inset: 0 0 0 var(--x);
   pointer-events: none;
 }
 .cv-login-glow {
@@ -336,7 +338,7 @@
   justify-content: space-between;
   gap: 16px;
   margin-top: auto;
-  margin-right: calc(57 * var(--u));
+  margin-right: calc(var(--x) + 57 * var(--u));
   padding: calc(40 * var(--u)) 0 calc(50 * var(--u));
   font-size: calc(14.5 * var(--u));
   color: var(--lp-mist);
