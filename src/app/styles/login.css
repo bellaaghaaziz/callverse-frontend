@@ -120,7 +120,7 @@
 .cv-login-input {
   width: 100%;
   height: 54px;
-  padding: 0 14px 0 61px;
+  padding: 0 58px 0 61px;
   border: 1px solid var(--lp-border);
   border-radius: 8px;
   background: var(--surface);
@@ -136,9 +136,6 @@
 }
 .cv-login-control .cv-login-input:focus {
   box-shadow: 0 0 0 4px #087f7024;
-}
-.cv-login-control:has(.cv-login-toggle) .cv-login-input {
-  padding-right: 58px;
 }
 .cv-login-toggle {
   position: absolute;

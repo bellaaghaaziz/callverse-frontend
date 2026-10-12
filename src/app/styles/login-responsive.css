@@ -44,28 +44,10 @@
     width: 420px;
     height: 360px;
   }
+  /* The wordmark keeps its story proportions at a fixed unit. */
   .cv-login-story .cv-brand {
+    --u: 0.81px;
     margin-top: 0;
-    gap: 13px;
-    font-size: 30px;
-  }
-  .cv-login-story .cv-brand-mark {
-    width: 30px;
-    height: 34px;
-    gap: 3.5px;
-  }
-  .cv-login-story .cv-brand-mark i {
-    width: 5px;
-    height: 19px;
-  }
-  .cv-login-story .cv-brand-mark i:nth-child(2) {
-    height: 34px;
-  }
-  .cv-login-story .cv-brand-mark i:nth-child(3) {
-    height: 27px;
-  }
-  .cv-login-story .cv-brand-mark i:nth-child(4) {
-    height: 15px;
   }
   .cv-login-story .cv-status-dot {
     width: 9px;
