@@ -1,0 +1,174 @@
+/* Landing breakpoints. */
+@media (max-width: 1000px) {
+  .cv-landing-nav {
+    grid-template-columns: auto 1fr auto;
+  }
+  .cv-landing-nav nav {
+    justify-content: center;
+    gap: 28px;
+  }
+  .cv-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 48px;
+  }
+  .cv-hero-visual {
+    width: min(780px, 100%);
+    margin-inline: auto;
+  }
+  .cv-section-intro {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .cv-section-intro > p {
+    margin-top: 0;
+  }
+  .cv-section-intro-lined {
+    margin-left: 0;
+  }
+  .cv-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .cv-feature-card {
+    min-height: 300px;
+  }
+  .cv-feature-card p {
+    max-width: 58%;
+  }
+  .cv-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cv-architecture {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .cv-architecture-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .cv-landing-nav {
+    grid-template-columns: 1fr auto;
+  }
+  .cv-landing-nav nav {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .cv-landing-nav {
+    padding-block: 16px;
+  }
+  .cv-landing-nav .cv-brand,
+  .cv-landing-footer .cv-brand {
+    gap: clamp(8px, 2.6vw, 16px);
+    font-size: clamp(21px, 6.2vw, 24px);
+  }
+  .cv-landing-nav .cv-brand-mark,
+  .cv-landing-footer .cv-brand-mark {
+    transform: none;
+    margin-right: 0;
+  }
+  .cv-landing-nav .cv-button {
+    gap: clamp(6px, 2vw, 12px);
+    height: 40px;
+    padding: 0 clamp(12px, 4vw, 16px);
+    font-size: clamp(13px, 3.6vw, 14px);
+  }
+  .cv-hero {
+    padding: 36px 0 24px;
+  }
+  .cv-hero-copy h1 {
+    font-size: 46px;
+  }
+  .cv-hero-description {
+    margin-top: 22px;
+    font-size: 16px;
+  }
+  .cv-hero-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cv-hero-actions > * {
+    justify-content: center;
+  }
+  /* Phones: the canvas becomes a plain column at its natural size. */
+  .cv-hero-art,
+  .cv-hero-stage {
+    --u: 1px;
+  }
+  .cv-hero-art {
+    display: none;
+  }
+  .cv-hero-stage {
+    aspect-ratio: auto;
+    display: grid;
+    gap: 14px;
+  }
+  .cv-hero-stage::before,
+  .cv-glass-queue,
+  .cv-glass-resolved {
+    display: none;
+  }
+  .cv-product-preview {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: auto;
+  }
+  .cv-preview-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-preview-menu {
+    display: none;
+  }
+  .cv-glass-clear {
+    position: relative;
+    left: auto;
+    top: auto;
+    white-space: normal;
+  }
+  .cv-experience,
+  .cv-roles-section {
+    padding-top: 52px;
+  }
+  .cv-feature-card p {
+    max-width: none;
+  }
+  .cv-feature-art {
+    width: 40%;
+    opacity: 0.6;
+  }
+  .cv-role-grid,
+  .cv-architecture-list {
+    grid-template-columns: 1fr;
+  }
+  .cv-landing-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 32px 24px;
+  }
+  .cv-landing-cta .cv-button {
+    width: 100%;
+  }
+  .cv-landing-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .cv-landing-footer p {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .cv-landing-footer nav {
+    margin-left: 0;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-landing .cv-button,
+  .cv-hero-more,
+  .cv-role-card {
+    transition: none;
+  }
+}

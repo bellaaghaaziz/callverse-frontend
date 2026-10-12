@@ -10,6 +10,11 @@ export function clearSession() {
   localStorage.removeItem("role");
   disconnectStomp();
 }
+export function sessionNotice(search: string): string | null {
+  return new URLSearchParams(search).get("expired") === "1"
+    ? "Votre session a expiré. Reconnectez-vous."
+    : null;
+}
 export function expireSession() {
   clearSession();
   if (typeof window !== "undefined")

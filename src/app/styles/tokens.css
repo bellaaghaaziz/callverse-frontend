@@ -1,0 +1,42 @@
+/* Design tokens: Aziz's palette values, named by role. */
+:root {
+  --ink: #172d3b;
+  --paper: #f5f6f4;
+  --text: #172d3b;
+  --text-muted: #63736b;
+  --border: #e4e9e6;
+  --indigo: #087f70;
+  --emerald: #087f70;
+  --rose: #bc4557;
+  --amber: #ad761a;
+  --surface: #fff;
+  --surface-soft: #fafbf8;
+  --text-inverse: #fff;
+  --navy: #142b39;
+  --border-soft: #edf0e9;
+  --border-input: #dfe5e0;
+  --sidebar-divider: #ffffff10;
+  --focus-ring: #087f70;
+  --focus-ring-on-dark: #4db6a4;
+  /* Green-direction proposal (R4.7, 2026-10-11 mockups): the landing, the login and the supervisor
+     screen. The other app screens keep the tokens above. */
+  --lp-bg: #fbfcf9;
+  --lp-ink: #05262e;
+  --lp-brand: #067a61;
+  --lp-brand-light: #0c9170;
+  --lp-brand-strong: #056f58;
+  --lp-brand-soft: #0a8466;
+  --lp-eyebrow: #0a7258;
+  --lp-muted: #4e7480;
+  --lp-accent: #29a387;
+  --lp-mint: #e3f3ec;
+  --lp-mint-strong: #c5eedd;
+  --lp-border: #dbe9e4;
+  --lp-night-deep: #022a26;
+  --lp-night: #02302b;
+  --lp-night-2: #0b4e44;
+  --lp-glow: #1df5bc;
+  --lp-mist: #a5d1cb;
+  --lp-deep: #11504a;
+  --lp-wash: #eff6f2;
+}

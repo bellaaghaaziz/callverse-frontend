@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { FrontDesk, KnowledgeSearch } from "@/components/IntegrationTools";
 import ConversationPanel from "@/components/ConversationPanel";
@@ -17,8 +17,25 @@ import {
   Settings2,
 } from "lucide-react";
 import { roleLabel, initialsFor } from "@/lib/presentation";
+import { tabKeyTarget } from "@/lib/tabs";
+const tabs = [
+  "Utilisateurs",
+  "Procédures",
+  "Accueil",
+  "Catalogue produits",
+  "Conseillers",
+  "Règles",
+];
 export default function AdminPage() {
   const [tab, setTab] = useState("Utilisateurs");
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Each tab's content is the one panel the tabs control.
+  const panel = {
+    role: "tabpanel",
+    id: "admin-panel",
+    "aria-labelledby": "admin-tab-" + tabs.indexOf(tab),
+    tabIndex: 0,
+  };
   useEffect(() => {
     const handler = (event: Event) =>
       setTab((event as CustomEvent<string>).detail);
@@ -39,6 +56,13 @@ export default function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
   const [detail, setDetail] = useState<Schema["User"] | null>(null);
+  // The detail takes focus when it opens; « Fermer » returns it to « Détails ».
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  const detailTrigger = useRef<HTMLButtonElement | null>(null);
+  const detailId = detail?.id;
+  useEffect(() => {
+    if (detailId) detailHeading.current?.focus();
+  }, [detailId]);
   const [conversationId, setConversationId] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
@@ -162,19 +186,25 @@ export default function AdminPage() {
         role="tablist"
         aria-label="Sections d’administration"
       >
-        {[
-          "Utilisateurs",
-          "Procédures",
-          "Accueil",
-          "Catalogue produits",
-          "Conseillers",
-          "Règles",
-        ].map((label) => (
+        {tabs.map((label, index) => (
           <button
             key={label}
+            ref={(node) => {
+              tabRefs.current[index] = node;
+            }}
+            id={"admin-tab-" + index}
             role="tab"
             aria-selected={tab === label}
+            aria-controls="admin-panel"
+            tabIndex={tab === label ? 0 : -1}
             onClick={() => setTab(label)}
+            onKeyDown={(event) => {
+              const next = tabKeyTarget(event.key, index, tabs.length);
+              if (next === null) return;
+              event.preventDefault();
+              setTab(tabs[next]);
+              tabRefs.current[next]?.focus();
+            }}
           >
             {label}
           </button>
@@ -186,7 +216,7 @@ export default function AdminPage() {
         </p>
       )}
       {tab === "Utilisateurs" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <section className="cv-card">
             <div className="cv-card-heading">
               <div>
@@ -218,7 +248,7 @@ export default function AdminPage() {
                 className="cv-input grow"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Rechercher un nom ou un email"
+                placeholder="Rechercher un nom ou une adresse e-mail"
               />
               <button className="cv-button">
                 <Search size={13} />
@@ -256,12 +286,16 @@ export default function AdminPage() {
             </form>
             <div className="cv-table-wrap">
               <table className="cv-table">
+                <caption className="sr-only">
+                  Utilisateurs, page {page + 1} sur{" "}
+                  {Math.max(1, users?.page.totalPages || 0)}
+                </caption>
                 <thead>
                   <tr>
-                    <th>Utilisateur</th>
-                    <th>Rôle</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Rôle</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -321,7 +355,10 @@ export default function AdminPage() {
                           </button>
                           <button
                             className="cv-button cv-button-secondary cv-button-small"
-                            onClick={() => inspect(user.id)}
+                            onClick={(event) => {
+                              detailTrigger.current = event.currentTarget;
+                              void inspect(user.id);
+                            }}
                           >
                             Détails
                             <ArrowUpRight size={12} />
@@ -370,14 +407,20 @@ export default function AdminPage() {
                     {initialsFor(detail.firstName + " " + detail.lastName)}
                   </span>
                   <div>
-                    <h2 className="text-lg">
+                    <h2 className="text-lg" ref={detailHeading} tabIndex={-1}>
                       {detail.firstName} {detail.lastName}
                     </h2>
                     <p className="cv-subtitle">{detail.email}</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setDetail(null)}
+                  onClick={() => {
+                    setDetail(null);
+                    // The row may be gone (new page or filter): use the panel.
+                    const trigger = detailTrigger.current;
+                    if (trigger?.isConnected) trigger.focus();
+                    else document.getElementById("admin-panel")?.focus();
+                  }}
                   className="cv-button cv-button-secondary cv-button-small"
                 >
                   Fermer
@@ -417,7 +460,7 @@ export default function AdminPage() {
                       <span className="cv-label">
                         {
                           {
-                            email: "Email",
+                            email: "Adresse e-mail",
                             firstName: "Prénom",
                             lastName: "Nom",
                             password: "Mot de passe temporaire",
@@ -485,7 +528,7 @@ export default function AdminPage() {
               </div>
               <p className="cv-muted mt-4 !leading-relaxed">
                 Le mot de passe doit contenir 12 caractères minimum, 72 octets
-                maximum et exclure le nom de l’adresse email. Pour un
+                maximum et exclure le nom de l’adresse e-mail. Pour un
                 conseiller, le profil et les compétences doivent aussi être
                 configurés.
               </p>
@@ -494,7 +537,7 @@ export default function AdminPage() {
         </div>
       )}
       {tab === "Procédures" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <KnowledgeSearch />
           <p className="cv-muted">
             La création et la modification d’articles ne sont pas encore
@@ -503,7 +546,7 @@ export default function AdminPage() {
         </div>
       )}
       {tab === "Accueil" && (
-        <div className="cv-stack">
+        <div className="cv-stack" {...panel}>
           <FrontDesk
             onOpened={(conversation) =>
               setSelectedConversation(conversation.id)
@@ -546,7 +589,7 @@ export default function AdminPage() {
         </div>
       )}
       {["Catalogue produits", "Conseillers", "Règles"].includes(tab) && (
-        <section className="cv-card">
+        <section className="cv-card" {...panel}>
           <div className="cv-empty !py-20">
             <span className="cv-empty-icon mx-auto">
               <Settings2 size={24} />

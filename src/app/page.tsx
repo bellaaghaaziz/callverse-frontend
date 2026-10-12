@@ -1,30 +1,111 @@
 import Link from "next/link";
 import Brand from "@/components/Brand";
+import HeroVisual from "@/components/landing/HeroVisual";
+import LandingNav from "@/components/landing/LandingNav";
+import { CtaArt, FeatureArt } from "@/components/landing/Illustrations";
 import {
   ArrowUpRight,
   ArrowRight,
   MessageSquare,
-  ShieldCheck,
   Headphones,
   Activity,
   Users,
-  Check,
   BookOpen,
-  Send,
-  ChevronRight,
+  Settings,
+  Server,
+  Database,
+  Radio,
+  Sparkles,
+  Monitor,
 } from "lucide-react";
+
+const features = [
+  {
+    kind: "chat" as const,
+    label: "01 · ÉCHANGER",
+    icon: MessageSquare,
+    title: (
+      <>
+        Des conversations
+        <br />
+        qui restent lisibles.
+      </>
+    ),
+    text: "Messages en direct, intervenants identifiés, horaires et historique. Gardez le fil de chaque échange.",
+  },
+  {
+    kind: "context" as const,
+    label: "02 · COMPRENDRE",
+    icon: BookOpen,
+    title: (
+      <>
+        Le contexte change
+        <br />
+        tout.
+      </>
+    ),
+    text: "Consultez le dossier client, les opérations récentes et les procédures utiles depuis le poste conseiller.",
+  },
+  {
+    kind: "team" as const,
+    label: "03 · AVANCER",
+    icon: Activity,
+    title: (
+      <>
+        Les équipes,
+        <br />
+        connectées.
+      </>
+    ),
+    text: "Orientez les contacts, ouvrez un ticket et sollicitez le superviseur quand la situation le demande.",
+  },
+];
+
+const roles = [
+  {
+    icon: MessageSquare,
+    title: "Client",
+    desc: "Retrouvez votre échange et discutez directement avec votre conseiller.",
+    n: "01",
+  },
+  {
+    icon: Headphones,
+    title: "Conseiller",
+    desc: "Prenez en charge les contacts avec le dossier client et les actions utiles.",
+    n: "02",
+  },
+  {
+    icon: Users,
+    title: "Superviseur",
+    desc: "Suivez les files, les indicateurs du jour et les alertes de votre session.",
+    n: "03",
+  },
+  {
+    icon: Settings,
+    title: "Administrateur",
+    desc: "Gérez les comptes, les rôles et les accès de votre plateforme.",
+    n: "04",
+  },
+];
+
+// Only what the project really uses; the AI service is not wired yet.
+const stack = [
+  { icon: Monitor, title: "Next.js", desc: "Interface web" },
+  { icon: Server, title: "Spring Boot", desc: "API et règles métier" },
+  { icon: Radio, title: "STOMP / WebSocket", desc: "Échanges en direct" },
+  { icon: Database, title: "PostgreSQL", desc: "Données et historique" },
+  { icon: Sparkles, title: "Service IA", desc: "Bientôt disponible" },
+];
+
 export default function Home() {
   return (
     <div className="cv-landing">
       <header className="cv-landing-nav">
         <Brand />
-        <nav aria-label="Navigation du site">
-          <a href="#experience">L’expérience</a>
-          <a href="#roles">Vos espaces</a>
-        </nav>
-        <Link href="/login" className="cv-button cv-button-secondary">
+        <LandingNav />
+        <Link href="/login" className="cv-button">
           Se connecter
-          <ArrowUpRight size={14} />
+          <ArrowUpRight size={15} />
         </Link>
       </header>
       <main>
@@ -49,15 +130,15 @@ export default function Home() {
             <div className="cv-hero-actions">
               <Link href="/login" className="cv-button">
                 Découvrir mon espace
-                <ArrowUpRight size={16} />
+                <ArrowUpRight size={17} />
               </Link>
               <a href="#experience" className="cv-hero-more">
                 Voir l’expérience
-                <ArrowRight size={15} />
+                <ArrowRight size={17} />
               </a>
             </div>
             <div className="cv-hero-footnote">
-              <span className="cv-hero-avatars">
+              <span className="cv-hero-avatars" aria-hidden="true">
                 <i>CL</i>
                 <i>CV</i>
                 <i>SV</i>
@@ -65,214 +146,101 @@ export default function Home() {
               <span>
                 Un lien entre clients,
                 <br />
-                <strong>conseillers et équipes.</strong>
+                conseillers et équipes.
               </span>
             </div>
           </div>
-          <div className="cv-hero-visual">
-            <div className="cv-visual-grid" aria-hidden="true" />
-            <span className="cv-visual-caption">L’ESPACE QUI RELIE.</span>
-            <div
-              className="cv-product-preview"
-              aria-label="Aperçu illustratif d’une conversation"
-            >
-              <div className="cv-preview-top">
-                <span className="flex items-center gap-2">
-                  <span className="cv-preview-logo">
-                    <Headphones size={15} />
-                  </span>
-                  Votre espace de travail
-                </span>
-                <span>Aperçu</span>
-              </div>
-              <div className="cv-preview-body">
-                <div className="cv-preview-sidebar">
-                  <MessageSquare size={18} />
-                  <Users size={17} />
-                  <BookOpen size={17} />
-                  <Activity size={17} />
-                  <span className="cv-avatar">CV</span>
-                </div>
-                <div className="cv-preview-chat">
-                  <div className="cv-preview-chat-header">
-                    <span className="cv-avatar cv-avatar-light">ML</span>
-                    <div>
-                      <strong>Marie Laurent</strong>
-                      <p>Une question sur votre carte</p>
-                    </div>
-                    <span className="cv-preview-live" />
-                  </div>
-                  <p className="cv-preview-day">Aujourd’hui</p>
-                  <div className="cv-preview-bubble">
-                    Bonjour, je souhaite vérifier une opération sur ma carte.
-                    <small>10:42</small>
-                  </div>
-                  <div className="cv-preview-bubble cv-preview-bubble-own">
-                    Bonjour Marie, je suis là pour vous aider. Regardons cela
-                    ensemble.
-                    <small>
-                      10:43 <Check size={10} />
-                    </small>
-                  </div>
-                  <div className="cv-preview-context">
-                    <ShieldCheck size={13} />
-                    <span>Le dossier client, à portée de main.</span>
-                  </div>
-                  <div className="cv-preview-compose">
-                    <span>Écrire un message…</span>
-                    <span>
-                      <Send size={13} />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="cv-floating-card">
-              <span>
-                <Check size={18} />
-              </span>
-              <div>
-                <strong>Une conversation claire.</strong>
-                <p>Un accompagnement qui avance.</p>
-              </div>
-            </div>
-            <p className="cv-preview-disclaimer">
-              Aperçu illustratif · les données de cet exemple sont fictives.
-            </p>
-          </div>
+          <HeroVisual />
         </section>
-        <div className="cv-value-strip">
-          <span>
-            <MessageSquare size={17} />
-            Des échanges en direct
-          </span>
-          <span>
-            <Users size={17} />
-            Un contexte partagé
-          </span>
-          <span>
-            <ShieldCheck size={17} />
-            Des accès par rôle
-          </span>
-          <span>
-            <Activity size={17} />
-            Une activité visible
-          </span>
-        </div>
         <section className="cv-experience" id="experience">
           <div className="cv-section-intro">
-            <p className="cv-eyebrow">MOINS DE DISPERSION. PLUS DE RELATION.</p>
-            <h2>
-              Tout ce qui aide.
-              <br />
-              Là où vous en avez besoin.
-            </h2>
+            <div>
+              <p className="cv-eyebrow">
+                MOINS DE DISPERSION, PLUS DE RELATION.
+              </p>
+              <h2>
+                Tout ce qui aide.
+                <br />
+                Là où vous en avez
+                <br />
+                <em>besoin.</em>
+              </h2>
+            </div>
             <p>
               Un outil pensé pour comprendre la demande, retrouver le contexte
               et faire avancer la conversation.
             </p>
           </div>
           <div className="cv-feature-grid">
-            <article className="cv-feature-card cv-feature-main">
-              <span className="cv-feature-number">01 / ÉCHANGER</span>
-              <div className="cv-feature-mini-chat">
-                <span>Bonjour, pouvez-vous m’aider ?</span>
-                <span>Bien sûr. On regarde ensemble.</span>
-                <span className="cv-feature-typing">
-                  <i />
-                  <i />
-                  <i />
+            {features.map((feature) => (
+              <article key={feature.label} className="cv-feature-card">
+                <FeatureArt kind={feature.kind} />
+                <span className="cv-feature-number">{feature.label}</span>
+                <span className="cv-feature-symbol">
+                  <feature.icon size={24} />
                 </span>
-              </div>
-              <h3>
-                Des conversations
-                <br />
-                qui restent lisibles.
-              </h3>
-              <p>
-                Messages en direct, intervenants identifiés, horaires et
-                historique. Gardez le fil de chaque échange.
-              </p>
-              <MessageSquare size={20} />
-            </article>
-            <article className="cv-feature-card">
-              <span className="cv-feature-number">02 / COMPRENDRE</span>
-              <div className="cv-feature-symbol">
-                <BookOpen size={36} />
-              </div>
-              <h3>Le contexte change tout.</h3>
-              <p>
-                Consultez le dossier client, les opérations récentes et les
-                procédures utiles depuis le poste conseiller.
-              </p>
-              <BookOpen size={20} />
-            </article>
-            <article className="cv-feature-card">
-              <span className="cv-feature-number">03 / AVANCER</span>
-              <div className="cv-feature-symbol">
-                <Activity size={36} />
-              </div>
-              <h3>Les équipes, connectées.</h3>
-              <p>
-                Orientez les contacts, ouvrez un ticket et sollicitez le
-                superviseur quand la situation le demande.
-              </p>
-              <ArrowUpRight size={20} />
-            </article>
+                <h3>{feature.title}</h3>
+                <p>{feature.text}</p>
+                <ArrowUpRight className="cv-feature-arrow" size={18} />
+              </article>
+            ))}
           </div>
         </section>
         <section className="cv-roles-section" id="roles">
           <div className="cv-section-intro">
-            <p className="cv-eyebrow">À CHACUN SON ESPACE</p>
-            <h2>
-              Une plateforme.
-              <br />
-              Quatre façons de se retrouver.
-            </h2>
+            <div>
+              <p className="cv-eyebrow">À CHACUN SON ESPACE</p>
+              <h2>
+                Une plateforme.
+                <br />
+                Quatre façons de se
+                <br />
+                retrouver.
+              </h2>
+            </div>
+            <p className="cv-section-intro-lined">
+              Chaque rôle dispose d’un espace dédié, conçu pour ses besoins,
+              avec les bons outils et la bonne information.
+            </p>
           </div>
           <div className="cv-role-grid">
-            {[
-              {
-                icon: MessageSquare,
-                title: "Client",
-                desc: "Retrouvez votre échange et discutez directement avec votre conseiller.",
-                n: "01",
-              },
-              {
-                icon: Headphones,
-                title: "Conseiller",
-                desc: "Prenez en charge les contacts avec le dossier client et les actions utiles.",
-                n: "02",
-              },
-              {
-                icon: Activity,
-                title: "Superviseur",
-                desc: "Suivez les files, les indicateurs du jour et les alertes de votre session.",
-                n: "03",
-              },
-              {
-                icon: Users,
-                title: "Administrateur",
-                desc: "Gérez les comptes, les rôles et les accès de votre plateforme.",
-                n: "04",
-              },
-            ].map((role) => (
+            {roles.map((role) => (
               <Link href="/login" key={role.n} className="cv-role-card">
                 <span className="cv-role-card-top">
-                  <role.icon size={22} />
+                  <span className="cv-role-icon">
+                    <role.icon size={20} />
+                  </span>
                   <span>{role.n}</span>
                 </span>
                 <h3>{role.title}</h3>
                 <p>{role.desc}</p>
                 <span className="cv-role-card-link">
                   Découvrir l’espace
-                  <ChevronRight size={14} />
+                  <ArrowRight size={14} />
                 </span>
               </Link>
             ))}
           </div>
         </section>
+        <section className="cv-architecture" id="architecture">
+          <div className="cv-architecture-intro">
+            <p className="cv-eyebrow">ARCHITECTURE</p>
+            <h2>Une base simple et solide.</h2>
+          </div>
+          <ul className="cv-architecture-list">
+            {stack.map((item) => (
+              <li key={item.title}>
+                <item.icon size={18} />
+                <span>
+                  <strong>{item.title}</strong>
+                  <small>{item.desc}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
         <section className="cv-landing-cta">
+          <CtaArt />
           <div>
             <p className="cv-eyebrow">CHAQUE ÉCHANGE COMPTE.</p>
             <h2>
@@ -283,14 +251,18 @@ export default function Home() {
           </div>
           <Link href="/login" className="cv-button">
             Entrer dans mon espace
-            <ArrowUpRight size={16} />
+            <ArrowUpRight size={17} />
           </Link>
         </section>
       </main>
       <footer className="cv-landing-footer">
         <Brand />
         <p>La relation client, avec plus de clarté.</p>
-        <span>CallVerse · Relation client bancaire</span>
+        <nav aria-label="Liens du pied de page">
+          <a href="#experience">L’expérience</a>
+          <a href="#roles">Vos espaces</a>
+          <a href="#architecture">Architecture</a>
+        </nav>
       </footer>
     </div>
   );

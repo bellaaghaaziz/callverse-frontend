@@ -32,6 +32,17 @@ export const intentLabel: Record<string, string> = {
   ACCOUNT_CLOSURE: "Clôture de compte",
   OTHER: "Autre demande",
 };
+export const customerDisplayName = (
+  customer: { firstName: string; lastName: string } | null,
+) =>
+  customer
+    ? customer.firstName + " " + customer.lastName
+    : "Conversation client";
+// One stable key per set of customers (ids sorted, missing ones skipped).
+export const customerIdsKey = (items: { customerId?: string | null }[]) =>
+  [...new Set(items.map((item) => item.customerId).filter(Boolean))]
+    .sort()
+    .join(",");
 export const initialsFor = (name: string) =>
   name
     .trim()

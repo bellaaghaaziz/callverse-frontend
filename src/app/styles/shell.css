@@ -1,0 +1,333 @@
+/* App frame: skip link, sidebar, header, account menu and footer. */
+.cv-app {
+  display: flex;
+  min-height: 100vh;
+}
+/* Skip link: off screen until focused, then over the light header. */
+.cv-skip-link {
+  position: fixed;
+  top: 16px;
+  left: 256px;
+  z-index: 70;
+  transform: translateY(-200%);
+}
+.cv-skip-link:focus {
+  transform: none;
+}
+@media (max-width: 900px) {
+  .cv-skip-link {
+    left: 16px;
+  }
+}
+.cv-main:focus {
+  outline: none;
+}
+.cv-sidebar {
+  width: 240px;
+  background: var(--navy);
+  color: #bac7cf;
+  position: fixed;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 18px 18px;
+  z-index: 40;
+  overflow-y: auto;
+}
+.cv-sidebar-brand {
+  padding: 0 12px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cv-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--navy);
+}
+.cv-brand-dark {
+  color: var(--text-inverse);
+}
+.cv-brand > span:last-child > span {
+  color: #65c9ad;
+}
+.cv-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 28px;
+  height: 30px;
+}
+.cv-brand-mark i {
+  display: block;
+  width: 4px;
+  border-radius: 4px;
+  background: #239b83;
+  height: 16px;
+}
+.cv-brand-mark i:nth-child(2) {
+  height: 28px;
+}
+.cv-brand-mark i:nth-child(3) {
+  height: 22px;
+}
+.cv-brand-mark i:nth-child(4) {
+  height: 12px;
+}
+.cv-brand-dark .cv-brand-mark i {
+  background: #73d2b4;
+}
+.cv-workspace-switch {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #ffffff18;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 30px;
+}
+.cv-workspace-switch div {
+  flex: 1;
+}
+.cv-workspace-switch strong,
+.cv-sidebar-account strong {
+  display: block;
+  font-size: 12px;
+  color: var(--text-inverse);
+  font-weight: 600;
+}
+.cv-workspace-switch small,
+.cv-sidebar-account small {
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+  color: #a0b2be;
+}
+.cv-workspace-logo {
+  display: grid;
+  place-items: center;
+  background: #294353;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  color: #d6e9e2;
+}
+.cv-nav-caption {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 0 12px;
+  margin-bottom: 12px;
+  color: #7794a5;
+}
+.cv-nav-item {
+  display: flex;
+  width: 100%;
+  gap: 11px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 500;
+  margin: 4px 0;
+  color: #b5c5ce;
+  background: transparent;
+  font-size: 13px;
+}
+.cv-nav-item:hover {
+  background: #ffffff09;
+  color: var(--text-inverse);
+}
+.cv-nav-active {
+  background: #2a4c50 !important;
+  color: #c7f6df !important;
+}
+.cv-nav-active-dot {
+  width: 5px;
+  height: 5px;
+  background: #8ce6bd;
+  border-radius: 50%;
+  margin-left: auto;
+}
+.cv-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 36px;
+}
+.cv-sidebar-help {
+  padding: 16px 12px;
+  border-top: 1px solid var(--sidebar-divider);
+}
+.cv-sidebar-help > svg {
+  color: #7cb3a4;
+  margin-bottom: 12px;
+}
+.cv-sidebar-help strong {
+  display: block;
+  color: #dee7e9;
+  font-size: 12px;
+}
+.cv-sidebar-help p {
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 7px;
+  color: #89a2b1;
+}
+.cv-sidebar-account {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 20px;
+  padding: 14px 6px 0;
+  border-top: 1px solid var(--sidebar-divider);
+}
+.cv-sidebar-account div {
+  min-width: 0;
+  flex: 1;
+}
+.cv-sidebar-account small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cv-sidebar-account button {
+  border: 0;
+  background: transparent;
+  color: #a2b4bf;
+  padding: 5px;
+}
+.cv-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #385866;
+  color: #dbede9;
+  font-size: 11px;
+  font-weight: 700;
+}
+.cv-avatar-light {
+  background: #e8efe9;
+  color: #3d6858;
+}
+.cv-app-content {
+  margin-left: 240px;
+  width: calc(100% - 240px);
+  min-width: 0;
+}
+.cv-app-header {
+  height: 76px;
+  background: #fcfdfb;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  gap: 12px;
+}
+.cv-header-left,
+.cv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.cv-breadcrumb {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: #69777e;
+}
+.cv-breadcrumb strong {
+  font-weight: 500;
+  color: #425761;
+}
+.cv-header-role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #69796f;
+}
+.cv-account-trigger {
+  background: transparent;
+  border: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #7d8d90;
+}
+.cv-account-menu {
+  position: absolute;
+  right: 0;
+  top: 46px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px #17382c16;
+  border-radius: 12px;
+  width: 240px;
+  padding: 16px;
+  z-index: 50;
+}
+.cv-account-menu strong {
+  font-size: 12px;
+}
+.cv-account-menu p {
+  font-size: 11px;
+  color: #6a7882;
+  margin: 7px 0 14px;
+  overflow-wrap: anywhere;
+}
+.cv-account-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f6f8f5;
+  border: 0;
+  border-radius: 7px;
+  padding: 10px;
+  width: 100%;
+  font-size: 12px;
+}
+.cv-main {
+  padding: 30px 32px 40px;
+  max-width: 1800px;
+  margin: auto;
+}
+.cv-app-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  color: #65746f;
+  font-size: 10px;
+  padding: 18px 32px;
+  border-top: 1px solid var(--border);
+}
+.cv-app-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cv-footer-dot,
+.cv-status-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.cv-footer-dot {
+  background: #75ab96;
+}
+.cv-mobile-toggle,
+.cv-mobile-close {
+  display: none;
+}

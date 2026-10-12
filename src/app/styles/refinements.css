@@ -1,0 +1,102 @@
+/* Late refinements that must stay after everything above (see the R4.4 notes). */
+/* Reading comfort and final responsive refinements. */
+.cv-mobile-toggle.cv-icon-button {
+  display: none;
+}
+.cv-meta-list > div {
+  font-size: 12px;
+}
+.cv-input,
+.cv-button {
+  font-size: 13px;
+}
+.cv-conversation-item strong,
+.cv-list-row strong {
+  font-size: 12px;
+}
+.cv-conversation-item p,
+.cv-list-row p,
+.cv-chat-person p {
+  font-size: 11px;
+}
+.cv-message-body time {
+  font-size: 10px;
+}
+.cv-chat-actions .cv-button {
+  font-size: 11px;
+}
+.cv-bank-card p,
+.cv-account-card > p {
+  font-size: 11px;
+}
+.cv-customer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cv-customer-column > .cv-card {
+  width: 100%;
+}
+.cv-customer-column .cv-action-form {
+  order: -1;
+}
+.cv-main .cv-inline-form > .cv-input {
+  flex: 1;
+  min-width: 0;
+}
+.cv-main .cv-inline-form > .cv-button {
+  flex-shrink: 0;
+}
+@media (max-width: 1250px) and (min-width: 601px) {
+  .cv-customer-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .cv-mobile-toggle.cv-icon-button {
+    display: grid;
+  }
+}
+@media (max-width: 600px) {
+  .cv-chat-person strong {
+    font-size: 12px;
+  }
+  .cv-chat-person {
+    min-width: 0;
+  }
+  .cv-chat-status .cv-badge {
+    font-size: 10px;
+  }
+  .cv-composer {
+    padding: 13px;
+  }
+  .cv-composer .cv-button {
+    padding: 10px;
+    font-size: 11px;
+  }
+  .cv-chat-person p.cv-key {
+    font-size: 9px;
+  }
+  .cv-subtitle {
+    font-size: 12px;
+  }
+}
+.cv-card-heading p,
+.cv-meta-list dt,
+.cv-chat-person p,
+.cv-conversation-item p,
+.cv-list-row p {
+  color: var(--text-muted);
+}
+.cv-message-body time,
+.cv-bank-card p,
+.cv-account-card > p {
+  color: #657461;
+}
+.cv-composer > p {
+  color: #6c7a68;
+}
+.cv-input::placeholder {
+  color: #6c7965;
+}

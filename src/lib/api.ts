@@ -16,7 +16,7 @@ export class ApiError extends Error {
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
-      INVALID_CREDENTIALS: "Email ou mot de passe incorrect.",
+      INVALID_CREDENTIALS: "Adresse e-mail ou mot de passe incorrect.",
       UNAUTHENTICATED: "Votre session a expiré. Reconnectez-vous.",
       ACCESS_DENIED: "Vous n'êtes pas autorisé à effectuer cette action.",
       RESOURCE_NOT_FOUND: "Élément introuvable.",
@@ -25,7 +25,7 @@ export function errorMessage(error: unknown): string {
       ADVISOR_UNAVAILABLE: "Votre nombre maximum de conversations est atteint.",
       INVALID_STATE_TRANSITION:
         "Cette action n'est plus disponible. Actualisez les données.",
-      EMAIL_ALREADY_USED: "Cette adresse email est déjà utilisée.",
+      EMAIL_ALREADY_USED: "Cette adresse e-mail est déjà utilisée.",
       SELF_LOCKOUT:
         "Vous ne pouvez pas bloquer votre compte ou modifier votre propre rôle.",
       VALIDATION_FAILED: "Vérifiez les champs saisis.",

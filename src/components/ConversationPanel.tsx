@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { apiFetch, errorMessage } from "@/lib/api";
 import {
   mergeMessages,
@@ -24,6 +24,7 @@ export default function ConversationPanel({
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
+  const helpId = useId();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const latestStatus = useRef("");
@@ -176,7 +177,7 @@ export default function ConversationPanel({
             onClick={reconnectStomp}
           >
             <RefreshCw size={12} />
-            Reconnecter le flux live
+            Reconnecter le flux en direct
           </button>
         </div>
       )}
@@ -197,6 +198,7 @@ export default function ConversationPanel({
           <form onSubmit={send}>
             <input
               aria-label="Message"
+              aria-describedby={helpId}
               disabled={busy}
               placeholder="Écrire un message…"
               className="cv-input"
@@ -211,7 +213,7 @@ export default function ConversationPanel({
             </button>
           </form>
           <p>
-            <span>
+            <span id={helpId}>
               Votre échange est visible par le conseiller et le client.
             </span>
             <span>{draft.length}/2000</span>

@@ -20,6 +20,33 @@ export type LiveKpi = Omit<
   slaRatio?: number | null;
   abandonRate?: number | null;
 };
+export type SupervisedParty = Schema["SupervisedParty"];
+export type SupervisedConversation = Omit<
+  Schema["SupervisedConversation"],
+  | "advisor"
+  | "assignedAt"
+  | "endedAt"
+  | "intent"
+  | "skill"
+  | "waitSeconds"
+  | "handleSeconds"
+  | "slaMet"
+  | "lastMessageAt"
+> & {
+  advisor?: SupervisedParty | null;
+  assignedAt?: string | null;
+  endedAt?: string | null;
+  intent?: string | null;
+  skill?: string | null;
+  waitSeconds?: number | null;
+  handleSeconds?: number | null;
+  slaMet?: boolean | null;
+  lastMessageAt?: string | null;
+};
+export type SupervisedConversationPage = {
+  content: SupervisedConversation[];
+  page: Schema["PageInfo"];
+};
 export interface ConversationEvent {
   schemaVersion: 1;
   type: "MESSAGE_POSTED" | "STATUS_CHANGED";
@@ -50,6 +77,10 @@ export interface SupervisionAlert {
   cardId: string | null;
   cardLast4: string | null;
 }
+// EscalationRequest.reason maxLength in the backend contract.
+export const ESCALATION_REASON_MAX_LENGTH = 255;
+// MessageRequest.content maxLength in the backend contract.
+export const MESSAGE_MAX_LENGTH = 2000;
 export function mergeMessages(
   previous: Message[],
   incoming: Message[],

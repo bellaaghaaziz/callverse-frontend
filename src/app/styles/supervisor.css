@@ -1,0 +1,600 @@
+/* Supervisor dashboard (R4.7 proposal, 2026-10-11 mockup). Shared classes are restyled under
+   .cv-supervisor, which only /supervisor renders; the others (cv-kpi-*, cv-conv-*, cv-pager…) are
+   rendered only by src/components/supervisor/. 1 mock px = 1 CSS px; desktop layout: min-width 901px. */
+
+/* Shared pieces, restyled for this screen. */
+.cv-supervisor .cv-card {
+  border-color: var(--lp-border);
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px #0b3b310a,
+    0 10px 28px #0b3b310d;
+}
+.cv-supervisor .cv-button {
+  /* Transparent, not none: the same height as the bordered secondary buttons beside it. */
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 18px;
+  background: linear-gradient(
+    90deg,
+    var(--lp-brand-strong),
+    var(--lp-brand-soft)
+  );
+  color: var(--text-inverse);
+  font-size: 14px;
+}
+.cv-supervisor .cv-button:not(:disabled):hover {
+  background: var(--lp-brand-strong);
+}
+.cv-supervisor .cv-button-secondary {
+  border: 1px solid var(--lp-border);
+  background: var(--surface);
+  color: var(--lp-deep);
+}
+.cv-supervisor .cv-button-secondary svg {
+  color: var(--lp-brand);
+}
+.cv-supervisor .cv-button-secondary:not(:disabled):hover {
+  background: var(--lp-wash);
+}
+.cv-supervisor .cv-button-danger {
+  border: 1px solid #edd3d9;
+  background: var(--surface);
+  color: #ac4054;
+}
+.cv-supervisor .cv-button-danger:not(:disabled):hover {
+  background: #fff4f6;
+}
+.cv-supervisor .cv-button-small {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.cv-supervisor .cv-icon-button {
+  width: 36px;
+  height: 36px;
+  border-color: var(--lp-border);
+  border-radius: 10px;
+  color: var(--lp-deep);
+}
+.cv-supervisor .cv-icon-button:not(:disabled):hover {
+  background: var(--lp-wash);
+}
+.cv-supervisor .cv-input {
+  height: 36px;
+  padding: 0 12px;
+  border-color: var(--lp-border);
+  color: var(--lp-ink);
+  font-size: 13px;
+}
+.cv-supervisor .cv-input::placeholder {
+  color: var(--lp-muted);
+}
+.cv-supervisor .cv-count {
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 7px;
+  background: var(--lp-mint);
+  color: var(--lp-brand);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.cv-supervisor .cv-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.cv-supervisor .cv-muted,
+.cv-supervisor .cv-subtitle {
+  color: var(--lp-muted);
+}
+.cv-supervisor .cv-result {
+  border-color: var(--lp-border);
+  border-radius: 10px;
+}
+.cv-supervisor .cv-notice {
+  background: var(--lp-wash);
+  border-color: var(--lp-border);
+  color: var(--lp-deep);
+}
+.cv-supervisor .cv-section {
+  margin-top: 18px;
+}
+.cv-supervisor #frontdesk {
+  margin-top: 14px;
+}
+
+/* Heading: eyebrow, headline, sub-copy; the live line and « Actualiser » at the right. */
+.cv-supervisor .cv-page-heading {
+  margin-bottom: 9px;
+  padding: 0 6px 0 11px;
+}
+.cv-supervisor .cv-eyebrow {
+  margin-bottom: 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--lp-muted);
+}
+.cv-supervisor .cv-page-heading h1 {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--lp-ink);
+  text-wrap: balance;
+}
+.cv-supervisor .cv-page-heading .cv-subtitle {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.cv-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.cv-heading-actions .cv-button {
+  height: 38px;
+  padding: 0 11px;
+  gap: 9px;
+  font-size: 13px;
+}
+.cv-supervisor .cv-live {
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--lp-deep);
+}
+.cv-supervisor .cv-live:before {
+  width: 8px;
+  height: 8px;
+  background: var(--lp-accent);
+  box-shadow: 0 0 0 4px #29a38726;
+}
+.cv-supervisor .cv-live-off {
+  color: #7d5618;
+}
+.cv-supervisor .cv-live-off:before {
+  background: #ca9850;
+  box-shadow: none;
+}
+.cv-page-error {
+  margin-bottom: 18px;
+}
+
+/* KPI tiles: icon and title on the first row, the value under the icon, the caption beside it. */
+.cv-supervisor .cv-stat-grid {
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.cv-kpi {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(34px, auto) 1fr;
+  grid-template-rows: 34px auto;
+  column-gap: 15px;
+  row-gap: 6px;
+  min-height: 112px;
+  padding: 16px 14px 18px;
+}
+.cv-kpi > :not(.cv-kpi-art) {
+  position: relative;
+  z-index: 1;
+}
+.cv-kpi-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--lp-mint);
+  color: var(--lp-brand);
+}
+.cv-kpi-label {
+  align-self: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--lp-ink);
+}
+.cv-kpi-value {
+  font-family: var(--font-display), sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--lp-ink);
+}
+.cv-kpi-foot {
+  align-self: end;
+  font-size: 12px;
+  color: var(--lp-muted);
+}
+.cv-kpi-art {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 150px;
+  height: 112px;
+  pointer-events: none;
+}
+.cv-kpi-art-fill {
+  fill: var(--lp-mint);
+  opacity: 0.5;
+}
+.cv-kpi-art-line {
+  fill: none;
+  stroke: var(--lp-mint-strong);
+  stroke-width: 1.5;
+}
+.cv-kpi-art-dot {
+  fill: var(--lp-mint-strong);
+}
+.cv-kpi-rose .cv-kpi-icon {
+  background: #fcecee;
+  color: var(--rose);
+}
+.cv-kpi-rose .cv-kpi-art-fill {
+  fill: #fdeef0;
+}
+.cv-kpi-rose .cv-kpi-art-line {
+  stroke: #f6c9cf;
+}
+.cv-kpi-rose .cv-kpi-art-dot {
+  r: 5px;
+  fill: #f2737f;
+}
+
+/* Card headings: icon well, title and sub-copy, then a chip or an action. */
+.cv-supervisor .cv-card-heading {
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 13px 22px 8px 16px;
+  border-bottom: 0;
+}
+.cv-supervisor .cv-card-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.cv-card-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--lp-mint);
+  color: var(--lp-brand);
+}
+.cv-supervisor .cv-card-heading h2 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--lp-ink);
+}
+.cv-supervisor .cv-card-heading p {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--lp-muted);
+}
+
+/* Tables: tinted head, hairline rows, tabular figures. The wrapper is the containing block of
+   the visually hidden headers (absolutely positioned), so they scroll with the table instead of
+   widening the page. */
+.cv-supervisor .cv-table-wrap {
+  position: relative;
+}
+.cv-supervisor .cv-table {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.cv-supervisor .cv-table th {
+  height: 29px;
+  padding: 0 24px;
+  border-bottom: 0;
+  background: var(--lp-wash);
+  color: var(--lp-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.cv-supervisor .cv-table td {
+  height: 32px;
+  padding: 0 24px;
+  border-bottom-color: var(--lp-border);
+  color: var(--lp-ink);
+}
+.cv-supervisor .cv-table tbody tr:hover {
+  background: #f7fbf9;
+}
+.cv-queue-table th:first-child {
+  width: 40%;
+}
+.cv-queue-table th:nth-child(2) {
+  width: 25%;
+}
+.cv-queue-table .cv-status-dot {
+  width: 8px;
+  height: 8px;
+  margin-right: 14px;
+}
+.cv-dot-green {
+  color: var(--lp-accent);
+}
+.cv-dot-rose {
+  color: var(--rose);
+}
+.cv-queue-table .cv-count {
+  min-width: 32px;
+  height: 20px;
+  background: #eef5f0;
+  color: var(--lp-deep);
+}
+.cv-indicators {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 10px 14px 0 18px;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: var(--lp-wash);
+}
+.cv-indicators > div {
+  padding: 0 20px;
+}
+.cv-indicators > div + div {
+  border-left: 1px solid var(--lp-border);
+}
+.cv-indicators dt {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--lp-muted);
+}
+.cv-indicators dd {
+  margin: 4px 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 600;
+  color: var(--lp-ink);
+}
+.cv-footnote {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px 9px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--lp-muted);
+}
+
+/* Alerts: the list, or a calm empty state over a mint wave. */
+.cv-supervisor #alerts {
+  display: flex;
+  flex-direction: column;
+}
+.cv-alert-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 440px;
+  padding: 11px 13px 11px;
+  overflow-y: auto;
+}
+.cv-alerts-empty {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px 80px;
+  overflow: hidden;
+  border: 1px solid var(--lp-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--surface), var(--lp-wash));
+  color: var(--lp-muted);
+  font-size: 13px;
+}
+.cv-alerts-empty > svg:first-child {
+  margin: 0 0 14px;
+  color: var(--lp-muted);
+}
+.cv-alerts-empty strong {
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: var(--lp-ink);
+}
+/* The text sits above the wave, which stays clear of it: its crest is 70 px from the bottom. */
+.cv-alerts-empty > :not(.cv-alerts-wave) {
+  position: relative;
+  z-index: 1;
+}
+.cv-alerts-empty > .cv-alerts-wave {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 90px;
+  margin: 0;
+}
+.cv-alerts-wave path {
+  fill: var(--lp-mint);
+  opacity: 0.55;
+}
+.cv-alerts-wave path + path {
+  opacity: 0.9;
+}
+.cv-alert {
+  margin: 0;
+}
+.cv-alert-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.cv-alert .cv-button {
+  margin-top: 12px;
+}
+
+/* Conversations: filter row, table with a named row action, pager. */
+.cv-supervisor .cv-toolbar {
+  gap: 10px;
+  padding: 4px 16px 8px 20px;
+}
+.cv-search {
+  position: relative;
+  flex: 1 1 240px;
+}
+.cv-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lp-muted);
+}
+.cv-supervisor .cv-search .cv-input {
+  width: 100%;
+  padding-left: 36px;
+}
+.cv-supervisor .cv-toolbar > .cv-button {
+  height: 36px;
+  padding: 0 18px;
+}
+.cv-conv-error {
+  margin: 0 20px 12px;
+}
+.cv-supervisor .cv-conv-table th {
+  height: 27px;
+  padding: 0 20px;
+}
+.cv-supervisor .cv-conv-table td {
+  height: 37px;
+  padding: 0 20px;
+}
+.cv-supervisor .cv-conv-table td:last-child {
+  text-align: right;
+}
+/* Ten columns need 1210 px at 20 px padding: tighter cells keep them in the card down to 1366. */
+@media (max-width: 1600px) {
+  .cv-supervisor .cv-conv-table th,
+  .cv-supervisor .cv-conv-table td {
+    padding: 0 12px;
+  }
+}
+.cv-conv-name {
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--lp-ink);
+}
+.cv-conv-ref {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--lp-muted);
+}
+.cv-conv-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.cv-supervisor .cv-row-open {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+}
+.cv-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 16px 4px 22px;
+  border-top: 1px solid var(--lp-border);
+}
+.cv-pager span {
+  font-size: 12px;
+  color: var(--lp-muted);
+}
+.cv-pager > div {
+  display: flex;
+  gap: 8px;
+}
+
+/* Opened conversation (not in the mockup), same grammar; focus lands here with the app ring. */
+.cv-supervisor #conversation-panel:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 4px;
+  border-radius: 14px;
+}
+.cv-supervisor .cv-chat-header {
+  border-bottom-color: var(--lp-border);
+}
+.cv-supervisor .cv-chat-person .cv-avatar-light {
+  width: 40px;
+  height: 40px;
+  color: var(--lp-brand);
+}
+.cv-supervisor .cv-chat-person strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  color: var(--lp-ink);
+}
+.cv-supervisor .cv-chat-actions {
+  border-top-color: var(--lp-border);
+}
+
+@media (min-width: 901px) {
+  .cv-supervisor .cv-two-columns {
+    grid-template-columns: minmax(0, 1.36fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+  .cv-supervisor .cv-toolbar select {
+    width: 161px;
+  }
+  .cv-supervisor .cv-toolbar input[type="datetime-local"] {
+    width: 211px;
+  }
+  /* « Enregistrer un contact » on one row: well, title and sub-copy, then the search.
+     FrontDesk is shared with the admin, so the row is built in CSS on its own markup. */
+  .cv-supervisor #frontdesk > .cv-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 578px);
+    align-items: center;
+    column-gap: 24px;
+    padding: 9px 13px 9px 70px;
+  }
+  .cv-supervisor #frontdesk .cv-tool-title {
+    grid-column: 1;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--lp-ink);
+  }
+  .cv-supervisor #frontdesk .cv-tool-title svg {
+    position: absolute;
+    left: 14px;
+    top: 9px;
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    border-radius: 50%;
+    background: var(--lp-mint);
+    color: var(--lp-brand);
+  }
+  .cv-supervisor #frontdesk .cv-subtitle {
+    grid-column: 1;
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .cv-supervisor #frontdesk .cv-inline-form {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .cv-supervisor #frontdesk .cv-result,
+  .cv-supervisor #frontdesk .cv-notice {
+    grid-column: 1 / -1;
+  }
+}

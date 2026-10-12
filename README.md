@@ -23,9 +23,13 @@ Customer chat requires the UUID of a conversation staff registered for that cust
 ```powershell
 npm run lint
 npm test
-npx tsc --noEmit --incremental false
+npm run typecheck
 npm run build
 ```
+
+After a backend contract change, start the backend on http://localhost:8080 and run `npm run gen:api` to regenerate src/shared/api-client/generated/callverse-api.d.ts from its OpenAPI document.
+
+GitHub Actions runs the same four checks on every pull request and push to main (.github/workflows/ci.yml).
 
 To build without overwriting a running development server's output:
 
@@ -39,3 +43,11 @@ Unset CALLVERSE_BUILD_DIR afterward for normal development. Never commit real .e
 See [the integration review](docs/BACKEND_INTEGRATION_STATUS.md) for connected flows, backend contract findings, remaining endpoints and verification limits.
 
 See [the frontend design notes](docs/FRONTEND_DESIGN.md) for the interface, reusable components and browser checks.
+
+See [the green direction guide](docs/GREEN_DIRECTION.md) for the R4.7 redesign (landing, login, supervisor): tokens, components, scoping, and how to bring the other screens into it.
+
+## Styles
+
+`src/app/globals.css` imports Tailwind, then the files in `src/app/styles/` in a fixed order: tokens, base, shell, components, workspace, app-responsive, shell-green, supervisor, landing, landing-preview, landing-sections, landing-responsive, login, login-story, login-responsive, loader, refinements. The green-direction proposal (R4.7) has its own `--lp-*` tokens: the landing, the login and the supervisor screen use them; the other app screens do not. `shell-green.css` styles `AppShell variant="green"` (under `.cv-shell-green`) and `supervisor.css` the supervisor dashboard: shared classes under `.cv-supervisor`, its own classes rendered only by `src/components/supervisor/`. Keep those class names out of other screens. The order is the cascade, so add a rule to the file for its area rather than at the end of the list. Colours that carry a role (surfaces, borders, brand, focus rings, muted text) are tokens in `tokens.css`.
+
+`npm test` reads the stylesheet through these imports, resolves the tokens and checks that key text keeps a 4.5:1 contrast and every focus ring 3:1.

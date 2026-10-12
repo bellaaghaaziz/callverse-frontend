@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import type { Schema } from "@/lib/contracts";
+import { serviceStatus } from "@/lib/login";
 export default function BackendHealth() {
   const [health, setHealth] = useState<Schema["HealthStatusResponse"] | null>(
     null,
@@ -18,17 +19,10 @@ export default function BackendHealth() {
       });
     return () => controller.abort();
   }, []);
+  const { state, text } = serviceStatus(health?.status ?? null, unavailable);
   return (
-    <span className="cv-muted" role="status">
-      {unavailable
-        ? "Service indisponible"
-        : !health
-          ? "Vérification du service…"
-          : health.status === "UP"
-            ? "Service disponible"
-            : health.status === "DEGRADED"
-              ? "Service disponible · fonctions IA indisponibles"
-              : "Service indisponible"}
+    <span className="cv-muted" role="status" data-state={state}>
+      {text}
     </span>
   );
 }
