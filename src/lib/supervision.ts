@@ -30,9 +30,15 @@ export const alertCustomerLabel = (customerId?: string, name?: string) =>
     : customerId
       ? "Client · " + customerId.slice(0, 8)
       : "Client";
-// KPI and queue figures: « — » until the backend has a measure.
-export const waitLabel = (seconds?: number | null) =>
-  seconds == null ? "—" : durationLabel(Math.round(seconds));
+// KPI and queue figures: « — » until the backend has a measure. Waits under an
+// hour carry their units; longer ones read as durationLabel (« 3 j 21 h »).
+export function waitLabel(seconds?: number | null) {
+  if (seconds == null) return "—";
+  const total = Math.max(0, Math.round(seconds));
+  if (total >= 3600) return durationLabel(total);
+  const minutes = Math.floor(total / 60);
+  return (minutes ? minutes + " min " : "") + (total % 60) + " s";
+}
 export const percentLabel = (value?: number | null) =>
   value == null
     ? "—"

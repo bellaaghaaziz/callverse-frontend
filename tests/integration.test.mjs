@@ -901,7 +901,12 @@ test("supervisor waits read as durations and ratios as French percentages, « �
   // The longest wait in the demo data: 336372 s, shown until now as « 336372 s ».
   assert.equal(waitLabel(336372), "3 j 21 h");
   assert.equal(waitLabel(3725.4), "1 h 2 min");
-  assert.equal(waitLabel(42.6), "00:43");
+  // Under an hour, units say what the numbers are (« 00:43 » read like hh:mm).
+  assert.equal(waitLabel(42.6), "43 s");
+  assert.equal(waitLabel(323), "5 min 23 s");
+  assert.equal(waitLabel(3599), "59 min 59 s");
+  // Clock skew can make a wait slightly negative: never « -1 j -1 h ».
+  assert.equal(waitLabel(-5), "0 s");
   assert.equal(waitLabel(null), "—");
   assert.equal(waitLabel(undefined), "—");
   // ICU puts a no-break space before \u00ab % \u00bb (U+00A0 or U+202F, by version).
