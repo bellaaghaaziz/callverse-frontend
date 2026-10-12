@@ -717,9 +717,9 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   check(".cv-login-field-icon", "color", ["#ffffff"], 3);
   // White button text on both ends of the gradient the button really uses.
   check(".cv-login-submit", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
-  // Focus rings: the app ring on the sheet, the outer mint and white; the light ring on the night.
+  // Focus ring: the app ring on the sheet, the outer mint and white. The story panel has no
+  // focusable element, so it needs no ring of its own.
   check("a:focus-visible", "outline", [...sheet, values["--lp-mint"]], 3);
-  check(".cv-login-story :focus-visible", "outline-color", night, 3);
 });
 test("advisor rules: who can reply or abandon, and the customer name shown", () => {
   const advisor = compile(

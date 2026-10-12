@@ -47,8 +47,7 @@ a:focus-visible,
 }
 /* On dark surfaces the lighter teal keeps the ring at 3:1 or more. */
 .cv-sidebar :focus-visible,
-.cv-landing-cta :focus-visible,
-.cv-login-story :focus-visible {
+.cv-landing-cta :focus-visible {
   outline-color: var(--focus-ring-on-dark);
 }
 input:focus,
