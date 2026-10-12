@@ -180,7 +180,7 @@
     0 12px 26px #056f5833,
     inset 0 1px 0 #ffffff26;
 }
-.cv-login-submit:hover {
+.cv-login-submit:hover:not(:disabled) {
   background: linear-gradient(100deg, #04624e, #087a5e);
 }
 
@@ -232,7 +232,7 @@
 .cv-login-account > svg {
   margin-left: -7px;
 }
-.cv-login-account:hover {
+.cv-login-account:hover:not(:disabled) {
   border-color: #b9dccf;
 }
 .cv-login-account-icon {
