@@ -1,5 +1,5 @@
 // Query for GET /supervision/conversations (listSupervisedConversations).
-import { skillLabel } from "./presentation";
+import { durationLabel, skillLabel } from "./presentation";
 export const SUPERVISED_STATUSES = [
   "QUEUED",
   "ASSIGNED",
@@ -30,6 +30,16 @@ export const alertCustomerLabel = (customerId?: string, name?: string) =>
     : customerId
       ? "Client · " + customerId.slice(0, 8)
       : "Client";
+// KPI and queue figures: « — » until the backend has a measure.
+export const waitLabel = (seconds?: number | null) =>
+  seconds == null ? "—" : durationLabel(Math.round(seconds));
+export const percentLabel = (value?: number | null) =>
+  value == null
+    ? "—"
+    : new Intl.NumberFormat("fr-FR", {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }).format(value);
 // The backend rejects a range whose end is not after its start (400).
 export function invalidRange(from: string, to: string): boolean {
   const start = isoOrNull(from);

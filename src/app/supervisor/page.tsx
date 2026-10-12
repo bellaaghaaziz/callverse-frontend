@@ -18,15 +18,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { skillLabel, timeLabel } from "@/lib/presentation";
-import { alertCustomerLabel } from "@/lib/supervision";
+import { alertCustomerLabel, percentLabel, waitLabel } from "@/lib/supervision";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
-const percent = (value: number | null | undefined) =>
-  value == null
-    ? "—"
-    : new Intl.NumberFormat("fr-FR", {
-        style: "percent",
-        maximumFractionDigits: 1,
-      }).format(value);
 export default function SupervisorPage() {
   const [kpi, setKpi] = useState<LiveKpi | null>(null);
   const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
@@ -80,14 +73,9 @@ export default function SupervisorPage() {
     ["En conversation", kpi?.inService ?? "—"],
     ["Résolues aujourd'hui", kpi?.resolvedToday ?? "—"],
     ["Abandonnées aujourd'hui", kpi?.abandonedToday ?? "—"],
-    [
-      "Attente moyenne",
-      kpi?.averageWaitSeconds == null
-        ? "—"
-        : `${Math.round(kpi.averageWaitSeconds)} s`,
-    ],
-    ["Respect du délai cible", percent(kpi?.slaRatio)],
-    ["Taux d'abandon", percent(kpi?.abandonRate)],
+    ["Attente moyenne", waitLabel(kpi?.averageWaitSeconds)],
+    ["Respect du délai cible", percentLabel(kpi?.slaRatio)],
+    ["Taux d’abandon", percentLabel(kpi?.abandonRate)],
   ];
   const mainMetrics = metrics.slice(0, 4);
   const openConversation = (id: string) => {
@@ -200,11 +188,7 @@ export default function SupervisorPage() {
                     <td>
                       <span className="cv-count">{queue.waiting}</span>
                     </td>
-                    <td>
-                      {queue.oldestWaitSeconds == null
-                        ? "—"
-                        : Math.round(queue.oldestWaitSeconds) + " s"}
-                    </td>
+                    <td>{waitLabel(queue.oldestWaitSeconds)}</td>
                   </tr>
                 ))}
               </tbody>
