@@ -226,10 +226,14 @@ export default function SupervisedConversations({
                     : "—"}
                 </td>
                 <td>
-                  {/* One action per row: a named button, not a ⋮ menu. */}
+                  {/* One action per row: a named button, not a ⋮ menu; the
+                      tooltip shows the name to mouse users. */}
                   <button
                     className="cv-icon-button cv-row-open"
                     aria-label={
+                      "Ouvrir la conversation de " + conversation.customer.name
+                    }
+                    title={
                       "Ouvrir la conversation de " + conversation.customer.name
                     }
                     onClick={() => onOpen(conversation.id)}
