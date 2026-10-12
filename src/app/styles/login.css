@@ -272,19 +272,21 @@
   font-size: 15px;
   color: var(--lp-deep);
 }
+/* Full width, so the box stays put when « Vérification du service… » becomes the status. */
 .cv-login-service [role="status"] {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 12px;
   font-size: inherit;
   color: inherit;
 }
-.cv-login-service [data-state]::before {
+/* No dot while checking: it appears with the status instead of sliding as the text changes. */
+.cv-login-service [data-state]:not([data-state="checking"])::before {
   content: "";
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: var(--lp-border);
 }
 .cv-login-service [data-state="up"]::before {
   background: var(--lp-accent);
