@@ -516,7 +516,13 @@
   gap: 8px;
 }
 
-/* Opened conversation (not in the mockup): the same wells, hairlines and buttons. */
+/* Opened conversation (not in the mockup): the same wells, hairlines and buttons. Focus moves
+   into the panel when it opens; it shows the app's ring, not the browser's black one. */
+.cv-supervisor #conversation-panel:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 4px;
+  border-radius: 14px;
+}
 .cv-supervisor .cv-chat-header {
   border-bottom-color: var(--lp-border);
 }

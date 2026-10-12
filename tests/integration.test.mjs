@@ -994,6 +994,8 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   // The opened conversation (not in the mockup), restyled in the same grammar.
   check(".cv-supervisor .cv-notice", "color", [wash], 4.5);
   check(".cv-supervisor .cv-chat-person strong", "color", ["#ffffff"], 4.5);
+  // Focus moves into the opened panel: the brand ring on the wash, not the browser's black one.
+  check(".cv-supervisor #conversation-panel:focus-visible", "outline", [wash], 3);
   // White text on both ends of the green gradient the supervisor buttons use.
   check(".cv-supervisor .cv-button", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
 });
