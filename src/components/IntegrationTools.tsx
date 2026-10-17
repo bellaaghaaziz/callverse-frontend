@@ -59,7 +59,7 @@ export function FrontDesk({
         }),
       });
       setNotice(
-        `Contact enregistré. Identifiant à transmettre au client : ${conversation.id}`,
+        "Contact enregistré. Le client retrouve sa demande dans sa liste de conversations.",
       );
       onOpened?.(conversation);
     } catch (error) {

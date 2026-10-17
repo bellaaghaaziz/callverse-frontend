@@ -46,6 +46,7 @@ export const aiWorkspace = {
   transcript: (id: string, signal?: AbortSignal) => apiFetch<SimulationMessage[]>(`/simulation-runs/${encodeURIComponent(id)}/messages`, { signal }),
   workforce: () => apiFetch<WorkforceRecommendation>("/supervision/workforce/recommendations", { method: "POST" }),
   quality: (id: string, signal?: AbortSignal) => apiFetch<QualityEvaluation[]>(`/supervision/conversations/${encodeURIComponent(id)}/quality`, { signal }),
+  requestQuality: (id: string) => apiFetch<void>(`/supervision/conversations/${encodeURIComponent(id)}/quality`, { method: "POST" }),
 };
 
 export const skillNames: Record<string, string> = {

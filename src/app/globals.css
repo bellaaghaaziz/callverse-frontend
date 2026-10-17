@@ -10,6 +10,7 @@
 @import "./styles/green-components.css";
 @import "./styles/supervisor.css";
 @import "./styles/green-workspaces.css";
+@import "./styles/conversation-directory.css";
 @import "./styles/ai-workspace.css";
 @import "./styles/guided-tour.css";
 @import "./styles/landing.css";

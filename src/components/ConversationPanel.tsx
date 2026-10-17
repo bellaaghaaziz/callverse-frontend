@@ -155,9 +155,7 @@ export default function ConversationPanel({
           </span>
           <div>
             <strong>Votre conversation</strong>
-            <p className="cv-key" title={id}>
-              Référence {id}
-            </p>
+            <p>{conversation ? new Date(conversation.queuedAt).toLocaleString("fr-FR") : "Chargement de l’échange…"}</p>
           </div>
         </div>
         <div className="cv-chat-status">

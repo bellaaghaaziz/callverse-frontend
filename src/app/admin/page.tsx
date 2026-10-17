@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { FrontDesk, KnowledgeSearch } from "@/components/IntegrationTools";
 import ConversationPanel from "@/components/ConversationPanel";
+import ConversationPicker from "@/components/ConversationPicker";
 import { api, apiFetch, errorMessage } from "@/lib/api";
 import type { Role, Schema } from "@/lib/contracts";
 const roles: Role[] = ["CUSTOMER", "ADVISOR", "SUPERVISOR", "ADMIN"];
@@ -13,7 +14,6 @@ import {
   Users,
   UserPlus,
   ArrowUpRight,
-  MessageSquare,
   Settings2,
 } from "lucide-react";
 import { roleLabel, initialsFor } from "@/lib/presentation";
@@ -63,7 +63,6 @@ export default function AdminPage() {
   useEffect(() => {
     if (detailId) detailHeading.current?.focus();
   }, [detailId]);
-  const [conversationId, setConversationId] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
@@ -553,33 +552,7 @@ export default function AdminPage() {
               setSelectedConversation(conversation.id)
             }
           />
-          <section className="cv-card cv-card-pad">
-            <h2 className="cv-tool-title">
-              <MessageSquare size={18} />
-              Consulter une conversation
-            </h2>
-            <form
-              className="cv-inline-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSelectedConversation(conversationId.trim());
-              }}
-            >
-              <input
-                aria-label="Identifiant de conversation"
-                className="cv-input"
-                required
-                pattern="[0-9a-fA-F-]{36}"
-                value={conversationId}
-                onChange={(e) => setConversationId(e.target.value)}
-                placeholder="Identifiant de conversation"
-              />
-              <button className="cv-button">
-                Ouvrir
-                <ArrowUpRight size={13} />
-              </button>
-            </form>
-          </section>
+          <section className="cv-card cv-card-pad"><ConversationPicker selectedId={selectedConversation} onSelect={choice => setSelectedConversation(choice.id)} /></section>
           {selectedConversation && (
             <ConversationPanel
               key={selectedConversation}

@@ -15,6 +15,7 @@ import AdvisorInbox from "@/components/advisor/Inbox";
 import AdvisorChatPanel from "@/components/advisor/ChatPanel";
 import AdvisorCustomerColumn from "@/components/advisor/CustomerColumn";
 import AdvisorActionForms from "@/components/advisor/ActionForms";
+import ConversationHistory from "@/components/advisor/ConversationHistory";
 
 export default function AdvisorPage() {
   const workspace = useAdvisorWorkspace();
@@ -125,6 +126,7 @@ export default function AdvisorPage() {
           />
         </AdvisorCustomerColumn>
       </div>
+      <ConversationHistory workspace={workspace} />
       <div className="cv-section">
         <div className="cv-section-title">
           <h2>Vos outils, à portée de main</h2>

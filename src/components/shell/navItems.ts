@@ -15,6 +15,7 @@ import {
 export const itemsByRole = {
   Conseiller: [
     { id: "workspace", label: "Espace de travail", icon: MessageSquare },
+    { id: "history", label: "Mes conversations", icon: MessageSquare },
     { id: "frontdesk", label: "Enregistrer un contact", icon: Headphones },
     { id: "knowledge", label: "Procédures", icon: BookOpen },
     { id: "incidents", label: "Incidents", icon: Activity },

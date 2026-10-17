@@ -2,7 +2,6 @@ import { useRef } from "react";
 import {
   CheckCircle2,
   Clock,
-  Copy,
   MessageSquare,
   Send,
   ShieldAlert,
@@ -34,7 +33,6 @@ export default function AdvisorChatPanel({
     customerName,
     messages,
     elapsed,
-    showToast,
     canReply,
     busy,
     draft,
@@ -82,21 +80,7 @@ export default function AdvisorChatPanel({
               <Clock size={12} />
               Depuis la mise en file · {durationLabel(elapsed)}
             </span>
-            <button
-              className="flex items-center gap-1"
-              title="Copier l’identifiant de conversation"
-              onClick={() => {
-                navigator.clipboard
-                  .writeText(activeConv.id)
-                  .then(() => showToast("Identifiant de conversation copié"))
-                  .catch(() =>
-                    showToast("La copie est indisponible dans ce navigateur."),
-                  );
-              }}
-            >
-              <Copy size={11} />
-              Référence {activeConv.id.slice(0, 8)}
-            </button>
+            <span>{skillLabel[activeConv.skill] || "Relation client"}</span>
           </div>
           <ChatThread
             key={activeConv.id}

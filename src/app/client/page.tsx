@@ -2,7 +2,6 @@
 import { useState } from "react";
 import {
   MessageSquare,
-  ArrowRight,
   ShieldCheck,
   Headphones,
   Check,
@@ -10,9 +9,9 @@ import {
 } from "lucide-react";
 import AppShell from "@/components/AppShell";
 import ConversationPanel from "@/components/ConversationPanel";
+import ConversationPicker from "@/components/ConversationPicker";
 import { Incidents } from "@/components/IntegrationTools";
 export default function ClientPage() {
-  const [input, setInput] = useState("");
   const [id, setId] = useState<string | null>(null);
   return (
     <AppShell role="Client" initials="CL" title="Mon espace client">
@@ -36,36 +35,11 @@ export default function ClientPage() {
               <MessageSquare size={19} />
               Échangez avec votre conseiller
             </h2>
-            <p className="cv-subtitle mb-5">
-              Saisissez l’identifiant transmis par votre conseiller pour
-              retrouver votre conversation et envoyer un message.
-            </p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setId(input.trim());
-              }}
-            >
-              <label className="cv-label" htmlFor="client-conversation-id">
-                Identifiant de conversation
-              </label>
-              <div className="cv-inline-form">
-                <input
-                  id="client-conversation-id"
-                  aria-label="Identifiant de conversation"
-                  className="cv-input"
-                  required
-                  pattern="[0-9a-fA-F-]{36}"
-                  placeholder="Collez l’identifiant reçu"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                />
-                <button className="cv-button">
-                  Ouvrir
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </form>
+            <p className="cv-subtitle mb-5">Retrouvez vos demandes et ouvrez un échange en un clic.</p>
+            <ConversationPicker title="Mes conversations" selectedId={id} onSelect={choice => {
+              setId(choice.id);
+              requestAnimationFrame(() => document.querySelector('[data-tour="client-chat"]')?.scrollIntoView({behavior:"smooth",block:"start"}));
+            }} />
           </section>
           <div data-tour="client-chat">{id ? (
             <ConversationPanel key={id} id={id} role="CUSTOMER" />
@@ -98,7 +72,7 @@ export default function ClientPage() {
               [
                 "02",
                 "Retrouvez l’échange",
-                "Il vous transmet un identifiant de conversation.",
+                "Choisissez votre demande dans la liste de vos conversations.",
               ],
               [
                 "03",

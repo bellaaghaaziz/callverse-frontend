@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import ConversationPicker from "./ConversationPicker";
 import { adaptSuggestion, adaptQuality, adaptWorkforce, adaptSimulationTurn } from "@/lib/ai";
 
 export default function AiLab({ supervision = false }: { supervision?: boolean }) {
@@ -27,6 +28,7 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
     return json;
   }
   async function run() {
+    if (["suggestion", "quality"].includes(feature) && !conversationId) { setError("Choisissez une conversation dans la liste."); return; }
     setBusy(true); setError(""); setResult(null);
     try {
       const body = feature === "workforce" ? { feature, strategy, state: JSON.parse(scenario) }
@@ -51,12 +53,13 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
       catch (e) { setError(e instanceof Error ? e.message : "Service indisponible"); } finally { setBusy(false); }
     }}>Vérifier le service IA</button>
     {status && <p role="status" className="cv-notice">{status}</p>}
+    {["suggestion", "quality"].includes(feature) && <div className="cv-section"><ConversationPicker selectedId={conversationId} resolvedOnly={feature === "quality"} onSelect={choice => { setConversationId(choice.id); setResult(null); }} /></div>}
     <form className="cv-stack cv-section" data-tour="lab-form" onSubmit={e => { e.preventDefault(); void run(); }}>
       <label className="cv-label">Fonction IA<select className="cv-input" value={feature} disabled={busy} onChange={e => { setFeature(e.target.value); setResult(null); setError(""); }}>
         <option value="suggestion">Suggestion conseiller</option><option value="simulation">Premier message d’un client simulé</option>
         {supervision && <><option value="quality">Évaluation qualité</option><option value="workforce">Proposition d’effectifs</option></>}
       </select></label>
-      {["suggestion", "quality"].includes(feature) && <label className="cv-label">Conversation à analyser<input className="cv-input" required value={conversationId} onChange={e => setConversationId(e.target.value)} placeholder="Identifiant de conversation" /></label>}
+      {["suggestion", "quality"].includes(feature) && <p className="cv-muted">{conversationId ? "La conversation sélectionnée sera analysée." : "Sélectionnez d’abord un échange dans la liste ci-dessus."}</p>}
       {feature === "simulation" && <label className="cv-label">Objectif du client simulé<textarea className="cv-input" required value={objective} onChange={e => setObjective(e.target.value)} /></label>}
       {feature === "workforce" && <>
         <p className="cv-notice">Scénario synthétique modifiable : ADVISORY appartient au modèle IA et ne correspond pas à la file FRAUD. Ces effectifs ne sont pas ceux de la banque.</p>

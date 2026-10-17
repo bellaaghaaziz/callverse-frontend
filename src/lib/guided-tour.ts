@@ -23,7 +23,7 @@ export function tourForPath(path: string): TourDefinition | null {
       step("inbox", ".cv-conversation-list", "Ouvrir une conversation attribuée", "Vos contacts pris en charge apparaissent ici. Sélectionnez-en un pour afficher ses messages et son dossier client."),
       step("chat", ".cv-chat-panel .cv-chat-header, .cv-chat-empty h3", "Échanger et traiter la demande", "La conversation s’affiche au centre. Vous pouvez répondre, ouvrir un ticket, escalader ou résoudre selon son état. Une réponse IA peut aussi arriver directement dans cet échange."),
       step("customer", ".cv-customer-column > .cv-card", "Consulter le dossier client", "Les informations du client, ses comptes et ses cartes apparaissent après sélection d’une conversation. Vérifiez le dossier avant toute action bancaire."),
-      step("frontdesk", "#frontdesk", "Enregistrer une nouvelle demande", "Recherchez le client par sa référence, choisissez la compétence et le motif, puis enregistrez le contact. Transmettez ensuite l’identifiant de conversation au client."),
+      step("frontdesk", "#frontdesk", "Enregistrer une nouvelle demande", "Recherchez le client par sa référence, choisissez la compétence et le motif, puis enregistrez le contact. Le client retrouve ensuite sa demande dans sa liste de conversations."),
       step("knowledge", "#knowledge", "Rechercher une procédure", "Saisissez quelques mots pour retrouver une procédure publiée et consulter les informations utiles à votre réponse."),
       step("incidents", "#incidents", "Vérifier les incidents de service", "Avant de diagnostiquer une difficulté, consultez les incidents nationaux et ceux de la région du client."),
       step("lab-entry", '[data-tour="ai-entry"]', "Un laboratoire séparé", "Le laboratoire local permet des essais manuels. Il est distinct du conseiller IA qui répond dans les conversations et peut nécessiter une configuration locale."),
@@ -37,7 +37,7 @@ export function tourForPath(path: string): TourDefinition | null {
       step("frontdesk", "#frontdesk", "Enregistrer un contact", "Vous pouvez également rechercher un client et orienter une nouvelle demande vers une file de compétence."),
       aiEntry, account, help] };
     case "/client": return { scope: "client", steps: [intro, navigation,
-      step("open", '[data-tour="client-open"]', "Retrouver votre conversation", "Votre conseiller enregistre d’abord votre demande et vous transmet un identifiant. Collez-le ici, puis cliquez sur « Ouvrir » après la visite."),
+      step("open", '[data-tour="client-open"]', "Retrouver votre conversation", "Choisissez votre demande dans la liste. Vous pouvez rechercher un échange et filtrer son statut, puis l’ouvrir en un clic."),
       step("chat", '[data-tour="client-chat"]', "Envoyer et recevoir vos messages", "Une fois la conversation ouverte, les messages apparaissent ici. Écrivez votre demande puis envoyez-la ; les réponses arrivent en direct. Vous pouvez relire un échange terminé."),
       step("incidents", "#incidents", "Consulter les incidents connus", "Cette zone indique les interruptions de service publiées. Elle peut expliquer un problème rencontré avec votre application ou vos opérations."),
       account, help] };
@@ -46,7 +46,7 @@ export function tourForPath(path: string): TourDefinition | null {
       step("users", '[data-tour="admin-users"] .cv-toolbar, #admin-tab-0', "Rechercher et gérer les comptes", "Dans Utilisateurs, filtrez les comptes par rôle ou statut. Vous pouvez consulter un compte, changer son rôle ou le bloquer. Votre propre compte est protégé contre le blocage et le changement de rôle."),
       step("create-user", '[data-tour="admin-create-heading"], #admin-tab-0', "Créer un accès", "Dans Utilisateurs, renseignez l’adresse e-mail, le rôle et un mot de passe temporaire conforme aux règles affichées. Un conseiller a également besoin d’un profil et de compétences configurés."),
       step("procedures", '[data-tour="knowledge"], #admin-tab-1', "Consulter les procédures", "Ouvrez Procédures après la visite pour rechercher et lire les articles publiés. Cette rubrique ne fournit pas encore leur création ou leur modification."),
-      step("frontdesk", '[data-tour="frontdesk"], #admin-tab-2', "Accueillir une demande client", "Dans Accueil, recherchez le client par sa référence, puis enregistrez son contact. La rubrique permet aussi de consulter une conversation par son identifiant."),
+      step("frontdesk", '[data-tour="frontdesk"], #admin-tab-2', "Accueillir une demande client", "Dans Accueil, recherchez le client par sa référence, puis enregistrez son contact. La liste permet aussi de choisir une conversation par client, message ou statut."),
       aiEntry, account, help] };
     case "/supervisor/ai":
     case "/admin/ai": return { scope: route.slice(1).replace("/", "-"), steps: [intro,
@@ -56,7 +56,7 @@ export function tourForPath(path: string): TourDefinition | null {
       step("objective", '[data-tour="simulation-setup"] textarea', "Donner un objectif au client simulé", "Décrivez sa demande, par exemple « Comprendre un prélèvement inconnu ». En dessous, choisissez le profil du client, sa patience et le maximum de tours."),
       step("launch", '[data-tour="simulation-setup"] button', "Lancer votre dialogue", "Après la visite, lancez l’essai. Chaque combinaison scénario, stratégie et graine doit être unique. Une nouvelle graine est proposée après le lancement. La visite n’active pas ce bouton."),
       step("tracking", '[data-tour="simulation-tracking"]', "Observer le dialogue des agents", "Sélectionnez un run récent pour lire les échanges client simulé–conseiller IA. Le suivi s’actualise pendant l’exécution et s’arrête au résultat final. Une erreur peut signaler un modèle indisponible."),
-      step("quality", '[data-tour="quality-lookup"]', "Retrouver une évaluation qualité", "Collez l’identifiant d’une conversation live résolue. Les notes enregistrées apparaissent ici ; l’absence de résultat signifie qu’aucune évaluation n’est encore disponible, pas une note de zéro."),
+      step("quality", '[data-tour="quality-lookup"]', "Retrouver une évaluation qualité", "Choisissez une conversation résolue dans la liste. Les notes enregistrées apparaissent ici ; l’absence de résultat signifie qu’aucune évaluation n’est encore disponible, pas une note de zéro."),
       step("return", '[data-tour="ai-return"]', "Revenir à votre espace principal", "Utilisez ce lien pour retrouver la supervision ou l’administration. Les dialogues simulés restent séparés des conversations live."),
       help] };
     case "/advisor/ai": return { scope: "advisor-lab", steps: [
