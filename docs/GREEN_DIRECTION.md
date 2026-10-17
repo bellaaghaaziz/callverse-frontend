@@ -1,5 +1,7 @@
 # Green direction (R4.7 proposal): what was redesigned, and how to extend it
 
+> Mise à jour locale du 12 octobre 2026 : cette direction est désormais appliquée aux quatre rôles. `AppShell` utilise le thème vert par défaut ; `green-components.css` porte les composants communs extraits du superviseur, et `green-workspaces.css` harmonise les onglets, tableaux, formulaires, files et chats. Les sections ci-dessous décrivent la proposition initiale de Fedi et son historique.
+
 Written for Aziz. It explains the redesign on PR #3, how it is built, and how to bring the advisor, admin and client screens into the same design. Nothing here is merged until you decide.
 
 ---

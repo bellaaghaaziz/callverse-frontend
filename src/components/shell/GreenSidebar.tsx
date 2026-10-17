@@ -3,6 +3,18 @@ import { Headphones } from "lucide-react";
 // Green-direction sidebar (R4.7, 2026-10-11 dashboard mockup). The swooshes are
 // decoration, hidden from assistive technology; the space card is plain text.
 const spaceByRole: Record<string, { title: string; text: string }> = {
+  Conseiller: {
+    title: "Espace conseiller",
+    text: "Échangez, accompagnez et simplifiez chaque demande client.",
+  },
+  Client: {
+    title: "Espace client",
+    text: "Gardez le contact avec votre conseiller, en toute simplicité.",
+  },
+  "Analyste / Admin": {
+    title: "Administration",
+    text: "Gérez les accès et les outils de votre plateforme.",
+  },
   Superviseur: {
     title: "Espace superviseur",
     text: "Pilotez, accompagnez et gardez une longueur d’avance.",

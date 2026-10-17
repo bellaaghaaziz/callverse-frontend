@@ -67,7 +67,13 @@ export async function apiFetch<T = unknown>(
     const body: Partial<Schema["ErrorResponse"]> | null = await res
       .json()
       .catch(() => null);
-    if (res.status === 401 && path !== "/auth/login") expireSession();
+    // A late response must not expire a session that was closed or replaced.
+    if (
+      res.status === 401 &&
+      path !== "/auth/login" &&
+      token &&
+      sessionStorage.getItem("jwt") === token
+    ) expireSession();
     throw new ApiError(
       res.status,
       body?.code || `HTTP_${res.status}`,

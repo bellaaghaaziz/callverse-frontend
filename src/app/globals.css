@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Order matters: each file is a consecutive part of the former single stylesheet. */
+/* Shared foundations, green workspaces, then public pages and refinements. */
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 @import "./styles/shell.css";
@@ -7,7 +7,9 @@
 @import "./styles/workspace.css";
 @import "./styles/app-responsive.css";
 @import "./styles/shell-green.css";
+@import "./styles/green-components.css";
 @import "./styles/supervisor.css";
+@import "./styles/green-workspaces.css";
 @import "./styles/landing.css";
 @import "./styles/landing-preview.css";
 @import "./styles/landing-sections.css";

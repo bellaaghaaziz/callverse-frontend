@@ -1,6 +1,7 @@
 "use client";
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ShieldCheck,
   Headphones,
@@ -20,13 +21,13 @@ export default function AppShell({
   role,
   initials,
   title,
-  variant,
+  variant = "green",
   children,
 }: {
   role: string;
   initials: string;
   title: string;
-  // "green": the R4.7 proposal's shell (supervisor only for now).
+  // All workspaces share the same visual direction.
   variant?: "green";
   children: ReactNode;
 }) {
@@ -237,6 +238,11 @@ export default function AppShell({
               </div>
             </div>
             <div className="cv-header-right">
+              {(role === "Conseiller" || role === "Superviseur") && (
+                <Link className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : "/supervisor/ai"}>
+                  Essais IA
+                </Link>
+              )}
               {!green && (
                 <span className="cv-header-role">
                   <ShieldCheck size={14} />
@@ -269,7 +275,7 @@ export default function AppShell({
               </div>
             </div>
           </header>
-          <main className="cv-main" id="main-content" tabIndex={-1}>
+          <main className="cv-main cv-green" id="main-content" tabIndex={-1}>
             {children}
           </main>
           <footer className="cv-app-footer">

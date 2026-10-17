@@ -84,6 +84,22 @@ test("API sends bearer authentication without cookies and handles normal 204 res
   );
   assert.equal(request.options.headers.get("X-Test"), "custom");
 });
+test("late unauthorized responses preserve a logged-out or replacement session", async () => {
+  for (const replacement of [null, "replacement-token"]) {
+    let token = "original-token", expired = 0, finish;
+    const response = new Promise(resolve => { finish = resolve; });
+    const api = compile("api", {
+      process: { env: {} }, window: {}, Headers,
+      sessionStorage: { getItem: () => token },
+      fetch: () => response,
+    }, { "./auth": { expireSession: () => { expired++; } } });
+    const pending = api.apiFetch("/auth/me");
+    token = replacement;
+    finish(new Response(JSON.stringify({ code: "UNAUTHENTICATED" }), { status: 401 }));
+    await assert.rejects(pending);
+    assert.equal(expired, 0);
+  }
+});
 test("401 expires the session, while 403 and invalid login preserve error distinctions", async () => {
   let status = 403,
     expired = 0;
@@ -915,6 +931,18 @@ test("supervisor waits read as durations and ratios as French percentages, « �
   assert.match(percentLabel(0), /^0[\u00a0\u202f]%$/);
   assert.equal(percentLabel(null), "—");
 });
+test("shared green chat, tables and selected tabs retain readable contrast", () => {
+  const { contrastRatio } = compile("contrast");
+  const css = readStylesheet(new URL("../src/app/globals.css", import.meta.url));
+  for (const selector of [
+    ".cv-green .cv-message-bubble",
+    ".cv-green .cv-message-own .cv-message-bubble",
+    ".cv-green .cv-tabs button[aria-selected=\"true\"]",
+    ".cv-green .cv-table th",
+  ]) {
+    assert.ok(contrastRatio(cssValue(css, selector, "color"), cssValue(css, selector, "background")) >= 4.5, selector);
+  }
+});
 test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green surfaces", () => {
   const { contrastRatio } = compile("contrast");
   const css = readStylesheet(
@@ -976,9 +1004,9 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   // icons and the ring at 3:1 on white and on the mint wells.
   const card = ["#ffffff", wash];
   const mint = values["--lp-mint"];
-  check(".cv-supervisor .cv-eyebrow", "color", [wash], 4.5);
-  check(".cv-supervisor .cv-page-heading h1", "color", [wash], 4.5);
-  check(".cv-supervisor .cv-subtitle", "color", [wash], 4.5);
+  check(".cv-green .cv-eyebrow", "color", [wash], 4.5);
+  check(".cv-green .cv-page-heading h1", "color", [wash], 4.5);
+  check(".cv-green .cv-subtitle", "color", [wash], 4.5);
   check(".cv-supervisor .cv-live", "color", [wash], 4.5);
   check(".cv-supervisor .cv-live-off", "color", [wash], 4.5);
   check(".cv-kpi-label", "color", ["#ffffff"], 4.5);
@@ -1002,7 +1030,7 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   check(".cv-supervisor .cv-card-heading h2", "color", ["#ffffff"], 4.5);
   check(".cv-supervisor .cv-card-heading p", "color", ["#ffffff"], 4.5);
   check(".cv-card-icon", "color", [mint], 3);
-  check(".cv-supervisor .cv-count", "color", [mint], 4.5);
+  check(".cv-green .cv-count", "color", [mint], 4.5);
   check(".cv-supervisor .cv-table th", "color", card, 4.5);
   check(".cv-supervisor .cv-table td", "color", card, 4.5);
   check(".cv-indicators dt", "color", [wash], 4.5);
@@ -1013,15 +1041,15 @@ test("the supervisor dashboard keeps text at 4.5:1 and rings at 3:1 on its green
   check(".cv-conv-name", "color", ["#ffffff"], 4.5);
   check(".cv-conv-ref", "color", ["#ffffff"], 4.5);
   check(".cv-pager span", "color", ["#ffffff"], 4.5);
-  check(".cv-supervisor .cv-input::placeholder", "color", ["#ffffff"], 4.5);
-  check(".cv-supervisor .cv-button-secondary", "color", ["#ffffff"], 4.5);
-  check(".cv-supervisor .cv-icon-button", "color", ["#ffffff"], 3);
+  check(".cv-green .cv-input::placeholder", "color", ["#ffffff"], 4.5);
+  check(".cv-green .cv-button-secondary", "color", ["#ffffff"], 4.5);
+  check(".cv-green .cv-icon-button", "color", ["#ffffff"], 3);
   check(".cv-search svg", "color", ["#ffffff"], 3);
   // The opened conversation (not in the mockup), restyled in the same grammar.
-  check(".cv-supervisor .cv-notice", "color", [wash], 4.5);
+  check(".cv-green .cv-notice", "color", [wash], 4.5);
   check(".cv-supervisor .cv-chat-person strong", "color", ["#ffffff"], 4.5);
   // Focus moves into the opened panel: the brand ring on the wash, not the browser's black one.
   check(".cv-supervisor #conversation-panel:focus-visible", "outline", [wash], 3);
   // White text on both ends of the green gradient the supervisor buttons use.
-  check(".cv-supervisor .cv-button", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
+  check(".cv-green .cv-button", "color", [values["--lp-brand-strong"], values["--lp-brand-soft"]], 4.5);
 });
