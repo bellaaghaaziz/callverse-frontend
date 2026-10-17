@@ -3,6 +3,9 @@
 Pour les parcours IA connectés à Spring (effectifs, simulation et lecture qualité),
 voir [AI_CONNECTED.md](docs/AI_CONNECTED.md) et le lancement local sur le port 3100.
 
+Une visite guidée accompagne chaque compte à sa première visite des espaces
+authentifiés. Le bouton **Guide** permet de la relancer ; voir [GUIDED_TOUR.md](docs/GUIDED_TOUR.md).
+
 Next.js frontend for the CallVerse backend. Authentication, the advisor workspace, live supervision, staff contact registration, existing customer chat, incidents, knowledge search and user administration use real backend endpoints.
 
 ## Local setup

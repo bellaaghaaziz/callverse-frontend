@@ -31,7 +31,7 @@ export default function ClientPage() {
       </div>
       <div className="cv-two-columns">
         <div className="cv-stack" id="conversation">
-          <section className="cv-card cv-card-pad">
+          <section className="cv-card cv-card-pad" data-tour="client-open">
             <h2 className="cv-tool-title">
               <MessageSquare size={19} />
               Échangez avec votre conseiller
@@ -67,7 +67,7 @@ export default function ClientPage() {
               </div>
             </form>
           </section>
-          {id ? (
+          <div data-tour="client-chat">{id ? (
             <ConversationPanel key={id} id={id} role="CUSTOMER" />
           ) : (
             <section className="cv-card">
@@ -81,7 +81,7 @@ export default function ClientPage() {
                 Vos messages apparaîtront ici dès l’ouverture de votre échange.
               </div>
             </section>
-          )}
+          )}</div>
         </div>
         <aside className="cv-stack">
           <section className="cv-card cv-card-pad">

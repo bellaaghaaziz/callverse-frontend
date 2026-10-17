@@ -46,12 +46,12 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
     <h2 className="cv-tool-title">Laboratoire IA</h2>
     <p className="cv-subtitle">Essais isolés : aucune réponse envoyée au client et aucune modification métier automatique.</p>
     <p className="cv-notice">Le conseiller utilise les lectures autorisées et la recherche textuelle des procédures. Le type de contrat, le risque de départ et le nombre de tickets ne sont pas fournis dans le contexte. Le RAG vectoriel n’est pas activé ici.</p>
-    <button className="cv-button cv-button-secondary" disabled={busy} onClick={async () => {
+    <button className="cv-button cv-button-secondary" data-tour="lab-health" disabled={busy} onClick={async () => {
       setBusy(true); setError(""); try { const data = await request(); setStatus("Service connecté · " + (data.workforce.model_file_present ? "modèle PPO présent" : "modèle PPO absent")); }
       catch (e) { setError(e instanceof Error ? e.message : "Service indisponible"); } finally { setBusy(false); }
     }}>Vérifier le service IA</button>
     {status && <p role="status" className="cv-notice">{status}</p>}
-    <form className="cv-stack cv-section" onSubmit={e => { e.preventDefault(); void run(); }}>
+    <form className="cv-stack cv-section" data-tour="lab-form" onSubmit={e => { e.preventDefault(); void run(); }}>
       <label className="cv-label">Fonction IA<select className="cv-input" value={feature} disabled={busy} onChange={e => { setFeature(e.target.value); setResult(null); setError(""); }}>
         <option value="suggestion">Suggestion conseiller</option><option value="simulation">Premier message d’un client simulé</option>
         {supervision && <><option value="quality">Évaluation qualité</option><option value="workforce">Proposition d’effectifs</option></>}

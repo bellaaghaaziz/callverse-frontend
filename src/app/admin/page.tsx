@@ -184,6 +184,7 @@ export default function AdminPage() {
       <div
         className="cv-tabs"
         role="tablist"
+        data-tour="admin-tabs"
         aria-label="Sections d’administration"
       >
         {tabs.map((label, index) => (
@@ -217,7 +218,7 @@ export default function AdminPage() {
       )}
       {tab === "Utilisateurs" && (
         <div className="cv-stack" {...panel}>
-          <section className="cv-card">
+          <section className="cv-card" data-tour="admin-users">
             <div className="cv-card-heading">
               <div>
                 <h2>Utilisateurs</h2>
@@ -445,7 +446,7 @@ export default function AdminPage() {
             </section>
           )}
           <section className="cv-card cv-card-pad">
-            <h2 className="cv-tool-title">
+            <h2 className="cv-tool-title" data-tour="admin-create-heading">
               <UserPlus size={18} />
               Créer un compte
             </h2>

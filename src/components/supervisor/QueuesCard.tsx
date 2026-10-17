@@ -12,7 +12,7 @@ export default function QueuesCard({ kpi }: { kpi: LiveKpi | null }) {
     ["Taux d’abandon", percentLabel(kpi?.abandonRate)],
   ];
   return (
-    <section className="cv-card">
+    <section className="cv-card" data-tour="supervision-queues">
       <CardHeading
         icon={Layers}
         title="Files par compétence"

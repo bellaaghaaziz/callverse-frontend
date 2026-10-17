@@ -13,7 +13,7 @@ export default function AiWorkspace() {
   const [error, setError] = useState("");
   return <div className="cv-ai-workspace"><div className="cv-page-heading"><div><p className="cv-eyebrow">INTELLIGENCE ARTIFICIELLE</p><h1>Analysez, simulez, améliorez.</h1><p className="cv-subtitle">Des recommandations sur votre activité et des dialogues simulés dans un espace dédié.</p></div></div>
     <WorkforceCard /><SimulationStudio />
-    <section className="cv-card cv-card-pad cv-section"><h2 className="cv-tool-title">Consulter une évaluation qualité</h2><p className="cv-subtitle">Vous pouvez aussi ouvrir une conversation résolue depuis la supervision.</p>
+    <section className="cv-card cv-card-pad cv-section" data-tour="quality-lookup"><h2 className="cv-tool-title">Consulter une évaluation qualité</h2><p className="cv-subtitle">Vous pouvez aussi ouvrir une conversation résolue depuis la supervision.</p>
       <form className="cv-ai-lookup cv-section" onSubmit={async e => {
         e.preventDefault(); if (busy) return; setBusy(true); setError(""); setConversation(null);
         try { setConversation(await apiFetch<Conversation>(`/conversations/${encodeURIComponent(draft.trim())}`)); }

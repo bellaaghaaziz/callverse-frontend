@@ -69,7 +69,7 @@ export function FrontDesk({
     }
   }
   return (
-    <section className="cv-card cv-card-pad">
+    <section className="cv-card cv-card-pad" data-tour="frontdesk">
       <h2 className="cv-tool-title">
         <Headphones size={18} />
         Enregistrer un contact
@@ -191,7 +191,7 @@ export function KnowledgeSearch() {
     }
   }
   return (
-    <section className="cv-card cv-card-pad">
+    <section className="cv-card cv-card-pad" data-tour="knowledge">
       <h2 className="cv-tool-title">
         <BookOpen size={18} />
         Procédures

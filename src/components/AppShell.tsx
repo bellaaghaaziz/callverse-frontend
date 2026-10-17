@@ -17,6 +17,7 @@ import Brand from "./Brand";
 import { itemsByRole } from "./shell/navItems";
 import { SidebarArt, SpaceCard } from "./shell/GreenSidebar";
 import { clearSession } from "@/lib/auth";
+import GuidedTour from "./GuidedTour";
 export default function AppShell({
   role,
   initials,
@@ -169,7 +170,7 @@ export default function AppShell({
               <p className="cv-nav-caption">VOTRE ESPACE</p>
             </>
           )}
-          <nav aria-label="Navigation principale">
+          <nav aria-label="Navigation principale" data-tour="navigation">
             {items.map((item) => (
               <button
                 key={item.id}
@@ -223,6 +224,7 @@ export default function AppShell({
               <button
                 className="cv-mobile-toggle cv-icon-button"
                 aria-label="Ouvrir le menu"
+                data-tour="mobile-menu"
                 onClick={() => setMobileOpen(true)}
               >
                 <Menu size={21} />
@@ -238,8 +240,9 @@ export default function AppShell({
               </div>
             </div>
             <div className="cv-header-right">
+              <GuidedTour />
               {(role === "Conseiller" || role === "Superviseur" || role === "Analyste / Admin") && (
-                <Link className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : role === "Superviseur" ? "/supervisor/ai" : "/admin/ai"}>
+                <Link data-tour="ai-entry" className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : role === "Superviseur" ? "/supervisor/ai" : "/admin/ai"}>
                   {role === "Conseiller" ? "Laboratoire local" : "Pilotage IA"}
                 </Link>
               )}
@@ -256,6 +259,7 @@ export default function AppShell({
                     green ? initials + ", menu du compte" : "Menu du compte"
                   }
                   aria-expanded={profileOpen}
+                  data-tour="account"
                   onClick={() => setProfileOpen(!profileOpen)}
                   className="cv-account-trigger"
                 >

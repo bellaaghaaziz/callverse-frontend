@@ -77,7 +77,7 @@ export default function SimulationStudio() {
       <p className="cv-subtitle">Un client synthétique échange avec le conseiller IA, sans intervenir dans les files live.</p></div>
       <button className="cv-button cv-button-secondary" disabled={loading || busy} onClick={() => setCatalogRevision(n => n + 1)}><RefreshCw size={14} />Actualiser les scénarios</button></div>
     {error && <p role="alert" className="cv-error cv-section">{error}</p>}
-    <details className="cv-card cv-card-pad cv-section"><summary>Créer un scénario de dialogue</summary>
+    <details className="cv-card cv-card-pad cv-section" data-tour="scenario-create"><summary>Créer un scénario de dialogue</summary>
       <p className="cv-subtitle cv-section">Donnez un nom à votre essai. Les paramètres du client et du dialogue se choisissent ci-dessous.</p>
       <form className="cv-ai-lookup cv-section" onSubmit={async e => {
         e.preventDefault(); if (inFlight.current || !scenarioName.trim()) return;
@@ -93,7 +93,7 @@ export default function SimulationStudio() {
         <button className="cv-button cv-button-secondary" disabled={busy || loading || !options || !scenarioName.trim()}>Créer le scénario</button></form>
     </details>
     <div className="cv-ai-studio-grid cv-section">
-      <form className="cv-card cv-card-pad cv-stack" onSubmit={start}>
+      <form className="cv-card cv-card-pad cv-stack" data-tour="simulation-setup" onSubmit={start}>
         <h3 className="cv-tool-title">Configurer le dialogue</h3>
         {loading && <p role="status">Chargement des scénarios…</p>}
         {options && (!options.scenarios.length || !options.strategies.length) && <p className="cv-notice">Aucun scénario ou stratégie disponible. Demandez à l’administrateur de configurer les références de simulation.</p>}
@@ -111,7 +111,7 @@ export default function SimulationStudio() {
         </fieldset>
         <p className="cv-subtitle">Chaque combinaison scénario, stratégie et graine est unique. La graine suivante est proposée après le lancement.</p>
       </form>
-      <div className="cv-card cv-card-pad">
+      <div className="cv-card cv-card-pad" data-tour="simulation-tracking">
         <div className="cv-ai-card-heading"><h3 className="cv-tool-title">Suivi du dialogue</h3><button className="cv-button cv-button-secondary cv-button-small" disabled={!selected} onClick={() => setRevision(n => n + 1)}><RefreshCw size={14} />Actualiser le suivi</button></div>
         <label className="cv-label cv-section">Simulations récentes<select className="cv-input" value={selected} onChange={e => { setSelected(e.target.value); setRun(null); setMessages([]); setFollowError(""); }}><option value="">Sélectionner une simulation</option>{runs.map(r => <option key={r.runId} value={r.runId}>{r.startedAt ? new Date(r.startedAt).toLocaleString("fr-FR") : "Simulation"} · {runNames[r.status]} · {r.runId.slice(0, 8)}</option>)}</select></label>
         {followError && <p role="alert" className="cv-error cv-section">{followError} Le suivi est suspendu ; utilisez « Actualiser le suivi » pour réessayer.</p>}
