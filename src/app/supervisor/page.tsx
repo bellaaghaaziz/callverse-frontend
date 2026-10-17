@@ -13,6 +13,7 @@ import { useConnection, useTopic } from "@/hooks/useTopic";
 import { reconnectStomp } from "@/lib/stomp";
 import { RefreshCw } from "lucide-react";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
+import WorkforceCard from "@/components/ai/WorkforceCard";
 export default function SupervisorPage() {
   const [kpi, setKpi] = useState<LiveKpi | null>(null);
   const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
@@ -116,6 +117,7 @@ export default function SupervisorPage() {
           </p>
         )}
         <KpiTiles kpi={kpi} />
+        <WorkforceCard />
         <div className="cv-two-columns">
           <QueuesCard kpi={kpi} />
           <AlertsCard

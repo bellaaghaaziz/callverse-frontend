@@ -14,6 +14,7 @@ import ChatThread from "./ChatThread";
 import StatusBadge from "./StatusBadge";
 import { MessageSquare, RefreshCw, Send, CheckCircle2 } from "lucide-react";
 import { reconnectStomp } from "@/lib/stomp";
+import QualityCard from "./ai/QualityCard";
 export default function ConversationPanel({
   id,
   role,
@@ -185,6 +186,9 @@ export default function ConversationPanel({
         <div className="cv-error m-4" role="alert">
           {error}
         </div>
+      )}
+      {(role === "SUPERVISOR" || role === "ADMIN") && conversation?.status === "RESOLVED" && (
+        <div className="cv-card-pad"><QualityCard conversationId={id} status={conversation.status} /></div>
       )}
       <div className="flex flex-col h-[420px] min-h-0">
         <ChatThread

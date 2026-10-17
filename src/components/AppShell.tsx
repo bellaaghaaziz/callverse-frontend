@@ -238,9 +238,9 @@ export default function AppShell({
               </div>
             </div>
             <div className="cv-header-right">
-              {(role === "Conseiller" || role === "Superviseur") && (
-                <Link className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : "/supervisor/ai"}>
-                  Essais IA
+              {(role === "Conseiller" || role === "Superviseur" || role === "Analyste / Admin") && (
+                <Link className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : role === "Superviseur" ? "/supervisor/ai" : "/admin/ai"}>
+                  {role === "Conseiller" ? "Laboratoire local" : "Pilotage IA"}
                 </Link>
               )}
               {!green && (

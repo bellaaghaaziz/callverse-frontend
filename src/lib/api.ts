@@ -36,6 +36,8 @@ export function errorMessage(error: unknown): string {
         "Aucune politique SLA configurée. Contactez l'équipe backend.",
       PASSWORD_TOO_WEAK: "Le mot de passe ne respecte pas les exigences.",
       INTERNAL_ERROR: "Le service rencontre une erreur. Réessayez plus tard.",
+      WORKFORCE_UNAVAILABLE: "L’analyse des effectifs est indisponible. Réessayez dans quelques instants.",
+      SIMULATION_RUN_ALREADY_EXISTS: "Cette combinaison scénario, stratégie et graine existe déjà. Choisissez une autre graine.",
     };
     return (
       messages[error.code] ||

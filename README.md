@@ -1,5 +1,8 @@
 # CallVerse frontend
 
+Pour les parcours IA connectés à Spring (effectifs, simulation et lecture qualité),
+voir [AI_CONNECTED.md](docs/AI_CONNECTED.md) et le lancement local sur le port 3100.
+
 Next.js frontend for the CallVerse backend. Authentication, the advisor workspace, live supervision, staff contact registration, existing customer chat, incidents, knowledge search and user administration use real backend endpoints.
 
 ## Local setup

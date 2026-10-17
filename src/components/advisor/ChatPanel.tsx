@@ -10,9 +10,6 @@ import {
 } from "lucide-react";
 import ChatThread from "@/components/ChatThread";
 import StatusBadge from "@/components/StatusBadge";
-import { AiSlotView } from "@/components/AiSlot";
-import SuggestionCard from "@/components/SuggestionCard";
-import { draftWithSuggestion } from "@/lib/ai";
 import { MESSAGE_MAX_LENGTH } from "@/lib/contracts";
 import {
   durationLabel,
@@ -23,7 +20,6 @@ import {
 import { canAbandon, canEscalate, canResolve } from "@/lib/advisor";
 import type { AdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 import type { ActionForms } from "@/hooks/useActionForms";
-import { useSuggestion } from "@/hooks/useSuggestion";
 
 // The open conversation: header, transcript, reply suggestion, composer and actions.
 export default function AdvisorChatPanel({
@@ -34,7 +30,6 @@ export default function AdvisorChatPanel({
   forms: ActionForms;
 }) {
   const {
-    activeConvId,
     activeConv,
     customerName,
     messages,
@@ -58,8 +53,6 @@ export default function AdvisorChatPanel({
     escalationOpen,
     setEscalationOpen,
   } = forms;
-  // Only conversations the advisor can answer get a suggestion.
-  const suggestion = useSuggestion(canReply ? activeConvId : null, messages);
   const composerInput = useRef<HTMLInputElement>(null);
   return (
     <section className="cv-card cv-chat-panel" aria-label="Conversation active">
@@ -111,29 +104,7 @@ export default function AdvisorChatPanel({
             role="ADVISOR"
             customerName={customerName}
           />
-          {canReply && (
-            <AiSlotView
-              state={suggestion.state}
-              title="Suggestion de réponse"
-              onRetry={suggestion.retry}
-            >
-              {suggestion.suggestion && (
-                <SuggestionCard
-                  suggestion={suggestion.suggestion}
-                  used={suggestion.used}
-                  disabled={busy}
-                  onUse={() => {
-                    const reply = suggestion.suggestion!.reply;
-                    setDraft((current) =>
-                      draftWithSuggestion(current, reply, MESSAGE_MAX_LENGTH),
-                    );
-                    suggestion.markUsed();
-                    composerInput.current?.focus();
-                  }}
-                />
-              )}
-            </AiSlotView>
-          )}
+          {canReply && <p className="cv-notice m-4">Lorsqu’il est disponible, le conseiller IA répond directement dans cet échange après un message client. Relisez les derniers messages avant d’envoyer votre réponse.</p>}
           <div className="cv-composer">
             {canReply ? (
               <>
