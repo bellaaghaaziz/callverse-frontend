@@ -1,0 +1,104 @@
+{
+  "at": "2026-10-18T17:43:35.003Z",
+  "presentationReady": false,
+  "automated": {
+    "java": {
+      "passed": 581,
+      "failures": 0,
+      "errors": 0
+    },
+    "python": {
+      "passed": 237,
+      "deselected": 1
+    },
+    "frontend": {
+      "passed": 71,
+      "failures": 0
+    },
+    "totalPassed": 889,
+    "lintExitCode": 0,
+    "typecheckExitCode": 0,
+    "productionBuildExitCode": 0
+  },
+  "browserAndApi": {
+    "broad": {
+      "passed": 31,
+      "failed": 1,
+      "fatal": null
+    },
+    "recheck": {
+      "passed": 11,
+      "failed": 0,
+      "fatal": null
+    },
+    "portal": {
+      "passed": 12,
+      "failed": 0,
+      "fatal": null
+    },
+    "originalStack": {
+      "passed": 2,
+      "failed": 6,
+      "fatal": null
+    },
+    "websocketSessionsPassed": true
+  },
+  "actualAi": {
+    "qualityPersistence": {
+      "passed": 1,
+      "failed": 0,
+      "fatal": null
+    },
+    "complexQualityStatus": 502,
+    "grounding": "FAIL",
+    "semanticChecks": [
+      {
+        "name": "Read customer tool",
+        "httpStatus": 200,
+        "automatedCheck": true,
+        "action": "NONE",
+        "elapsedSeconds": 2.35
+      },
+      {
+        "name": "Current published KB procedure",
+        "httpStatus": 200,
+        "automatedCheck": true,
+        "action": "NONE",
+        "elapsedSeconds": 12.08
+      },
+      {
+        "name": "Fraud escalation",
+        "httpStatus": 200,
+        "automatedCheck": false,
+        "action": "NONE",
+        "elapsedSeconds": 2.11
+      }
+    ],
+    "autonomousFirst": {
+      "passed": 2,
+      "failed": 0,
+      "fatal": "POST /queues/CREDIT/next: {\"timestamp\":\"2026-10-18T17:37:27.134262100Z\",\"status\":409,\"code\":\"ADVISOR_UNAVAILABLE\",\"message\":\"Advisor 183a86d2-dd29-491b-b376-0bfc60387929 is at capacity: 2 of 2 conversations.\",\"path\":\"/api/v1/queues/CREDIT/next\"}\n\n409 !== 200\n"
+    },
+    "autonomousRepeat": {
+      "passed": 1,
+      "failed": 2,
+      "fatal": null
+    },
+    "quotaRetrySeconds": [
+      238,
+      127
+    ]
+  },
+  "finalTestStack": {
+    "frontend": "http://localhost:3101",
+    "backend": "http://localhost:8183",
+    "ai": "http://localhost:8102",
+    "advisorMode": "OFF",
+    "sharedDatabaseWrites": false
+  },
+  "limits": [
+    "Automated check of source presence was contradicted by a manual grounding review.",
+    "The first autonomous script stopped after two successful checks because advisor capacity was reached; cleanup completed.",
+    "The original stack was inspected without banking mutations and was not upgraded."
+  ]
+}

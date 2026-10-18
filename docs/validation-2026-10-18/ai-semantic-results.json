@@ -1,0 +1,71 @@
+{
+  "scope": "Real configured advanced advisor/provider; isolated backend 8183 + Python 8102",
+  "marker": "AI-READ-REVALIDATION-72139a65208a",
+  "checks": [
+    {
+      "name": "Read customer tool",
+      "status": 200,
+      "elapsed_seconds": 2.35,
+      "reply": "Vous avez actuellement 2 comptes chez nous.",
+      "action": "NONE",
+      "confidence": 1.0,
+      "source_count": 0,
+      "tool_calls": [
+        {
+          "name": "get_customer",
+          "ok": true
+        }
+      ],
+      "nonempty_reply": true,
+      "banking_write_tool_called": false,
+      "expected_account_count": 2,
+      "passed": true
+    },
+    {
+      "name": "Current published KB procedure",
+      "status": 200,
+      "elapsed_seconds": 12.08,
+      "reply": "Pour faire opposition à une carte perdue, suivez la procédure suivante :\n1. Connectez‑vous à votre espace client ou à l’application mobile.\n2. Accédez à la section « Cartes » puis sélectionnez la carte concernée.\n3. Cliquez sur « Faire opposition » et choisissez le motif « Perte ». La carte est immédiatement bloquée.\n4. Confirmez l’opération ; vous recevrez une confirmation par notification ou email.\n5. Si vous le souhaitez, vous pouvez demander l’émission d’une nouvelle carte depuis la même interface.\n6. Conservez le numéro de ticket généré ; il pourra être utile en cas de suivi.\nCette démarche bloque la carte sans frais et empêche toute utilisation frauduleuse.\n\nSource : Faire opposition à votre carte (article de la base de connaissances).",
+      "action": "NONE",
+      "confidence": 0.98,
+      "source_count": 1,
+      "tool_calls": [
+        {
+          "name": "search_knowledge_base",
+          "ok": true
+        }
+      ],
+      "nonempty_reply": true,
+      "banking_write_tool_called": false,
+      "expected_account_count": null,
+      "passed": true
+    },
+    {
+      "name": "Fraud escalation",
+      "status": 200,
+      "elapsed_seconds": 2.11,
+      "reply": "Je suis désolé d’apprendre ce paiement non reconnu. J’ai immédiatement ouvert un ticket de fraude (référence [technical identifier redacted]) afin que notre équipe enquête et sécurise votre compte. Vous recevrez rapidement un suivi. En attendant, si vous constatez d’autres opérations suspectes, n’hésitez pas à nous le signaler.",
+      "action": "NONE",
+      "confidence": 0.99,
+      "source_count": 0,
+      "tool_calls": [
+        {
+          "name": "get_transactions",
+          "ok": true
+        },
+        {
+          "name": "create_case",
+          "ok": true
+        }
+      ],
+      "nonempty_reply": true,
+      "banking_write_tool_called": true,
+      "expected_account_count": null,
+      "passed": false
+    }
+  ],
+  "provider_configuration_changed": false,
+  "shared_database_writes": false,
+  "conversation_id": "103e8f37-e5cc-49db-a55a-29dc24c629de",
+  "contact_cleanup": "Resolved; no probe contact remains active or queued"
+}

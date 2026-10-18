@@ -1,0 +1,88 @@
+{
+  "scope": "Real simulator rules/API, substituted provider output; no external services",
+  "checks": [
+    "Five unrelated numeric replies never resolve the card-block objective",
+    "Incremental waiting changes patience and can abandon without provider wording",
+    "Standalone latest advisor reply can verify informational completion with exact evidence",
+    "Provider informational assessment cannot verify an operational objective"
+  ],
+  "irrelevant_numeric_reply": "La temperature sera de 22 degres demain, je vous souhaite une bonne journee.",
+  "resolution_regression_steps": [
+    {
+      "turn": 1,
+      "patience": 78.2,
+      "satisfaction": 47.0,
+      "status": "en_cours"
+    },
+    {
+      "turn": 2,
+      "patience": 76.4,
+      "satisfaction": 44.0,
+      "status": "en_cours"
+    },
+    {
+      "turn": 3,
+      "patience": 74.60000000000001,
+      "satisfaction": 41.0,
+      "status": "en_cours"
+    },
+    {
+      "turn": 4,
+      "patience": 72.80000000000001,
+      "satisfaction": 38.0,
+      "status": "en_cours"
+    },
+    {
+      "turn": 5,
+      "patience": 71.00000000000001,
+      "satisfaction": 35.0,
+      "status": "en_cours"
+    }
+  ],
+  "wait_responses": {
+    "initial": {
+      "content": "Merci de traiter ma demande.",
+      "status": "en_cours",
+      "state": {
+        "profile": "calme",
+        "patience": 80.0,
+        "satisfaction": 50.0,
+        "objective": "Bloquer une carte perdue",
+        "objective_met": false
+      }
+    },
+    "long_wait": {
+      "content": null,
+      "status": "abandonne",
+      "state": {
+        "profile": "calme",
+        "patience": 0.0,
+        "satisfaction": 50.0,
+        "objective": "Bloquer une carte perdue",
+        "objective_met": false
+      }
+    }
+  },
+  "informational_response": {
+    "content": null,
+    "status": "resolu",
+    "state": {
+      "profile": "calme",
+      "patience": 78.5,
+      "satisfaction": 58.0,
+      "objective": "comprendre les frais",
+      "objective_met": true
+    }
+  },
+  "operational_response": {
+    "content": "Merci de traiter ma demande.",
+    "status": "en_cours",
+    "state": {
+      "profile": "calme",
+      "patience": 78.2,
+      "satisfaction": 47.0,
+      "objective": "Bloquer une carte perdue",
+      "objective_met": false
+    }
+  }
+}

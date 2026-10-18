@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-18T17:40:44.470Z",
+  "scope": "Real Groq judge against a saved hallucinated advisor answer and its actual cited procedure; no persistence or banking mutations",
+  "status": 502,
+  "elapsedMs": 3181,
+  "unsupportedClaimsDetected": false,
+  "result": {
+    "detail": "Le modèle a produit une évaluation invalide."
+  }
+}

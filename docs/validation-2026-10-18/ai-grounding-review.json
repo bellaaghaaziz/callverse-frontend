@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-18T17:40:05.114Z",
+  "scope": "Manual grounding review of an actual saved Groq reply against current published article text and exercised API permissions",
+  "automatedSourcePresenceCheck": true,
+  "groundedAnswerReview": "FAIL",
+  "reply": "Pour faire opposition à une carte perdue, suivez la procédure suivante :\n1. Connectez‑vous à votre espace client ou à l’application mobile.\n2. Accédez à la section « Cartes » puis sélectionnez la carte concernée.\n3. Cliquez sur « Faire opposition » et choisissez le motif « Perte ». La carte est immédiatement bloquée.\n4. Confirmez l’opération ; vous recevrez une confirmation par notification ou email.\n5. Si vous le souhaitez, vous pouvez demander l’émission d’une nouvelle carte depuis la même interface.\n6. Conservez le numéro de ticket généré ; il pourra être utile en cas de suivi.\nCette démarche bloque la carte sans frais et empêche toute utilisation frauduleuse.\n\nSource : Faire opposition à votre carte (article de la base de connaissances).",
+  "availableArticles": [
+    {
+      "id": "e9386af8-69d5-41be-b14c-4a1d672a96f3",
+      "category": "FRAUD",
+      "title": "Contester un paiement par carte",
+      "content": "Les paiements non reconnus sont contestes apres opposition; le client signe une declaration.",
+      "tags": [
+        "contestation",
+        "fraude",
+        "paiement"
+      ],
+      "version": 1,
+      "updatedAt": "2026-10-18T15:18:32.904032Z"
+    },
+    {
+      "id": "c585c262-375d-433b-89ff-d4d05565309f",
+      "category": "CARDS",
+      "title": "Faire opposition a votre carte",
+      "content": "Bloquer la carte immediatement avec le motif adapte (perte, vol, fraude suspectee), puis ouvrir un ticket FRAUD si des paiements ne sont pas reconnus.",
+      "tags": [
+        "carte",
+        "opposition",
+        "fraude"
+      ],
+      "version": 1,
+      "updatedAt": "2026-10-18T15:18:32.883448Z"
+    }
+  ],
+  "unsupportedClaims": [
+    "The reply tells customers to block their card through their own portal/mobile application; current customer authorization rejects card blocking (403).",
+    "The cited article does not specify email/push confirmation, replacement-card ordering, a generated ticket number, or a free-of-charge policy."
+  ],
+  "conclusion": "A source identifier and declared confidence of 0.98 do not establish factual grounding. This answer must not be presented as validated banking advice."
+}

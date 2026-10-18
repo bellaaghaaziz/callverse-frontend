@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-18T17:32:38.944Z",
+  "database": "isolated local PostgreSQL; no shared database writes",
+  "marker": "REVALIDATION-1792344758944",
+  "steps": [
+    {
+      "name": "Fresh real Groq quality persists all six criteria after network-enabled AI restart",
+      "result": "PASS",
+      "ms": 2088,
+      "detail": {
+        "conversationId": "cd37d282-fa2d-4b06-ab7a-872e1c366096",
+        "grades": [
+          {
+            "id": "ef03b651-e258-4c61-81ba-9826b28455c5",
+            "globalScore": 6.4,
+            "scores": {
+              "EMPATHY": 2,
+              "ACCURACY": 10,
+              "RELEVANCE": 2,
+              "COMPLIANCE": 10,
+              "RESOLUTION": 2,
+              "COMMUNICATION": 10
+            },
+            "explanation": "Le conseiller n’a pas répondu à la demande, mais n’a pas violé de règle.",
+            "evaluator": "AI",
+            "createdAt": "2026-10-18T17:32:41.031629Z"
+          }
+        ]
+      }
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "route": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/supervision/conversations/cd37d282-fa2d-4b06-ab7a-872e1c366096/quality",
+      "status": 202
+    },
+    {
+      "method": "GET",
+      "route": "/supervision/conversations/cd37d282-fa2d-4b06-ab7a-872e1c366096/quality",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/supervision/conversations/cd37d282-fa2d-4b06-ab7a-872e1c366096/quality",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/supervision/conversations/cd37d282-fa2d-4b06-ab7a-872e1c366096/quality",
+      "status": 200
+    }
+  ]
+}
