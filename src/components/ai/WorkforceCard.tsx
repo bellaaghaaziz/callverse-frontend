@@ -2,12 +2,13 @@
 import { useRef, useEffect, useState } from "react";
 import { Users, Sparkles } from "lucide-react";
 import { aiWorkspace, skillNames, type WorkforceRecommendation } from "@/lib/ai-workspace";
-import { errorMessage } from "@/lib/api";
+import { ApiError, errorMessage } from "@/lib/api";
 
 export default function WorkforceCard() {
   const [result, setResult] = useState<WorkforceRecommendation | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [accessDenied, setAccessDenied] = useState(false);
   const mounted = useRef(false);
   const inFlight = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -16,9 +17,10 @@ export default function WorkforceCard() {
     inFlight.current = true;
     setBusy(true); setError(""); setResult(null);
     try { const data = await aiWorkspace.workforce(); if (mounted.current) setResult(data); }
-    catch (e) { if (mounted.current) setError(errorMessage(e)); }
+    catch (e) { if (mounted.current) { if (e instanceof ApiError && e.status === 403) setAccessDenied(true); else setError(errorMessage(e)); } }
     finally { inFlight.current = false; if (mounted.current) setBusy(false); }
   }
+  if (accessDenied) return null;
   const actions: Record<string, string> = {
     NOOP: "Conserver l’organisation", NO_OP: "Conserver l’organisation", NONE: "Conserver l’organisation",
     REALLOCATE: "Rééquilibrer les équipes", REASSIGN: "Rééquilibrer les équipes",
@@ -36,6 +38,8 @@ export default function WorkforceCard() {
         <p>{result.reason}</p>
         {result.fromPool && result.toPool && <p>{skillNames[result.fromPool] || result.fromPool} → {skillNames[result.toPool] || result.toPool}{result.count != null ? ` · ${result.count} conseiller(s)` : ""}</p>}
         <p>Aucune affectation n’a été modifiée. Cette proposition nécessite votre revue.</p>
+        {result.caveats?.length > 0 && <ul className="cv-subtitle">{result.caveats.map((caveat, index) => <li key={index}>{caveat}</li>)}</ul>}
+        <button type="button" className="cv-button cv-button-secondary" disabled>Appliquer — validation humaine à venir</button>
       </div>
       <div className="cv-table-wrap cv-section"><table className="cv-table"><caption className="sr-only">Données utilisées pour la recommandation</caption>
         <thead><tr><th>Compétence</th><th>En attente</th><th>Attente moyenne</th><th>Disponibles</th></tr></thead>

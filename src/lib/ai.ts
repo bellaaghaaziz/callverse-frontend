@@ -31,9 +31,9 @@ export function aiSlotState(
 // its endpoint ships (roadmap R5W); later, read these from a capabilities endpoint.
 export const AI_FEATURES: Record<AiFeature, boolean> = {
   suggestion: false,
-  workforce: false,
-  quality: false,
-  simulation: false,
+  workforce: true,
+  quality: true, // Our preserved workspace exposes persisted quality grades.
+  simulation: true,
 };
 // UNREACHABLE: the health request itself failed.
 export type AiHealth = "UP" | "DEGRADED" | "DOWN" | "UNREACHABLE";
@@ -123,16 +123,20 @@ export interface WorkforceViewModel {
   reason: string | null;
   // One number per metric, e.g. { wait_seconds: -45 }.
   expectedGain: Record<string, number>;
+  caveats: string[];
+  decisionId: number | null;
+  generatedAt: string | null;
+  requiresApproval: boolean;
 }
 export function adaptWorkforce(raw: unknown): WorkforceViewModel | null {
   if (!isRecord(raw)) return null;
   const action = text(raw.type);
   if (!action) return null;
-  const gain = isRecord(raw.expected_gain) ? raw.expected_gain : {};
+  const gain = isRecord(raw.expectedGain) ? raw.expectedGain : isRecord(raw.expected_gain) ? raw.expected_gain : {};
   return {
     action,
-    fromPool: text(raw.from_pool),
-    toPool: text(raw.to_pool),
+    fromPool: text(raw.fromPool) ?? text(raw.from_pool),
+    toPool: text(raw.toPool) ?? text(raw.to_pool),
     count:
       Number.isInteger(raw.count) && (raw.count as number) >= 0
         ? (raw.count as number)
@@ -141,6 +145,10 @@ export function adaptWorkforce(raw: unknown): WorkforceViewModel | null {
     expectedGain: Object.fromEntries(
       Object.entries(gain).filter(([, value]) => typeof value === "number"),
     ) as Record<string, number>,
+    caveats: list(raw.caveats).filter((value): value is string => typeof value === "string"),
+    decisionId: numberIn(raw.decisionId, 0, Number.MAX_SAFE_INTEGER),
+    generatedAt: text(raw.generatedAt),
+    requiresApproval: raw.requiresApproval !== false,
   };
 }
 

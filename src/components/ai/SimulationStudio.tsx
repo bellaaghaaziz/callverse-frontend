@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, RefreshCw, FlaskConical } from "lucide-react";
 import { aiWorkspace, running, runNames, type SimulationMessage, type SimulationOptions, type SimulationRun, type SimulationSetup } from "@/lib/ai-workspace";
+import { twinStrategies } from "@/lib/twin";
 import { errorMessage } from "@/lib/api";
 
 const initial: SimulationSetup = {
@@ -33,7 +34,7 @@ export default function SimulationStudio() {
       .then(([catalog, recent]) => {
         if (controller.signal.aborted) return;
         setOptions(catalog); setRuns(recent);
-        setSetup(s => ({ ...s, scenarioId: s.scenarioId || catalog.scenarios[0]?.id || "", strategyCode: s.strategyCode || catalog.strategies[0]?.code || "" }));
+        setSetup(s => ({ ...s, scenarioId: s.scenarioId || catalog.scenarios[0]?.id || "", strategyCode: s.strategyCode || catalog.strategies.find(strategy => strategy.code === "STATIC_FIFO")?.code || catalog.strategies[0]?.code || "" }));
       }).catch(e => { if (!controller.signal.aborted) setError(errorMessage(e)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
@@ -99,7 +100,7 @@ export default function SimulationStudio() {
         {options && (!options.scenarios.length || !options.strategies.length) && <p className="cv-notice">Aucun scénario ou stratégie disponible. Demandez à l’administrateur de configurer les références de simulation.</p>}
         <fieldset disabled={busy || loading || !options} className="cv-ai-fields">
           <label className="cv-label">Scénario<select className="cv-input" required value={setup.scenarioId} onChange={e => setSetup(s => ({ ...s, scenarioId: e.target.value }))}><option value="">Choisir un scénario</option>{options?.scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
-          <label className="cv-label">Référence de stratégie<select className="cv-input" required value={setup.strategyCode} onChange={e => setSetup(s => ({ ...s, strategyCode: e.target.value }))}><option value="">Choisir une stratégie</option>{options?.strategies.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}</select></label>
+          <label className="cv-label">Stratégie<select aria-label="Stratégie" className="cv-input" required value={setup.strategyCode} onChange={e => setSetup(s => ({ ...s, strategyCode: e.target.value }))}><option value="">Choisir une stratégie</option>{options?.strategies.map(s => <option key={s.code} value={s.code}>{twinStrategies.find(strategy => strategy.code === s.code)?.name || s.name}</option>)}</select></label>
           <p className="cv-subtitle">La stratégie identifie le run. Ce dialogue ne mesure pas les performances de répartition des effectifs.</p>
           <label className="cv-label">Objectif du client<textarea className="cv-input" required maxLength={1000} rows={3} value={setup.objective} onChange={e => setSetup(s => ({ ...s, objective: e.target.value }))} /></label>
           <div className="cv-ai-form-grid"><label className="cv-label">Profil<select className="cv-input" value={setup.profile} onChange={e => setSetup(s => ({ ...s, profile: e.target.value }))}>{Object.entries({ CALME: "Calme", IMPATIENT: "Impatient", INSATISFAIT: "Insatisfait", EXIGEANT: "Exigeant", OFFRE: "En recherche d’offre", CHURN: "Risque de départ" }).map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label>
@@ -113,7 +114,7 @@ export default function SimulationStudio() {
       </form>
       <div className="cv-card cv-card-pad" data-tour="simulation-tracking">
         <div className="cv-ai-card-heading"><h3 className="cv-tool-title">Suivi du dialogue</h3><button className="cv-button cv-button-secondary cv-button-small" disabled={!selected} onClick={() => setRevision(n => n + 1)}><RefreshCw size={14} />Actualiser le suivi</button></div>
-        <label className="cv-label cv-section">Simulations récentes<select className="cv-input" value={selected} onChange={e => { setSelected(e.target.value); setRun(null); setMessages([]); setFollowError(""); }}><option value="">Sélectionner une simulation</option>{runs.map(r => <option key={r.runId} value={r.runId}>{r.startedAt ? new Date(r.startedAt).toLocaleString("fr-FR") : "Simulation"} · {runNames[r.status]} · {r.runId.slice(0, 8)}</option>)}</select></label>
+        <label className="cv-label cv-section">Simulations récentes<select className="cv-input" value={selected} onChange={e => { setSelected(e.target.value); setRun(null); setMessages([]); setFollowError(""); }}><option value="">Sélectionner une simulation</option>{runs.map((r, index) => <option key={r.runId} value={r.runId}>{r.startedAt ? new Date(r.startedAt).toLocaleString("fr-FR") : "Simulation"} · {runNames[r.status]} · Essai {runs.length - index}</option>)}</select></label>
         {followError && <p role="alert" className="cv-error cv-section">{followError} Le suivi est suspendu ; utilisez « Actualiser le suivi » pour réessayer.</p>}
         {run && <div className="cv-notice cv-section" role="status"><strong>{runNames[run.status]}</strong><p>{run.messageCount} message(s) · {run.conversationStatus === "RESOLVED" ? "Conversation résolue" : run.conversationStatus === "ABANDONED" ? "Client parti" : "Dialogue simulé"}</p>{running(run) && <p>Le suivi s’actualise automatiquement.</p>}{run.errorMessage && <p>{run.errorMessage}</p>}</div>}
         {!selected && <p className="cv-notice cv-section">Lancez un dialogue ou sélectionnez une simulation récente pour consulter ses échanges.</p>}

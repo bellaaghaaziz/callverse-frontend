@@ -29,8 +29,13 @@ export function messageFromEvent(event: ConversationEvent): Message | null {
     sender: event.sender,
     content: event.content,
     sentAt: event.sentAt,
+    aiGenerated: event.aiGenerated === true,
   };
 }
+
+export const needsHumanTakeoverNotice = (messages: Message[]) =>
+  messages.some(message => message.sender === "ADVISOR" && message.aiGenerated === true) &&
+  !messages.some(message => message.sender === "ADVISOR" && message.aiGenerated !== true);
 
 // Applies a live status and drops conversations that are now closed.
 export const withEventStatus = <T extends Pick<Conversation, "id" | "status">>(

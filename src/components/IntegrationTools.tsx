@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiFetch, errorMessage } from "@/lib/api";
-import type { Customer, Conversation, Schema } from "@/lib/contracts";
+import type { Conversation, Schema } from "@/lib/contracts";
+import CustomerPicker, { type CustomerChoice } from "./CustomerPicker";
 import {
   Headphones,
   Search,
@@ -22,29 +23,11 @@ export function FrontDesk({
 }: {
   onOpened?: (conversation: Conversation) => void;
 }) {
-  const [reference, setReference] = useState("");
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<CustomerChoice | null>(null);
   const [skill, setSkill] = useState("FRAUD");
   const [intent, setIntent] = useState("FRAUD");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  async function lookup(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setCustomer(null);
-    setNotice("");
-    try {
-      setCustomer(
-        await apiFetch<Customer>(
-          `/customers?externalRef=${encodeURIComponent(reference.trim())}`,
-        ),
-      );
-    } catch (error) {
-      setNotice(errorMessage(error));
-    } finally {
-      setBusy(false);
-    }
-  }
   async function open() {
     if (!customer) return;
     setBusy(true);
@@ -62,6 +45,7 @@ export function FrontDesk({
         "Contact enregistré. Le client retrouve sa demande dans sa liste de conversations.",
       );
       onOpened?.(conversation);
+      setCustomer(null);
     } catch (error) {
       setNotice(errorMessage(error));
     } finally {
@@ -75,26 +59,9 @@ export function FrontDesk({
         Enregistrer un contact
       </h2>
       <p className="cv-subtitle mb-4">
-        Retrouvez le client, puis orientez sa demande vers la bonne file.
+        Choisissez un client dans la liste, puis orientez sa demande vers la bonne file.
       </p>
-      <form onSubmit={lookup} className="cv-inline-form">
-        <input
-          aria-label="Référence client"
-          required
-          maxLength={100}
-          value={reference}
-          onChange={(e) => {
-            setReference(e.target.value);
-            setCustomer(null);
-          }}
-          className="cv-input"
-          placeholder="Référence client, ex. DEMO-00418"
-        />
-        <button disabled={busy} className="cv-button">
-          <Search size={13} />
-          Rechercher
-        </button>
-      </form>
+      <CustomerPicker selectedId={customer?.id} disabled={busy} onSelect={choice => { setCustomer(choice); setNotice(""); }} />
       {customer && (
         <div className="cv-result">
           <div className="flex items-center gap-3 mb-4">
@@ -105,7 +72,7 @@ export function FrontDesk({
               <h3>
                 {customer.firstName} {customer.lastName}
               </h3>
-              <p>{customer.externalRef}</p>
+              {customer.region && <p>{customer.region}</p>}
             </div>
           </div>
           <div className="cv-form-row">

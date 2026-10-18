@@ -340,11 +340,11 @@ test("AI slot follows the request once the feature is available", () => {
   assert.equal(aiSlotState("available", "done"), "ready");
   assert.equal(aiSlotState("available", "failed"), "error");
 });
-test("no AI feature claims to be available before its Spring façade exists", () => {
+test("only implemented Spring AI features are enabled; reply suggestions remain unavailable", () => {
   const { AI_FEATURES, capabilityFor } = compile("ai");
   assert.deepEqual(
     Object.entries(AI_FEATURES).filter(([, ready]) => ready),
-    [],
+    [["workforce", true], ["quality", true], ["simulation", true]],
   );
   for (const health of [null, "UP", "DEGRADED", "DOWN", "UNREACHABLE"])
     assert.equal(capabilityFor("suggestion", health), "soon");
@@ -800,6 +800,7 @@ test("advisor events: a posted message is kept only when complete, closed conver
       sender: "CUSTOMER",
       content: "Bonjour",
       sentAt: "2026-10-11T09:00:00Z",
+      aiGenerated: false,
     },
   );
   assert.equal(
@@ -808,6 +809,10 @@ test("advisor events: a posted message is kept only when complete, closed conver
   );
   assert.equal(advisor.messageFromEvent({ ...event, messageId: null }), null);
   assert.equal(advisor.messageFromEvent({ ...event, content: null }), null);
+  const aiMessage = advisor.messageFromEvent({ ...event, sender: "ADVISOR", aiGenerated: true });
+  assert.equal(aiMessage.aiGenerated, true);
+  assert.equal(advisor.needsHumanTakeoverNotice([aiMessage]), true);
+  assert.equal(advisor.needsHumanTakeoverNotice([aiMessage, { ...aiMessage, id: 8, aiGenerated: false }]), false);
   const list = [
     { id: "c1", status: "ASSIGNED" },
     { id: "c2", status: "ACTIVE" },

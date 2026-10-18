@@ -17,3 +17,14 @@
 .cv-ai-lookup > label { flex:1; min-width:220px; }
 @media (max-width:1000px) { .cv-ai-studio-grid { grid-template-columns:1fr; } }
 @media (max-width:600px) { .cv-ai-form-grid, .cv-ai-criteria { grid-template-columns:1fr; } .cv-ai-card-heading > button { width:100%; justify-content:center; } }
+.cv-twin-charts { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px; }
+.cv-twin-chart { min-width:0;padding:16px;border:1px solid var(--lp-line,#c8dfd6);border-radius:16px;background:#f2f8f5; }
+.cv-twin-chart h3 { margin:0 0 16px;font-size:16px; }
+.cv-twin-bar-row { display:grid;grid-template-columns:70px minmax(0,1fr) 65px;gap:8px;align-items:center;margin-top:14px;font-size:12px; }
+.cv-twin-bar-row strong { text-align:right; }
+.cv-twin-track { height:12px;border-radius:6px;background:#dcebe4;overflow:hidden; }
+.cv-twin-bar { height:100%;border-radius:6px; }
+.cv-twin-bar-STATIC_FIFO { background:#45675e; }
+.cv-twin-bar-THRESHOLD { background:#10816a; }
+.cv-twin-bar-RL_PPO_V1 { background:#13b98b; }
+@media(max-width:1100px){.cv-twin-charts{grid-template-columns:1fr;}}

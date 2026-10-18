@@ -9,6 +9,8 @@ import {
   Activity,
   House,
   Bell,
+  FlaskConical,
+  Sparkles,
 } from "lucide-react";
 
 // Sidebar items per role: each id is a section on the page (or an admin tab).
@@ -25,6 +27,8 @@ export const itemsByRole = {
     { id: "alerts", label: "Alertes", icon: Bell },
     { id: "conversation", label: "Conversations", icon: MessageSquare },
     { id: "frontdesk", label: "Accueil", icon: Headphones },
+    { id: "workforce", label: "Proposition IA", icon: Sparkles },
+    { id: "twin", label: "Jumeau numérique", icon: FlaskConical },
   ],
   Client: [
     { id: "workspace", label: "Mon espace", icon: LayoutDashboard },
@@ -35,6 +39,7 @@ export const itemsByRole = {
     { id: "Utilisateurs", label: "Utilisateurs", icon: Users },
     { id: "Procédures", label: "Procédures", icon: BookOpen },
     { id: "Accueil", label: "Accueil", icon: Headphones },
+    { id: "Jumeau numérique", label: "Jumeau numérique", icon: FlaskConical },
     { id: "Catalogue produits", label: "Catalogue", icon: Package },
     { id: "Conseillers", label: "Conseillers", icon: Headphones },
     { id: "Règles", label: "Règles et accès", icon: SlidersHorizontal },

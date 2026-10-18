@@ -16,7 +16,7 @@ import {
   intentLabel,
   skillLabel,
 } from "@/lib/presentation";
-import { canAbandon, canEscalate, canResolve } from "@/lib/advisor";
+import { canAbandon, canEscalate, canResolve, needsHumanTakeoverNotice } from "@/lib/advisor";
 import type { AdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 import type { ActionForms } from "@/hooks/useActionForms";
 
@@ -88,7 +88,7 @@ export default function AdvisorChatPanel({
             role="ADVISOR"
             customerName={customerName}
           />
-          {canReply && <p className="cv-notice m-4">Lorsqu’il est disponible, le conseiller IA répond directement dans cet échange après un message client. Relisez les derniers messages avant d’envoyer votre réponse.</p>}
+          {canReply && needsHumanTakeoverNotice(messages) && <p className="cv-notice m-4" role="status">L’assistant IA a répondu à ce client. Votre premier message reprend la main : l’IA ne répondra plus.</p>}
           <div className="cv-composer">
             {canReply ? (
               <>

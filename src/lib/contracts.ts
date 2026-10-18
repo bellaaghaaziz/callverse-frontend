@@ -57,6 +57,7 @@ export interface ConversationEvent {
   sender: Message["sender"] | null;
   content: string | null;
   sentAt: string | null;
+  aiGenerated: boolean | null;
 }
 export interface QueueEvent {
   schemaVersion: 1;

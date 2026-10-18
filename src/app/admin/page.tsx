@@ -4,6 +4,7 @@ import AppShell from "@/components/AppShell";
 import { FrontDesk, KnowledgeSearch } from "@/components/IntegrationTools";
 import ConversationPanel from "@/components/ConversationPanel";
 import ConversationPicker from "@/components/ConversationPicker";
+import TwinLab from "@/components/twin/TwinLab";
 import { api, apiFetch, errorMessage } from "@/lib/api";
 import type { Role, Schema } from "@/lib/contracts";
 const roles: Role[] = ["CUSTOMER", "ADVISOR", "SUPERVISOR", "ADMIN"];
@@ -22,6 +23,7 @@ const tabs = [
   "Utilisateurs",
   "Procédures",
   "Accueil",
+  "Jumeau numérique",
   "Catalogue produits",
   "Conseillers",
   "Règles",
@@ -37,6 +39,8 @@ export default function AdminPage() {
     tabIndex: 0,
   };
   useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("section");
+    if (requested && tabs.includes(requested)) setTab(requested);
     const handler = (event: Event) =>
       setTab((event as CustomEvent<string>).detail);
     window.addEventListener("callverse:navigate", handler);
@@ -562,6 +566,7 @@ export default function AdminPage() {
           )}
         </div>
       )}
+      {tab === "Jumeau numérique" && <div {...panel}><TwinLab /></div>}
       {["Catalogue produits", "Conseillers", "Règles"].includes(tab) && (
         <section className="cv-card" {...panel}>
           <div className="cv-empty !py-20">

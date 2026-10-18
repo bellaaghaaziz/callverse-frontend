@@ -88,6 +88,7 @@ export default function ConversationPanel({
               sender: event.sender!,
               content: event.content!,
               sentAt: event.sentAt!,
+              aiGenerated: event.aiGenerated === true,
             },
           ]),
         );

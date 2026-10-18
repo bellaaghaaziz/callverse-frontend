@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -34,6 +34,7 @@ export default function AppShell({
 }) {
   const green = variant === "green";
   const router = useRouter();
+  const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -61,7 +62,7 @@ export default function AppShell({
   const [email, setEmail] = useState("");
   const items =
     itemsByRole[role as keyof typeof itemsByRole] || itemsByRole.Client;
-  const [active, setActive] = useState(items[0].id);
+  const [active, setActive] = useState(role === "Superviseur" && pathname.endsWith("/twin") ? "twin" : items[0].id);
   useEffect(() => {
     if (!profileOpen && !mobileOpen) return;
     const key = (event: KeyboardEvent) => {
@@ -115,6 +116,9 @@ export default function AppShell({
   function navigate(id: string) {
     setActive(id);
     setMobileOpen(false);
+    if (id === "twin" && role === "Superviseur") { router.push("/supervisor/twin"); return; }
+    if (role === "Superviseur" && window.location.pathname !== "/supervisor") { router.push("/supervisor#" + id); return; }
+    if (role === "Analyste / Admin" && window.location.pathname !== "/admin") { router.push("/admin?section=" + encodeURIComponent(id)); return; }
     if (role === "Analyste / Admin")
       window.dispatchEvent(
         new CustomEvent("callverse:navigate", { detail: id }),

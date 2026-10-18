@@ -93,12 +93,12 @@ export default function ChatThread({
           </div>
         )}
         {messages.map((message, index) => {
-          const own = message.sender === role;
+          const own = message.sender === role && message.aiGenerated !== true;
           const name =
             message.sender === "CUSTOMER"
               ? customerName
               : message.sender === "ADVISOR"
-                ? "Conseiller"
+                ? message.aiGenerated === true && role === "CUSTOMER" ? "Assistant IA" : "Conseiller"
                 : "Information";
           const day = dayLabel(message.sentAt);
           const newDay =
@@ -106,7 +106,8 @@ export default function ChatThread({
           const grouped =
             !newDay &&
             index > 0 &&
-            messages[index - 1].sender === message.sender;
+            messages[index - 1].sender === message.sender &&
+            (messages[index - 1].aiGenerated === true) === (message.aiGenerated === true);
           return (
             <div key={message.id}>
               {newDay && (
@@ -133,11 +134,12 @@ export default function ChatThread({
                     {initialsFor(name)}
                   </span>
                   <div className="cv-message-body">
-                    {!grouped && (
+                    {(!grouped || message.aiGenerated === true) && (
                       <p className="cv-message-name">
-                        {own ? "Vous" : name}
+                        {message.aiGenerated === true && role === "CUSTOMER" ? null : own ? "Vous" : name}
+                        {message.aiGenerated === true && <span className="cv-badge cv-badge-green" style={{marginLeft:role === "CUSTOMER" ? 0 : 8}} aria-label="Message rédigé par l'assistant IA">Assistant IA</span>}
                         <span>
-                          {own || name === roleLabel[message.sender]
+                          {own || message.aiGenerated === true || name === roleLabel[message.sender]
                             ? ""
                             : " · " + roleLabel[message.sender]}
                         </span>
