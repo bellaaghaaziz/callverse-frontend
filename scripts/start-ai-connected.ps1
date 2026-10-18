@@ -36,8 +36,9 @@ try {
     Read-LocalEnv (Join-Path $backendRoot '.env')
     Read-LocalEnv (Join-Path $workspaceRoot 'callverse-ai\.env')
     Read-LocalEnv (Join-Path $aiRoot '.env')
-    if (-not $env:LLM_API_KEY) { Write-Host 'Conseiller et simulateur : configurez LLM_API_KEY dans ai-service/.env pour les appels Groq.' }
-    if (-not $env:QUALITY_MODEL) { Write-Host 'Qualité : configurez QUALITY_MODEL avec un modèle disponible dans Ollama.' }
+    if (-not $env:LLM_API_KEY) { Write-Host 'Conseiller, simulateur et qualité Groq : configurez LLM_API_KEY dans ai-service/.env.' }
+    if ($env:QUALITY_PROVIDER -eq 'ollama' -and -not $env:QUALITY_MODEL) { Write-Host 'Qualité Ollama : configurez QUALITY_MODEL avec un modèle installé.' }
+    if (-not $env:QUALITY_PROVIDER) { Write-Host 'Qualité : Groq par défaut. Pour un test local, configurez QUALITY_PROVIDER=ollama et QUALITY_MODEL.' }
     $keyPath = Join-Path $runtimeRoot 'ai-connected-key.txt'
     if (-not (Test-Path -LiteralPath $keyPath)) {
         [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N') | Set-Content -LiteralPath $keyPath

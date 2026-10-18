@@ -1,7 +1,15 @@
 # Intégration IA — 18 octobre 2026
 
-Le backend `callverse-backend-ai` combine `origin/main` à `bcc172c` (intégration de Fedi)
+Le backend `callverse-backend-ai` combine `origin/main` à `00520e9` (intégration de Fedi)
 et nos annuaires et commandes qualité. Le navigateur utilise les routes Spring authentifiées.
+
+La qualité utilise désormais Groq par défaut (`LLM_API_KEY`, modèle `QUALITY_GROQ_MODEL`).
+Pour conserver les essais locaux Ollama, définir explicitement `QUALITY_PROVIDER=ollama`
+et `QUALITY_MODEL` avec un modèle installé. Sans clé Groq, le fournisseur par défaut ne
+peut pas noter les conversations. Le correctif du budget d’outils conseiller est intégré.
+
+Le [guide utilisateur PDF](user-guide/CallVerse-Guide-Decouverte-et-Tests.pdf) décrit les
+parcours de découverte et de test. Son exemple qualité provient du fournisseur local Ollama.
 
 ## Parcours disponibles
 
