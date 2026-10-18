@@ -10,9 +10,9 @@ const require=createRequire(import.meta.url);
 function compile(file,imports={}) {
  const source=fs.readFileSync(new URL('../src/'+file,import.meta.url),'utf8');
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- const module={exports:{}};
- vm.runInNewContext(code,{module,exports:module.exports,require:name=>imports[name]||require(name)});
- return module.exports;
+ const compiledModule={exports:{}};
+ vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,require:name=>imports[name]||require(name)});
+ return compiledModule.exports;
 }
 const presentation=compile('lib/presentation.ts');
 const ChatThread=compile('components/ChatThread.tsx',{'@/lib/presentation':presentation}).default;

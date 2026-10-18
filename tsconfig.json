@@ -31,10 +31,10 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    ".next-ai-connected/types/**/*.ts",
     ".next-validation/types/**/*.ts",
     ".next/types/**/*.ts",
-    "next-env.d.ts",
-    ".next-ai-connected/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
     "node_modules"

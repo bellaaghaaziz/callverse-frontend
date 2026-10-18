@@ -11,8 +11,11 @@ import AppShell from "@/components/AppShell";
 import ConversationPanel from "@/components/ConversationPanel";
 import ConversationPicker from "@/components/ConversationPicker";
 import { Incidents } from "@/components/IntegrationTools";
+import SupportDesk from "@/components/SupportDesk";
+import CustomerBanking from "@/components/CustomerBanking";
 export default function ClientPage() {
   const [id, setId] = useState<string | null>(null);
+  const [conversationRevision, setConversationRevision] = useState(0);
   return (
     <AppShell role="Client" initials="CL" title="Mon espace client">
       <div className="cv-page-heading" id="workspace">
@@ -36,7 +39,7 @@ export default function ClientPage() {
               Échangez avec votre conseiller
             </h2>
             <p className="cv-subtitle mb-5">Retrouvez vos demandes et ouvrez un échange en un clic.</p>
-            <ConversationPicker title="Mes conversations" selectedId={id} onSelect={choice => {
+            <ConversationPicker key={conversationRevision} title="Mes conversations" selectedId={id} onSelect={choice => {
               setId(choice.id);
               requestAnimationFrame(() => document.querySelector('[data-tour="client-chat"]')?.scrollIntoView({behavior:"smooth",block:"start"}));
             }} />
@@ -67,7 +70,7 @@ export default function ClientPage() {
               [
                 "01",
                 "Prenez contact",
-                "Votre conseiller enregistre votre demande.",
+                "Ouvrez une demande dans le formulaire Contacter un conseiller.",
               ],
               [
                 "02",
@@ -106,6 +109,8 @@ export default function ClientPage() {
           </section>
         </aside>
       </div>
+      <CustomerBanking onOpened={conversation => { setId(conversation.id); setConversationRevision(n => n + 1); }} />
+      <SupportDesk role="CUSTOMER" />
     </AppShell>
   );
 }

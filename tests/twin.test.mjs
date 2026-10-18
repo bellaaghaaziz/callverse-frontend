@@ -6,9 +6,9 @@ import ts from "typescript";
 function load(fetch=async()=>[]) {
  const source=fs.readFileSync(new URL('../src/lib/twin.ts',import.meta.url),'utf8');
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;
- const module={exports:{}};
- vm.runInNewContext(code,{module,exports:module.exports,URLSearchParams,require:name=>{assert.equal(name,'./api');return{apiFetch:fetch};}});
- return module.exports;
+ const compiledModule={exports:{}};
+ vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,URLSearchParams,require:name=>{assert.equal(name,'./api');return{apiFetch:fetch};}});
+ return compiledModule.exports;
 }
 test('twin calls only authenticated backend routes and preserves strategy and seed',async()=>{
  const calls=[];const {twinApi}=load(async(...args)=>{calls.push(args);return[];});

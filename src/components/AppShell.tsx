@@ -16,7 +16,7 @@ import SessionGuard from "./SessionGuard";
 import Brand from "./Brand";
 import { itemsByRole } from "./shell/navItems";
 import { SidebarArt, SpaceCard } from "./shell/GreenSidebar";
-import { clearSession } from "@/lib/auth";
+import { logoutSession } from "@/lib/api";
 import GuidedTour from "./GuidedTour";
 export default function AppShell({
   role,
@@ -110,7 +110,7 @@ export default function AppShell({
     return () => window.removeEventListener("callverse:section", listener);
   }, []);
   function logout() {
-    clearSession();
+    void logoutSession().catch(() => { /* The local session is already closed. */ });
     router.push("/");
   }
   function navigate(id: string) {

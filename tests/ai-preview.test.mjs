@@ -45,3 +45,21 @@ test("AI preview forwards workforce only to its fixed service path", async()=>{
   assert.equal(calls[1].options.headers["x-preview-key"],"test-key");
   assert.deepEqual(JSON.parse(calls[1].options.body),state);
 });
+
+test("advisor preview authenticates the AI service and cannot execute live banking tools", async()=>{
+  const calls=[];
+  const api=route(async(url,options)=>{
+    calls.push({url,options});
+    const responses=[{role:"ADVISOR"},{id:"10000000-0000-4000-8000-000000000001",customerId:"20000000-0000-4000-8000-000000000001"},
+      {messages:[{sender:"CUSTOMER",content:"Write to test@example.com, card 1234567890123456",sentAt:"2026-10-18T12:00:00Z"}]},
+      {tenureMonths:12,segment:"MASS"},{reply:"Proposal"}];
+    return Response.json(responses[calls.length-1]);
+  });
+  assert.equal((await api.POST(request({feature:"suggestion",conversationId:"10000000-0000-4000-8000-000000000001"}))).status,200);
+  const sent=JSON.parse(calls[4].options.body);
+  assert.equal(sent.mode,"SIMULATION");
+  assert.equal(calls[4].options.headers["x-ai-key"],"test-key");
+  assert.ok(!sent.message.includes("test@example.com"));
+  assert.ok(!sent.message.includes("1234567890123456"));
+  assert.equal(calls.length,5);
+});

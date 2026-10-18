@@ -9,9 +9,9 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
   const [objective, setObjective] = useState("Je souhaite comprendre comment faire opposition à ma carte perdue.");
   const [strategy, setStrategy] = useState("THRESHOLD");
   const [scenario, setScenario] = useState(JSON.stringify({
-    queues: { ACCOUNT: 0, CARD: 15, CREDIT: 0, ADVISORY: 0 },
-    avg_wait: { ACCOUNT: 0, CARD: 180, CREDIT: 0, ADVISORY: 0 },
-    available: { ACCOUNT: 2, CARD: 0, CREDIT: 1, ADVISORY: 1 },
+    queues: { ACCOUNTS: 0, CARDS: 15, CREDIT: 0, FRAUD: 0 },
+    avg_wait: { ACCOUNTS: 0, CARDS: 180, CREDIT: 0, FRAUD: 0 },
+    available: { ACCOUNTS: 2, CARDS: 0, CREDIT: 1, FRAUD: 1 },
     sla_today: .8, hour: 10, trend: 1,
   }, null, 2));
   const [result, setResult] = useState<unknown>(null);
@@ -47,7 +47,7 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
   return <section className="cv-card cv-card-pad cv-section" id="ai-lab">
     <h2 className="cv-tool-title">Laboratoire IA</h2>
     <p className="cv-subtitle">Essais isolés : aucune réponse envoyée au client et aucune modification métier automatique.</p>
-    <p className="cv-notice">Le conseiller utilise les lectures autorisées et la recherche textuelle des procédures. Le type de contrat, le risque de départ et le nombre de tickets ne sont pas fournis dans le contexte. Le RAG vectoriel n’est pas activé ici.</p>
+    <p className="cv-notice">Choisissez un échange auquel vous avez accès. L’IA peut rechercher les procédures publiées pour préparer une réponse. Les actions bancaires et la consultation des comptes par l’IA sont désactivées dans cet essai ; vérifiez vous-même le dossier avant d’utiliser la proposition.</p>
     <button className="cv-button cv-button-secondary" data-tour="lab-health" disabled={busy} onClick={async () => {
       setBusy(true); setError(""); try { const data = await request(); setStatus("Service connecté · " + (data.workforce.model_file_present ? "modèle PPO présent" : "modèle PPO absent")); }
       catch (e) { setError(e instanceof Error ? e.message : "Service indisponible"); } finally { setBusy(false); }
@@ -62,14 +62,14 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
       {["suggestion", "quality"].includes(feature) && <p className="cv-muted">{conversationId ? "La conversation sélectionnée sera analysée." : "Sélectionnez d’abord un échange dans la liste ci-dessus."}</p>}
       {feature === "simulation" && <label className="cv-label">Objectif du client simulé<textarea className="cv-input" required value={objective} onChange={e => setObjective(e.target.value)} /></label>}
       {feature === "workforce" && <>
-        <p className="cv-notice">Scénario synthétique modifiable : ADVISORY appartient au modèle IA et ne correspond pas à la file FRAUD. Ces effectifs ne sont pas ceux de la banque.</p>
+        <p className="cv-notice">Scénario synthétique modifiable sur les quatre compétences du centre. Ces effectifs ne sont pas ceux de la banque.</p>
         <label className="cv-label">Stratégie<select className="cv-input" value={strategy} onChange={e => setStrategy(e.target.value)}><option>THRESHOLD</option><option>STATIC_FIFO</option><option>PPO</option></select></label>
         <label className="cv-label">État du scénario (JSON)<textarea className="cv-input" rows={12} value={scenario} onChange={e => setScenario(e.target.value)} /></label>
       </>}
       <button className="cv-button" disabled={busy}>{busy ? "Analyse en cours…" : "Lancer l’essai IA"}</button>
     </form>
     {error && <p className="cv-error cv-section" role="alert">{error}</p>}
-    {suggestion && <div className="cv-notice cv-section"><h3>Proposition de réponse</h3><p style={{whiteSpace:"pre-wrap"}}>{suggestion.reply}</p><p>Confiance : {suggestion.confidence === null ? "inconnue" : Math.round(suggestion.confidence * 100) + " %"} · Action proposée : {suggestion.suggestedAction.type}</p><p>Les scores de sources à 0 indiquent une recherche textuelle sans score vectoriel.</p></div>}
+    {suggestion && <div className="cv-notice cv-section"><h3>Proposition de réponse</h3><p style={{whiteSpace:"pre-wrap"}}>{suggestion.reply}</p><p>Confiance : {suggestion.confidence === null ? "inconnue" : Math.round(suggestion.confidence * 100) + " %"} · Action proposée : {suggestion.suggestedAction.type}</p><p>Relisez la proposition avant de la reprendre dans votre message. Aucune action proposée n’est exécutée par cet essai.</p></div>}
     {result !== null && <details className="cv-section" open={!suggestion}><summary>Résultat détaillé</summary><pre style={{whiteSpace:"pre-wrap", overflowWrap:"anywhere", fontSize:12}}>{JSON.stringify(result, null, 2)}</pre></details>}
   </section>;
 }

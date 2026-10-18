@@ -54,7 +54,7 @@ test("API sends bearer authentication without cookies and handles normal 204 res
     {
       process: { env: {} },
       window: {},
-      sessionStorage: { getItem: () => "test-token" },
+      sessionStorage: { getItem: key => key === "jwt" ? "test-token" : null },
       Headers,
       fetch: async (url, options) => {
         request = { url, options };
@@ -90,7 +90,7 @@ test("late unauthorized responses preserve a logged-out or replacement session",
     const response = new Promise(resolve => { finish = resolve; });
     const api = compile("api", {
       process: { env: {} }, window: {}, Headers,
-      sessionStorage: { getItem: () => token },
+      sessionStorage: { getItem: key => key === "jwt" ? token : null },
       fetch: () => response,
     }, { "./auth": { expireSession: () => { expired++; } } });
     const pending = api.apiFetch("/auth/me");
@@ -108,7 +108,7 @@ test("401 expires the session, while 403 and invalid login preserve error distin
     {
       process: { env: {} },
       window: {},
-      sessionStorage: { getItem: () => "test-token" },
+      sessionStorage: { getItem: key => key === "jwt" ? "test-token" : null },
       Headers,
       fetch: async () =>
         new Response(

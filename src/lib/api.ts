@@ -1,5 +1,5 @@
 import type { Schema } from "./contracts";
-import { expireSession } from "./auth";
+import { clearSession, expireSession, storeSession, type SessionTokens } from "./auth";
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
 ).replace(/\/$/, "");
@@ -48,23 +48,69 @@ export function errorMessage(error: unknown): string {
   }
   return "Connexion au service impossible. Vérifiez la disponibilité du backend.";
 }
-export async function apiFetch<T = unknown>(
+let refreshing: { credential: string; promise: Promise<boolean> } | null = null;
+let rotation: { previous: string; current: string } | null = null;
+export async function refreshSession(expectedToken = sessionStorage.getItem("jwt")): Promise<boolean> {
+  if (!expectedToken || sessionStorage.getItem("jwt") !== expectedToken) return false;
+  const credential = sessionStorage.getItem("refreshToken");
+  if (!credential) return false;
+  if (refreshing?.credential === credential) return refreshing.promise;
+  const promise = (async () => {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: credential }), credentials: "omit", cache: "no-store",
+    });
+    if (sessionStorage.getItem("jwt") !== expectedToken || sessionStorage.getItem("refreshToken") !== credential) return false;
+    if (!response.ok) {
+      if (response.status === 401) expireSession();
+      throw new ApiError(response.status, response.status === 401 ? "UNAUTHENTICATED" : "INTERNAL_ERROR");
+    }
+    const tokens = await response.json() as SessionTokens;
+    if (sessionStorage.getItem("jwt") !== expectedToken || sessionStorage.getItem("refreshToken") !== credential) return false;
+    rotation = { previous: expectedToken, current: tokens.token };
+    storeSession(tokens);
+    return true;
+  })();
+  refreshing = { credential, promise };
+  try { return await promise; }
+  finally { if (refreshing?.promise === promise) refreshing = null; }
+}
+export async function logoutSession() {
+  const credential = sessionStorage.getItem("refreshToken");
+  clearSession();
+  if (credential) await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken: credential }), credentials: "omit", cache: "no-store", keepalive: true,
+  });
+}
+export async function apiResponse(
   path: string,
   options: RequestInit = {},
-): Promise<T> {
+): Promise<Response> {
   const token =
     typeof window !== "undefined" ? sessionStorage.getItem("jwt") : null;
+  let authenticatedToken = token;
   const headers = new Headers(options.headers);
   if (options.body !== undefined)
     headers.set("Content-Type", "application/json");
-  if (token && path !== "/auth/login")
+  const publicAuth = ["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout"].includes(path);
+  if (token && !publicAuth)
     headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  let res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
     credentials: "omit",
     cache: "no-store",
   });
+  if (res.status === 401 && token && !publicAuth) {
+    const current = sessionStorage.getItem("jwt");
+    const rotated = rotation?.previous === token && rotation.current === current;
+    if (rotated || (current === token && await refreshSession(token))) {
+      authenticatedToken = sessionStorage.getItem("jwt");
+      headers.set("Authorization", `Bearer ${authenticatedToken}`);
+      res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, credentials: "omit", cache: "no-store" });
+    }
+  }
   if (!res.ok) {
     const body: Partial<Schema["ErrorResponse"]> | null = await res
       .json()
@@ -72,9 +118,9 @@ export async function apiFetch<T = unknown>(
     // A late response must not expire a session that was closed or replaced.
     if (
       res.status === 401 &&
-      path !== "/auth/login" &&
+      !publicAuth &&
       token &&
-      sessionStorage.getItem("jwt") === token
+      sessionStorage.getItem("jwt") === authenticatedToken
     ) expireSession();
     throw new ApiError(
       res.status,
@@ -82,12 +128,16 @@ export async function apiFetch<T = unknown>(
       body?.message,
     );
   }
+  return res;
+}
+export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
+  const res = await apiResponse(path, options);
   if (res.status === 204) return null as T;
   return res.json() as Promise<T>;
 }
 export const api = {
   login: (email: string, password: string) =>
-    apiFetch<Schema["TokenResponse"]>("/auth/login", {
+    apiFetch<SessionTokens>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),

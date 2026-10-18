@@ -33,6 +33,9 @@ export const itemsByRole = {
   Client: [
     { id: "workspace", label: "Mon espace", icon: LayoutDashboard },
     { id: "conversation", label: "Mes échanges", icon: MessageSquare },
+    { id: "banking", label: "Mes comptes", icon: Package },
+    { id: "contact", label: "Contacter un conseiller", icon: Headphones },
+    { id: "support-followup", label: "Suivi de mes demandes", icon: Bell },
     { id: "incidents", label: "Incidents de service", icon: Activity },
   ],
   "Analyste / Admin": [

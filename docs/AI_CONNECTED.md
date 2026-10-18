@@ -22,7 +22,17 @@ parcours de découverte et de test. Son exemple qualité provient du fournisseur
   Les messages IA ne sont jamais présentés au conseiller comme « Vous ».
   Une notice explique la reprise humaine lorsqu'une IA a répondu et qu'aucun humain n'a écrit.
 - Superviseur : **Proposition IA**, demande explicite d'une recommandation avec observation
-  et limites. Aucun changement d'affectation ; l'application d'une proposition reste indisponible.
+  et limites. Un transfert proposé peut être appliqué après sélection des conseillers éligibles
+  et confirmation humaine de leur habilitation. Le backend revérifie la disponibilité et
+  refuse les propositions expirées ; aucune affectation n'est modifiée automatiquement.
+- Client : inscription depuis la connexion, consultation de ses comptes et mouvements,
+  téléchargement d'un relevé CSV et ouverture de sa propre conversation depuis son espace.
+  L'inscription crée un accès client ; les comptes et soldes viennent du backend bancaire.
+- Suivi : tickets, commentaires visibles par le client et gestes commerciaux dans les espaces
+  autorisés. Le client confirme la clôture d'un ticket résolu. Les crédits respectent le plafond
+  conseiller ou une validation de supervision, et les nouvelles tentatives identiques restent idempotentes.
+- Session : les jetons de renouvellement sont conservés pour la session du navigateur et tournent
+  lors du renouvellement. La déconnexion révoque la session côté serveur.
 - Superviseur : **Jumeau numérique**, `/supervisor/twin`. Administrateur : onglet du même nom.
   Choisir une journée et une graine, lancer les trois stratégies, comparer SLA, abandons,
   attente moyenne et P95. Les résultats sont réels et persistés, non des fixtures.
@@ -50,7 +60,7 @@ Activer `CALLVERSE_DEMODATA_ENABLED=true` avec le profil dev pour les trois jour
 - Chat autonome et client simulé : modèles Groq, clé LLM et configuration documentaire nécessaires.
 - `AI_ADVISOR_MODE=OFF` par défaut. `AUTONOMOUS` autorise les réponses jusqu'au premier message humain.
   Aucun interrupteur de mode n'est exposé dans l'interface.
-- Qualité : Ollama disponible et `QUALITY_MODEL` renseigné. Pour un CPU lent, ajuster ensemble
+- Qualité locale avec `QUALITY_PROVIDER=ollama` : Ollama disponible et `QUALITY_MODEL` renseigné. Pour un CPU lent, ajuster ensemble
   `QUALITY_TIMEOUT_SECONDS` (par exemple 240) et `AI_SERVICE_QUALITY_READ_TIMEOUT_SECONDS` (270).
   Les valeurs backend/Python par défaut sont 130/120 secondes.
 

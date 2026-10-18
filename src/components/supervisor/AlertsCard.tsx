@@ -4,22 +4,28 @@ import { timeLabel } from "@/lib/presentation";
 import { alertCustomerLabel } from "@/lib/supervision";
 import CardHeading from "./CardHeading";
 
-// « Alertes de la session »: the live alerts since login, or a calm empty state.
+// Persisted history and new live events share the same event envelope.
 export default function AlertsCard({
   alerts,
   names,
   onOpen,
+  hasMore = false,
+  loading = false,
+  onLoadMore,
 }: {
   alerts: SupervisionAlert[];
   names: Record<string, string>;
   onOpen: (id: string) => void;
+  hasMore?: boolean;
+  loading?: boolean;
+  onLoadMore?: () => void;
 }) {
   return (
     <section className="cv-card" id="alerts">
       <CardHeading
         icon={Bell}
-        title="Alertes de la session"
-        subtitle="Les événements reçus depuis votre connexion"
+        title="Historique des alertes"
+        subtitle="Les événements enregistrés et les nouvelles alertes en direct"
         count={alerts.length}
       />
       <div className="cv-alert-list">
@@ -75,6 +81,9 @@ export default function AlertsCard({
           </div>
         ))}
       </div>
+      {hasMore && <button className="cv-button cv-button-secondary" disabled={loading} onClick={onLoadMore}>
+        {loading ? "Chargement…" : "Afficher les alertes précédentes"}
+      </button>}
     </section>
   );
 }

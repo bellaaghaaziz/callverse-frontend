@@ -14,9 +14,19 @@ import { reconnectStomp } from "@/lib/stomp";
 import { RefreshCw } from "lucide-react";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
 import WorkforceCard from "@/components/ai/WorkforceCard";
+import SupportDesk from "@/components/SupportDesk";
+type AlertHistory = { content: SupervisionAlert[]; page: { number: number; totalPages: number } };
+function mergeAlerts(previous: SupervisionAlert[], incoming: SupervisionAlert[]) {
+  const unique = new Map<string, SupervisionAlert>();
+  [...previous, ...incoming].forEach(item => unique.set(`${item.type}:${item.escalationId || item.cardId}:${item.occurredAt}`, item));
+  return [...unique.values()].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+}
 export default function SupervisorPage() {
   const [kpi, setKpi] = useState<LiveKpi | null>(null);
   const [alerts, setAlerts] = useState<SupervisionAlert[]>([]);
+  const [alertPage, setAlertPage] = useState(0);
+  const [moreAlerts, setMoreAlerts] = useState(false);
+  const [loadingAlerts, setLoadingAlerts] = useState(false);
   const alertNames = useCustomerNames(alerts);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -31,9 +41,15 @@ export default function SupervisorPage() {
   const refresh = useCallback(async () => {
     const version = ++requestVersion.current;
     try {
-      const snapshot = await apiFetch<LiveKpi>("/supervision/kpi");
+      const [snapshot, history] = await Promise.all([
+        apiFetch<LiveKpi>("/supervision/kpi"),
+        apiFetch<AlertHistory>("/supervision/alerts?size=20"),
+      ]);
       if (version === requestVersion.current) {
         acceptKpi(snapshot);
+        setAlerts(previous => mergeAlerts(previous, history.content));
+        setAlertPage(0);
+        setMoreAlerts(history.page.totalPages > 1);
         setError("");
       }
     } catch (error) {
@@ -52,16 +68,18 @@ export default function SupervisorPage() {
     };
   }, [refresh]);
   useTopic<LiveKpi>("/topic/supervision/kpi", acceptKpi);
-  useTopic<SupervisionAlert>("/topic/supervision/alerts", (alert) =>
-    setAlerts((previous) => {
-      const key = (item: SupervisionAlert) =>
-        `${item.type}:${item.escalationId || item.cardId}:${item.occurredAt}`;
-      if (previous.some((item) => key(item) === key(alert))) return previous;
-      return [alert, ...previous]
-        .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-        .slice(0, 100);
-    }),
-  );
+  useTopic<SupervisionAlert>("/topic/supervision/alerts", alert => setAlerts(previous => mergeAlerts(previous, [alert])));
+  async function loadMoreAlerts() {
+    if (loadingAlerts) return;
+    setLoadingAlerts(true);
+    try {
+      const history = await apiFetch<AlertHistory>(`/supervision/alerts?page=${alertPage + 1}&size=20`);
+      setAlerts(previous => mergeAlerts(previous, history.content));
+      setAlertPage(history.page.number);
+      setMoreAlerts(history.page.number + 1 < history.page.totalPages);
+    } catch (error) { setError(errorMessage(error)); }
+    finally { setLoadingAlerts(false); }
+  }
   const openConversation = (id: string) => {
     setSelectedId(id);
     // After the panel renders, bring it into view and move focus into it.
@@ -118,12 +136,16 @@ export default function SupervisorPage() {
         )}
         <KpiTiles kpi={kpi} />
         <WorkforceCard />
+        <SupportDesk role="SUPERVISOR" />
         <div className="cv-two-columns">
           <QueuesCard kpi={kpi} />
           <AlertsCard
             alerts={alerts}
             names={alertNames}
             onOpen={openConversation}
+            hasMore={moreAlerts}
+            loading={loadingAlerts}
+            onLoadMore={() => void loadMoreAlerts()}
           />
         </div>
         <SupervisedConversations

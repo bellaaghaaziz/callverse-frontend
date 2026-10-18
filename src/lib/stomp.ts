@@ -111,3 +111,11 @@ export function reconnectStomp() {
   const activeClient = getStompClient();
   if (!activeClient.active) activeClient.activate();
 }
+
+export function refreshStompToken() {
+  const existing = client;
+  if (!existing) return;
+  void existing.deactivate().then(() => {
+    if (client === existing && sessionStorage.getItem("jwt")) existing.activate();
+  });
+}

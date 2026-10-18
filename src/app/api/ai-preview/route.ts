@@ -6,6 +6,11 @@ const ai = process.env.AI_PREVIEW_URL || "http://127.0.0.1:8001";
 class PreviewError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
+function modelText(text: string) {
+  return text.replace(/\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/gi, "[IBAN masqué]")
+    .replace(/\b[\w.+-]+@[\w.-]+\.[A-Z]{2,}\b/gi, "[e-mail masqué]")
+    .replace(/\b(?:\d[ -]?){12,19}\b/g, "[numéro masqué]");
+}
 async function identity(request: NextRequest) {
   if (!process.env.AI_PREVIEW_KEY) throw new PreviewError(503, "L’espace IA expérimental est désactivé.");
   const authorization = request.headers.get("authorization") || "";
@@ -20,7 +25,7 @@ async function identity(request: NextRequest) {
   const call = async (path: string, body?: unknown, customerId = "") => {
     const response = await fetch(ai + path, {
       method: body === undefined ? "GET" : "POST",
-      headers: { "Content-Type": "application/json", "x-preview-key": process.env.AI_PREVIEW_KEY!, "x-backend-authorization": authorization, "x-customer-id": customerId },
+      headers: { "Content-Type": "application/json", "x-ai-key": process.env.AI_PREVIEW_KEY!, "x-preview-key": process.env.AI_PREVIEW_KEY!, "x-backend-authorization": authorization, "x-customer-id": customerId },
       body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(180000),
     });
     if (!response.ok) throw new PreviewError(response.status === 504 ? 504 : response.status >= 500 ? 503 : response.status,
@@ -69,9 +74,9 @@ export async function POST(request: NextRequest) {
     const customer = await get("/customers/" + encodeURIComponent(conversation.customerId));
     return NextResponse.json(await call("/ai/advisor/respond", {
       conversation_id: conversation.id, customer_id: conversation.customerId,
-      message: messages[last].content,
-      history: messages.slice(0, last).map((m: {sender: string; content: string; sentAt: string}) => ({ role: m.sender === "CUSTOMER" ? "customer" : "advisor", content: m.content, ts: m.sentAt })),
-      context: { contract_type: "Non renseigné par le backend", tenure_months: customer.tenureMonths, churn_risk: null, open_tickets: null }, mode: "LIVE",
+      message: modelText(messages[last].content),
+      history: messages.slice(0, last).map((m: {sender: string; content: string; sentAt: string}) => ({ role: m.sender === "CUSTOMER" ? "customer" : "advisor", content: modelText(m.content), ts: m.sentAt })),
+      context: { tenure_months: customer.tenureMonths, segment: customer.segment }, mode: "SIMULATION",
     }, conversation.customerId));
   } catch (error) { return failure(error); }
 }

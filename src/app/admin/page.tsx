@@ -1,7 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { FrontDesk, KnowledgeSearch } from "@/components/IntegrationTools";
+import { FrontDesk } from "@/components/IntegrationTools";
+import AdminProducts from "@/components/admin/AdminProducts";
+import AdminKnowledge from "@/components/admin/AdminKnowledge";
+import AdminRules from "@/components/admin/AdminRules";
+import AdminAdvisorProfiles from "@/components/admin/AdminAdvisorProfiles";
+import SupportDesk from "@/components/SupportDesk";
 import ConversationPanel from "@/components/ConversationPanel";
 import ConversationPicker from "@/components/ConversationPicker";
 import TwinLab from "@/components/twin/TwinLab";
@@ -15,7 +20,6 @@ import {
   Users,
   UserPlus,
   ArrowUpRight,
-  Settings2,
 } from "lucide-react";
 import { roleLabel, initialsFor } from "@/lib/presentation";
 import { tabKeyTarget } from "@/lib/tabs";
@@ -532,9 +536,9 @@ export default function AdminPage() {
               </div>
               <p className="cv-muted mt-4 !leading-relaxed">
                 Le mot de passe doit contenir 12 caractères minimum, 72 octets
-                maximum et exclure le nom de l’adresse e-mail. Pour un
-                conseiller, le profil et les compétences doivent aussi être
-                configurés.
+                maximum et exclure le nom de l’adresse e-mail. Un nouveau
+                conseiller commence hors ligne ; configurez ses compétences et
+                sa capacité dans l’onglet Conseillers avant sa prise de poste.
               </p>
             </form>
           </section>
@@ -542,11 +546,7 @@ export default function AdminPage() {
       )}
       {tab === "Procédures" && (
         <div className="cv-stack" {...panel}>
-          <KnowledgeSearch />
-          <p className="cv-muted">
-            La création et la modification d’articles ne sont pas encore
-            disponibles.
-          </p>
+          <AdminKnowledge />
         </div>
       )}
       {tab === "Accueil" && (
@@ -557,6 +557,7 @@ export default function AdminPage() {
             }
           />
           <section className="cv-card cv-card-pad"><ConversationPicker selectedId={selectedConversation} onSelect={choice => setSelectedConversation(choice.id)} /></section>
+          <SupportDesk role="ADMIN" />
           {selectedConversation && (
             <ConversationPanel
               key={selectedConversation}
@@ -567,18 +568,9 @@ export default function AdminPage() {
         </div>
       )}
       {tab === "Jumeau numérique" && <div {...panel}><TwinLab /></div>}
-      {["Catalogue produits", "Conseillers", "Règles"].includes(tab) && (
-        <section className="cv-card" {...panel}>
-          <div className="cv-empty !py-20">
-            <span className="cv-empty-icon mx-auto">
-              <Settings2 size={24} />
-            </span>
-            <strong className="!text-lg">{tab}</strong>Cette fonctionnalité
-            n’est pas encore disponible.
-            <p>Les outils disponibles restent accessibles dans le menu.</p>
-          </div>
-        </section>
-      )}
+      {tab === "Catalogue produits" && <div {...panel}><AdminProducts /></div>}
+      {tab === "Conseillers" && <div {...panel}><AdminAdvisorProfiles /></div>}
+      {tab === "Règles" && <div {...panel}><AdminRules /></div>}
     </AppShell>
   );
 }

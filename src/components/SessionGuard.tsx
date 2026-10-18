@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { api, errorMessage } from "@/lib/api";
+import { api, errorMessage, refreshSession } from "@/lib/api";
 import { expireSession } from "@/lib/auth";
 import { roleHome, type Role } from "@/lib/contracts";
 export default function SessionGuard({
@@ -27,11 +27,11 @@ export default function SessionGuard({
       }
       const expiresAt = sessionStorage.getItem("expiresAt");
       const remaining = expiresAt ? Date.parse(expiresAt) - Date.now() : NaN;
-      if (Number.isFinite(remaining) && remaining <= 0) {
-        expireSession();
-        return;
-      }
       try {
+        if (Number.isFinite(remaining) && remaining <= 0 && !await refreshSession()) {
+          expireSession();
+          return;
+        }
         const user = await api.me();
         if (!active) return;
         const home = roleHome[user.role as Role];
@@ -47,6 +47,7 @@ export default function SessionGuard({
         }
         setReady(true);
         setError("");
+        setWarning("");
       } catch (error) {
         if (active) setError(errorMessage(error));
       }
@@ -55,8 +56,14 @@ export default function SessionGuard({
     const expiry = sessionStorage.getItem("expiresAt");
     const remaining = expiry ? Date.parse(expiry) - Date.now() : NaN;
     if (Number.isFinite(remaining) && remaining > 0) {
-      expiryTimer = setTimeout(expireSession, remaining);
-      warningTimer = setTimeout(
+      const renew = async () => {
+        try { if (!await refreshSession()) expireSession(); }
+        catch (error) {
+          if (active) { setWarning(errorMessage(error)); expiryTimer = setTimeout(() => void renew(), 30000); }
+        }
+      };
+      expiryTimer = setTimeout(() => void renew(), remaining);
+      if (!sessionStorage.getItem("refreshToken")) warningTimer = setTimeout(
         () =>
           setWarning(
             "Votre session expire dans moins de deux minutes. Terminez votre action puis reconnectez-vous.",
@@ -68,11 +75,14 @@ export default function SessionGuard({
       void verify();
     };
     window.addEventListener("callverse:auth-check", check);
+    const renewed = () => setRetry(value => value + 1);
+    window.addEventListener("callverse:session-refreshed", renewed);
     return () => {
       active = false;
       clearTimeout(expiryTimer);
       clearTimeout(warningTimer);
       window.removeEventListener("callverse:auth-check", check);
+      window.removeEventListener("callverse:session-refreshed", renewed);
     };
   }, [pathname, router, retry]);
   if (!ready)

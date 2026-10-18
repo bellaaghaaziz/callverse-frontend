@@ -3,19 +3,21 @@ import { useRef, useEffect, useState } from "react";
 import { Users, Sparkles } from "lucide-react";
 import { aiWorkspace, skillNames, type WorkforceRecommendation } from "@/lib/ai-workspace";
 import { ApiError, errorMessage } from "@/lib/api";
+import WorkforceApplication from "./WorkforceApplication";
 
 export default function WorkforceCard() {
   const [result, setResult] = useState<WorkforceRecommendation | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [accessDenied, setAccessDenied] = useState(false);
+  const [applied, setApplied] = useState(false);
   const mounted = useRef(false);
   const inFlight = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   async function analyze() {
     if (inFlight.current) return;
     inFlight.current = true;
-    setBusy(true); setError(""); setResult(null);
+    setBusy(true); setError(""); setResult(null); setApplied(false);
     try { const data = await aiWorkspace.workforce(); if (mounted.current) setResult(data); }
     catch (e) { if (mounted.current) { if (e instanceof ApiError && e.status === 403) setAccessDenied(true); else setError(errorMessage(e)); } }
     finally { inFlight.current = false; if (mounted.current) setBusy(false); }
@@ -37,9 +39,9 @@ export default function WorkforceCard() {
       <div className="cv-notice"><strong>{actions[result.type] || "Proposition d’organisation"}</strong>
         <p>{result.reason}</p>
         {result.fromPool && result.toPool && <p>{skillNames[result.fromPool] || result.fromPool} → {skillNames[result.toPool] || result.toPool}{result.count != null ? ` · ${result.count} conseiller(s)` : ""}</p>}
-        <p>Aucune affectation n’a été modifiée. Cette proposition nécessite votre revue.</p>
+        <p>{applied ? "Le transfert validé a été enregistré." : "Cette proposition nécessite votre revue avant toute modification."}</p>
         {result.caveats?.length > 0 && <ul className="cv-subtitle">{result.caveats.map((caveat, index) => <li key={index}>{caveat}</li>)}</ul>}
-        <button type="button" className="cv-button cv-button-secondary" disabled>Appliquer — validation humaine à venir</button>
+        {result.type === "REASSIGN" && <WorkforceApplication key={result.decisionId} proposal={result} onApplied={() => setApplied(true)} />}
       </div>
       <div className="cv-table-wrap cv-section"><table className="cv-table"><caption className="sr-only">Données utilisées pour la recommandation</caption>
         <thead><tr><th>Compétence</th><th>En attente</th><th>Attente moyenne</th><th>Disponibles</th></tr></thead>

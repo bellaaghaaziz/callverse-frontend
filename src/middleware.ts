@@ -8,7 +8,7 @@ const roleHome: Record<string, string> = {
 };
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname === "/" || pathname === "/login") return NextResponse.next();
+  if (pathname === "/" || pathname === "/login" || pathname === "/register") return NextResponse.next();
   const home = roleHome[request.cookies.get("role")?.value || ""];
   if (!home) return NextResponse.redirect(new URL("/login", request.url));
   if (!(pathname === home || pathname.startsWith(home + "/")))

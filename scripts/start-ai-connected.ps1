@@ -44,8 +44,11 @@ try {
         [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N') | Set-Content -LiteralPath $keyPath
     }
     $localKey = (Get-Content -LiteralPath $keyPath -Raw).Trim()
-    Set-LocalEnv 'INTERNAL_SERVICE_KEY' $localKey
-    Set-LocalEnv 'AI_SERVICE_KEY' $localKey
+    # Keep explicitly configured service keys; use the generated key only as a fallback.
+    if (-not $env:INTERNAL_SERVICE_KEY) { Set-LocalEnv 'INTERNAL_SERVICE_KEY' $localKey }
+    if (-not $env:AI_SERVICE_KEY) { Set-LocalEnv 'AI_SERVICE_KEY' $localKey }
+    Set-LocalEnv 'AI_PREVIEW_KEY' $env:AI_SERVICE_KEY
+    Set-LocalEnv 'AI_PREVIEW_URL' "http://127.0.0.1:$AiPort"
     Set-LocalEnv 'CALLVERSE_BACKEND_BASE_URL' "http://localhost:$BackendPort"
     Set-LocalEnv 'AI_SERVICE_BASE_URL' "http://127.0.0.1:$AiPort"
     Set-LocalEnv 'SERVER_PORT' "$BackendPort"

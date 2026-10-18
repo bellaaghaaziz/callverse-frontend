@@ -5,7 +5,7 @@ import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, errorMessage } from "@/lib/api";
-import { clearSession, sessionNotice } from "@/lib/auth";
+import { clearSession, storeSession, sessionNotice } from "@/lib/auth";
 import { roleHome, type Role } from "@/lib/contracts";
 import {
   Lock,
@@ -48,8 +48,7 @@ export default function LoginPage() {
     try {
       clearSession();
       const data = await api.login(targetEmail, targetPass);
-      sessionStorage.setItem("jwt", data.token);
-      sessionStorage.setItem("expiresAt", data.expiresAt);
+      storeSession(data);
       const user = await api.me();
       const home = roleHome[user.role as Role];
       if (!home) throw new Error("Unknown role");
@@ -115,6 +114,7 @@ export default function LoginPage() {
           <p className="cv-login-intro">
             Connectez-vous avec le compte fourni par votre administrateur.
           </p>
+          <p className="cv-subtitle"><Link href="/register">Créer mon espace client</Link></p>
           <form onSubmit={handleSubmit} className="cv-login-form">
             <div className="cv-login-field">
               <label className="cv-login-label" htmlFor="login-email">
