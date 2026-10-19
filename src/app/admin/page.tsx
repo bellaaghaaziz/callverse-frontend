@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
+import CustomerOnboarding from "@/components/staff/CustomerOnboarding";
 import { FrontDesk } from "@/components/IntegrationTools";
 import AdminProducts from "@/components/admin/AdminProducts";
 import AdminKnowledge from "@/components/admin/AdminKnowledge";
@@ -25,6 +26,7 @@ import { roleLabel, initialsFor } from "@/lib/presentation";
 import { tabKeyTarget } from "@/lib/tabs";
 const tabs = [
   "Utilisateurs",
+  "Clients",
   "Procédures",
   "Accueil",
   "Jumeau numérique",
@@ -567,6 +569,7 @@ export default function AdminPage() {
           )}
         </div>
       )}
+      {tab === "Clients" && <div {...panel}><CustomerOnboarding /></div>}
       {tab === "Jumeau numérique" && <div {...panel}><TwinLab /></div>}
       {tab === "Catalogue produits" && <div {...panel}><AdminProducts /></div>}
       {tab === "Conseillers" && <div {...panel}><AdminAdvisorProfiles /></div>}

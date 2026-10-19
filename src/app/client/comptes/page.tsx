@@ -6,6 +6,8 @@ import StatementDownload from "@/components/customer/StatementDownload";
 import { apiFetch, errorMessage } from "@/lib/api";
 import { money, type Schema } from "@/lib/contracts";
 import { totalBalance } from "@/lib/customer";
+import { spendingByKind } from "@/lib/charts";
+import BarList from "@/components/charts/BarList";
 
 const movementStatus: Record<string, string> = { BOOKED: "Effectué", PENDING: "En attente", REJECTED: "Refusé", DISPUTED: "Contesté" };
 const cardStatus: Record<string, string> = { ACTIVE: "Active", BLOCKED: "Bloquée", EXPIRED: "Expirée", CANCELLED: "Annulée" };
@@ -29,6 +31,7 @@ export default function ClientAccounts() {
   useEffect(() => {
     if (window.location.hash === "#releve") requestAnimationFrame(() => document.getElementById("releve")?.scrollIntoView({ behavior: "smooth" }));
   }, []);
+  const spending = useMemo(() => spendingByKind(movements || [], new Date(), 30), [movements]);
   const byDay = useMemo(() => {
     const groups = new Map<string, Schema["Transaction"][]>();
     for (const m of movements || []) {
@@ -71,6 +74,12 @@ export default function ClientAccounts() {
           );
         })}
         {profile && !profile.accounts.length && <p className="cv-notice">Aucun compte n’est encore rattaché à votre espace. Écrivez à votre conseiller pour découvrir nos offres.</p>}
+      </section>
+
+      <section className="cv-cs-card cv-cs-reveal" data-tour="client-spending">
+        <BarList title="Mes dépenses sur 30 jours" empty="Aucune dépense ces 30 derniers jours."
+          format={value => money(value, "EUR")}
+          items={spending.map(row => ({ key: row.kind, label: row.label, value: row.total }))} />
       </section>
 
       <section className="cv-cs-card cv-cs-reveal" data-tour="client-movements">
