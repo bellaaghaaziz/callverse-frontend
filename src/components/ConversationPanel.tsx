@@ -18,9 +18,17 @@ import QualityCard from "./ai/QualityCard";
 export default function ConversationPanel({
   id,
   role,
+  heading,
+  onDelete,
+  onStatus,
 }: {
   id: string;
   role: Role;
+  // The customer's space heads the chat with the advisor and the subject.
+  heading?: { title: string; subtitle: string };
+  // Customer only: removes the conversation from their space (the parent confirms first).
+  onDelete?: () => void;
+  onStatus?: (status: Conversation["status"]) => void;
 }) {
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -110,6 +118,11 @@ export default function ConversationPanel({
   const canAbandon =
     !!conversation &&
     ["QUEUED", "ASSIGNED", "ACTIVE"].includes(conversation.status);
+  const canDelete = role === "CUSTOMER" && !!onDelete && !!conversation && conversation.status !== "ESCALATED";
+  const status = conversation?.status;
+  useEffect(() => {
+    if (status) onStatus?.(status);
+  }, [status, onStatus]);
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!canWrite || !draft.trim()) return;
@@ -155,8 +168,9 @@ export default function ConversationPanel({
             <MessageSquare size={16} />
           </span>
           <div>
-            <strong>Votre conversation</strong>
-            <p>{conversation ? new Date(conversation.queuedAt).toLocaleString("fr-FR") : "Chargement de l’échange…"}</p>
+            <strong>{heading?.title || "Votre conversation"}</strong>
+            <p>{heading ? heading.subtitle + (conversation ? " · " + new Date(conversation.queuedAt).toLocaleString("fr-FR") : "")
+              : conversation ? new Date(conversation.queuedAt).toLocaleString("fr-FR") : "Chargement de l’échange…"}</p>
           </div>
         </div>
         <div className="cv-chat-status">
@@ -232,7 +246,7 @@ export default function ConversationPanel({
         )
       )}
       {((role === "SUPERVISOR" && conversation?.status === "ESCALATED") ||
-        canAbandon) && (
+        canAbandon || canDelete) && (
         <div className="cv-chat-actions">
           {role === "SUPERVISOR" && conversation?.status === "ESCALATED" && (
             <button
@@ -248,9 +262,14 @@ export default function ConversationPanel({
             <button
               disabled={busy}
               onClick={() => close("abandon")}
-              className="cv-button cv-button-danger"
+              className={role === "CUSTOMER" ? "cv-button cv-button-secondary" : "cv-button cv-button-danger"}
             >
-              Terminer — client parti
+              {role === "CUSTOMER" ? "Terminer l’échange" : "Terminer — client parti"}
+            </button>
+          )}
+          {canDelete && (
+            <button type="button" disabled={busy} onClick={onDelete} className="cv-button cv-button-danger">
+              Supprimer la conversation
             </button>
           )}
         </div>

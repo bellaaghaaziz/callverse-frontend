@@ -12,6 +12,8 @@ const step = (id: string, target: string, title: string, body: string): TourStep
 const navigation = step("navigation", '[data-tour="navigation"], [data-tour="mobile-menu"]', "Retrouvez vos outils", "Sur ordinateur, le menu est à gauche. Sur mobile, le bouton menu ouvre les mêmes rubriques. Cette visite présente les commandes sans les activer.");
 const account = step("account", '[data-tour="account"]', "Votre compte et la déconnexion", "Ouvrez ce menu pour vérifier le compte utilisé et vous déconnecter, notamment sur un ordinateur partagé.");
 const help = step("help", '[data-tour="help"]', "Le guide reste à portée de main", "Vous pouvez relancer la visite de cette page à tout moment avec ce bouton. Pour commencer à utiliser les commandes, terminez ou quittez la visite.");
+const clientWelcome = step("welcome", '[data-tour="client-welcome"]', "Bienvenue dans votre espace", "Une visite rapide de cette page. Vous pouvez avancer, revenir en arrière ou la quitter à tout moment.");
+const clientNavigation = step("navigation", '[data-tour="navigation"], [data-tour="mobile-menu"]', "Naviguer simplement", "Accueil, comptes, messagerie et aide : chaque besoin a sa page. Sur mobile, les mêmes rubriques sont en bas de l’écran.");
 const aiEntry = step("ai-entry", '[data-tour="ai-entry"]', "Ouvrir le pilotage IA", "Ce bouton ouvre les recommandations d’effectifs, le studio de dialogue simulé et la consultation qualité. Chaque écran possède sa propre visite.");
 
 export function tourForPath(path: string): TourDefinition | null {
@@ -36,10 +38,25 @@ export function tourForPath(path: string): TourDefinition | null {
       step("conversations", "#conversation", "Retrouver un échange", "Recherchez et filtrez les conversations, puis ouvrez leur détail. Une conversation résolue peut afficher son évaluation qualité ; vous pouvez actualiser si l’analyse est encore en cours."),
       step("frontdesk", "#frontdesk", "Enregistrer un contact", "Vous pouvez également rechercher un client et orienter une nouvelle demande vers une file de compétence."),
       aiEntry, account, help] };
-    case "/client": return { scope: "client", steps: [intro, navigation,
-      step("open", '[data-tour="client-open"]', "Retrouver votre conversation", "Choisissez votre demande dans la liste. Vous pouvez rechercher un échange et filtrer son statut, puis l’ouvrir en un clic."),
-      step("chat", '[data-tour="client-chat"]', "Envoyer et recevoir vos messages", "Une fois la conversation ouverte, les messages apparaissent ici. Écrivez votre demande puis envoyez-la ; les réponses arrivent en direct. Vous pouvez relire un échange terminé."),
-      step("incidents", "#incidents", "Consulter les incidents connus", "Cette zone indique les interruptions de service publiées. Elle peut expliquer un problème rencontré avec votre application ou vos opérations."),
+    // The customer's space: one page per need, each with its own short tour.
+    case "/client": return { scope: "client", steps: [clientWelcome, clientNavigation,
+      step("balance", '[data-tour="client-balance"]', "Vos avoirs en un coup d’œil", "Le total de vos comptes en euros. Le détail de chaque compte et de vos opérations se trouve dans « Mes comptes »."),
+      step("actions", '[data-tour="client-actions"]', "Les actions les plus utiles", "Écrivez à un conseiller, consultez vos comptes ou téléchargez un relevé en un clic."),
+      step("activity", '[data-tour="client-activity"]', "Vos dernières opérations", "Les mouvements les plus récents apparaissent ici. Un paiement refusé est signalé clairement."),
+      account, help] };
+    case "/client/comptes": return { scope: "client-accounts", steps: [clientWelcome, clientNavigation,
+      step("accounts", '[data-tour="client-accounts"]', "Vos comptes et vos cartes", "Chaque compte affiche son solde, son numéro masqué et la carte associée."),
+      step("movements", '[data-tour="client-movements"]', "Vos opérations", "Filtrez par compte pour retrouver un paiement, un virement ou un prélèvement."),
+      step("statement", '[data-tour="client-statement"]', "Télécharger un relevé", "Choisissez une période pour télécharger vos opérations dans un fichier compatible avec un tableur."),
+      account, help] };
+    case "/client/messages": return { scope: "client-messages", steps: [clientWelcome, clientNavigation,
+      step("new", '[data-tour="client-new"]', "Écrire à un conseiller", "Choisissez le sujet de votre demande. Une seule conversation peut être en cours à la fois : terminez-la ou supprimez-la pour en ouvrir une nouvelle."),
+      step("list", '[data-tour="client-conversations"]', "Vos conversations", "Chaque conversation indique votre conseiller et le sujet de la demande. Vous pouvez supprimer une conversation de votre espace ; la banque en conserve la trace."),
+      step("chat", '[data-tour="client-chat"]', "Échanger en direct", "Les messages de votre conseiller ou de l’assistant arrivent ici en direct."),
+      account, help] };
+    case "/client/aide": return { scope: "client-help", steps: [clientWelcome, clientNavigation,
+      step("followup", '[data-tour="client-followup"]', "Suivre vos demandes", "Retrouvez les dossiers ouverts par votre conseiller et leur avancement."),
+      step("status", '[data-tour="client-status"]', "État de nos services", "Une interruption de service connue peut expliquer une difficulté avec vos opérations."),
       account, help] };
     case "/admin": return { scope: "admin", steps: [intro, navigation,
       step("tabs", '[data-tour="admin-tabs"]', "Naviguer entre les rubriques", "Les onglets donnent accès aux utilisateurs, aux procédures et à l’accueil. Certaines autres rubriques signalent qu’elles ne sont pas encore disponibles."),

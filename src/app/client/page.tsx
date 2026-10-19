@@ -1,116 +1,92 @@
 "use client";
-import { useState } from "react";
-import {
-  MessageSquare,
-  ShieldCheck,
-  Headphones,
-  Check,
-  Wallet,
-} from "lucide-react";
-import AppShell from "@/components/AppShell";
-import ConversationPanel from "@/components/ConversationPanel";
-import ConversationPicker from "@/components/ConversationPicker";
-import { Incidents } from "@/components/IntegrationTools";
-import SupportDesk from "@/components/SupportDesk";
-import CustomerBanking from "@/components/CustomerBanking";
-export default function ClientPage() {
-  const [id, setId] = useState<string | null>(null);
-  const [conversationRevision, setConversationRevision] = useState(0);
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Download, MessageSquarePlus, TriangleAlert, Wallet } from "lucide-react";
+import { useCustomer } from "@/components/customer/CustomerShell";
+import { apiFetch } from "@/lib/api";
+import { money, type Schema } from "@/lib/contracts";
+import { conversationHeading, greeting, totalBalance } from "@/lib/customer";
+import type { ConversationChoice } from "@/components/ConversationPicker";
+
+const LIVE = ["QUEUED", "ASSIGNED", "ACTIVE", "ESCALATED"];
+const movementStatus: Record<string, string> = { PENDING: "En attente", REJECTED: "Refusé", DISPUTED: "Contesté" };
+const day = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" });
+
+// The home page answers three questions only: how much do I have, what happened lately,
+// and how do I reach the bank. Everything else has its own page.
+export default function ClientHome() {
+  const { profile, error } = useCustomer();
+  const [movements, setMovements] = useState<Schema["Transaction"][] | null>(null);
+  const [live, setLive] = useState<ConversationChoice | null>(null);
+  const [incidents, setIncidents] = useState<number | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const controller = new AbortController();
+    const { signal } = controller;
+    apiFetch<Schema["TransactionsResponse"]>("/me/transactions?count=4", { signal })
+      .then(r => { if (!signal.aborted) setMovements(r.transactions); }).catch(() => { if (!signal.aborted) setMovements([]); });
+    apiFetch<{ content: ConversationChoice[] }>("/conversations/accessible?page=0", { signal })
+      .then(r => { if (!signal.aborted) setLive(r.content.find(c => LIVE.includes(c.status)) || null); }).catch(() => {});
+    apiFetch<Schema["ServiceIncidentsResponse"]>("/service-incidents", { signal })
+      .then(r => { if (!signal.aborted) setIncidents(r.incidents.length); }).catch(() => {});
+    return () => controller.abort();
+  }, []);
+  const balance = profile ? totalBalance(profile.accounts) : null;
+  const heading = live ? conversationHeading(live) : null;
   return (
-    <AppShell role="Client" initials="CL" title="Mon espace client">
-      <div className="cv-page-heading" id="workspace">
+    <div className="cv-cs-stack">
+      <section className="cv-cs-hero cv-cs-reveal" data-tour="client-welcome">
         <div>
-          <p className="cv-eyebrow">VOTRE RELATION BANCAIRE</p>
-          <h1>Bonjour, bienvenue chez vous.</h1>
-          <p className="cv-subtitle">
-            Un espace simple pour rester en contact avec votre conseiller.
-          </p>
+          <p className="cv-cs-eyebrow">Mon espace</p>
+          <h1>{now ? greeting(now, profile?.firstName) : "Bonjour"}</h1>
+          <p className="cv-cs-lead">Heureux de vous revoir. Voici l’essentiel de vos comptes aujourd’hui.</p>
         </div>
-        <span className="cv-badge cv-badge-green">
-          <ShieldCheck size={12} />
-          Session personnelle
-        </span>
-      </div>
-      <div className="cv-two-columns">
-        <div className="cv-stack" id="conversation">
-          <section className="cv-card cv-card-pad" data-tour="client-open">
-            <h2 className="cv-tool-title">
-              <MessageSquare size={19} />
-              Échangez avec votre conseiller
-            </h2>
-            <p className="cv-subtitle mb-5">Retrouvez vos demandes et ouvrez un échange en un clic.</p>
-            <ConversationPicker key={conversationRevision} title="Mes conversations" selectedId={id} onSelect={choice => {
-              setId(choice.id);
-              requestAnimationFrame(() => document.querySelector('[data-tour="client-chat"]')?.scrollIntoView({behavior:"smooth",block:"start"}));
-            }} />
-          </section>
-          <div data-tour="client-chat">{id ? (
-            <ConversationPanel key={id} id={id} role="CUSTOMER" />
-          ) : (
-            <section className="cv-card">
-              <div className="cv-empty !py-16">
-                <span className="cv-empty-icon mx-auto">
-                  <MessageSquare size={26} />
-                </span>
-                <strong className="!text-lg">
-                  Votre conseiller vous attend.
-                </strong>
-                Vos messages apparaîtront ici dès l’ouverture de votre échange.
-              </div>
-            </section>
-          )}</div>
+        <div className="cv-cs-balance" data-tour="client-balance">
+          <span>Total de vos comptes</span>
+          <strong aria-live="polite">{balance === null ? "—" : money(balance, "EUR")}</strong>
+          <small>{profile ? `${profile.accounts.length} compte${profile.accounts.length > 1 ? "s" : ""}` : error || "Chargement…"}</small>
         </div>
-        <aside className="cv-stack">
-          <section className="cv-card cv-card-pad">
-            <h2 className="cv-tool-title">
-              <Headphones size={18} />
-              Comment ça marche ?
-            </h2>
-            {[
-              [
-                "01",
-                "Prenez contact",
-                "Ouvrez une demande dans le formulaire Contacter un conseiller.",
-              ],
-              [
-                "02",
-                "Retrouvez l’échange",
-                "Choisissez votre demande dans la liste de vos conversations.",
-              ],
-              [
-                "03",
-                "Discutez simplement",
-                "Envoyez vos messages et recevez ses réponses en direct.",
-              ],
-            ].map(([n, title, desc]) => (
-              <div className="cv-list-row" key={n}>
-                <span className="cv-count">{n}</span>
-                <div>
-                  <strong>{title}</strong>
-                  <p className="!leading-relaxed">{desc}</p>
-                </div>
-                {n === "03" && <Check size={14} className="text-emerald-600" />}
-              </div>
-            ))}
-          </section>
-          <div id="incidents">
-            <Incidents />
-          </div>
-          <section className="cv-card cv-card-pad">
-            <h2 className="cv-tool-title">
-              <Wallet size={18} />
-              Vos demandes bancaires
-            </h2>
-            <p className="cv-subtitle">
-              Besoin d’un relevé, d’informations sur un compte ou d’aide avec
-              votre carte ? Votre conseiller peut vous accompagner dans la
-              conversation.
-            </p>
-          </section>
-        </aside>
+      </section>
+
+      <section className="cv-cs-actions" aria-label="Actions rapides" data-tour="client-actions">
+        <Link href="/client/messages?nouveau=1" className="cv-cs-action cv-cs-reveal" style={{ animationDelay: "60ms" }}>
+          <MessageSquarePlus size={26} aria-hidden="true" /><strong>Écrire à un conseiller</strong><span>Une question, un souci de carte ?</span>
+        </Link>
+        <Link href="/client/comptes" className="cv-cs-action cv-cs-reveal" style={{ animationDelay: "120ms" }}>
+          <Wallet size={26} aria-hidden="true" /><strong>Voir mes comptes</strong><span>Soldes, cartes et opérations</span>
+        </Link>
+        <Link href="/client/comptes#releve" className="cv-cs-action cv-cs-reveal" style={{ animationDelay: "180ms" }}>
+          <Download size={26} aria-hidden="true" /><strong>Télécharger un relevé</strong><span>Vos opérations sur une période</span>
+        </Link>
+      </section>
+
+      {live && heading && (
+        <Link href={`/client/messages?conversation=${live.id}`} className="cv-cs-live cv-cs-reveal">
+          <span className="cv-cs-live-dot" aria-hidden="true" />
+          <span><strong>Conversation en cours · {heading.subtitle}</strong><small>{heading.title}</small></span>
+          <span className="cv-cs-live-cta">Reprendre <ArrowRight size={16} aria-hidden="true" /></span>
+        </Link>
+      )}
+
+      <div className="cv-cs-columns">
+        <section className="cv-cs-card cv-cs-reveal" data-tour="client-activity" style={{ animationDelay: "240ms" }}>
+          <div className="cv-cs-card-head"><h2>Dernières opérations</h2><Link href="/client/comptes">Tout voir</Link></div>
+          {movements === null ? <p className="cv-muted">Chargement…</p> : movements.length === 0 ? <p className="cv-muted">Aucune opération récente.</p> :
+            <ul className="cv-cs-movements">{movements.map(m => (
+              <li key={m.id}>
+                <span><strong>{m.counterparty || m.label}</strong><small>{day.format(new Date(m.bookedAt))}{movementStatus[m.status] ? " · " + movementStatus[m.status] : ""}</small></span>
+                <span className={"cv-cs-amount" + (m.amount > 0 ? " cv-cs-amount-in" : "") + (m.status === "REJECTED" ? " cv-cs-amount-rejected" : "")}>{(m.amount > 0 ? "+" : "") + money(m.amount, m.currency)}</span>
+              </li>))}</ul>}
+        </section>
+        <section className="cv-cs-card cv-cs-reveal" style={{ animationDelay: "300ms" }}>
+          <div className="cv-cs-card-head"><h2>Nos services</h2><Link href="/client/aide">Aide et suivi</Link></div>
+          {incidents === null ? <p className="cv-muted">Vérification…</p> : incidents === 0
+            ? <p className="cv-cs-status cv-cs-status-ok"><CheckCircle2 size={20} aria-hidden="true" />Tous nos services fonctionnent normalement.</p>
+            : <p className="cv-cs-status cv-cs-status-warn"><TriangleAlert size={20} aria-hidden="true" />{incidents === 1 ? "Un incident est en cours." : `${incidents} incidents sont en cours.`} <Link href="/client/aide">Voir le détail</Link></p>}
+          <p className="cv-muted">Besoin d’aide ? Votre conseiller vous répond dans la messagerie, et l’assistant peut vous aider à toute heure.</p>
+        </section>
       </div>
-      <CustomerBanking onOpened={conversation => { setId(conversation.id); setConversationRevision(n => n + 1); }} />
-      <SupportDesk role="CUSTOMER" />
-    </AppShell>
+    </div>
   );
 }

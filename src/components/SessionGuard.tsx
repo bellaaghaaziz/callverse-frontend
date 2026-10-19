@@ -19,7 +19,10 @@ export default function SessionGuard({
     let active = true;
     let expiryTimer: ReturnType<typeof setTimeout> | undefined;
     let warningTimer: ReturnType<typeof setTimeout> | undefined;
-    setReady(false);
+    // A page already verified stays visible while the next route is checked (shared layouts,
+    // such as the customer space, would otherwise flash and reload on every tab). The check
+    // itself still runs and still redirects or expires the session when it fails.
+    if (!sessionStorage.getItem("jwt")) setReady(false);
     async function verify() {
       if (!sessionStorage.getItem("jwt")) {
         expireSession();
