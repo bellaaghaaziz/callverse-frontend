@@ -38,6 +38,8 @@ export function errorMessage(error: unknown): string {
       INTERNAL_ERROR: "Le service rencontre une erreur. Réessayez plus tard.",
       WORKFORCE_UNAVAILABLE: "L’analyse des effectifs est indisponible. Réessayez dans quelques instants.",
       SIMULATION_RUN_ALREADY_EXISTS: "Cette combinaison scénario, stratégie et graine existe déjà. Choisissez une autre graine.",
+      CONVERSATION_ALREADY_OPEN: "Vous avez déjà une conversation en cours. Terminez-la ou supprimez-la pour en ouvrir une nouvelle.",
+      CONVERSATION_UNDER_SUPERVISION: "Un responsable traite actuellement cette conversation. Vous pourrez la supprimer une fois qu’elle sera terminée.",
     };
     return (
       messages[error.code] ||

@@ -8,6 +8,8 @@ export interface ConversationChoice {
   id: string; customerName: string; advisorName: string | null; skill: string;
   intent: string | null; status: "QUEUED" | "ASSIGNED" | "ACTIVE" | "ESCALATED" | "RESOLVED" | "ABANDONED";
   queuedAt: string; preview: string;
+  // Who is on the other side for the signed-in role, and what the request is about (backend V9).
+  counterpartName?: string | null; subject?: string | null; removedByCustomer?: boolean;
 }
 interface DirectoryPage { content: ConversationChoice[]; page: number; size: number; hasNext: boolean }
 const dates = new Intl.DateTimeFormat("fr-FR", {day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -57,8 +59,9 @@ export default function ConversationPicker({ onSelect, selectedId, resolvedOnly 
     <div className="cv-directory-list cv-section">
       {data?.content.map(item=><button type="button" key={item.id} className={"cv-directory-item" + (selectedId===item.id ? " cv-directory-selected" : "")}
         aria-pressed={selectedId===item.id} onClick={()=>onSelect(item)}>
-        <span className="cv-directory-heading"><strong>{item.customerName}</strong><StatusBadge status={item.status} /></span>
-        <span className="cv-muted">{intentLabel[item.intent || ""] || skillLabel[item.skill] || item.skill} · {dates.format(new Date(item.queuedAt))}</span>
+        <span className="cv-directory-heading"><strong>{item.counterpartName ?? item.customerName}</strong><StatusBadge status={item.status} /></span>
+        <span className="cv-muted">{item.subject || intentLabel[item.intent || ""] || skillLabel[item.skill] || item.skill} · {dates.format(new Date(item.queuedAt))}</span>
+        {item.removedByCustomer && <span className="cv-badge cv-badge-rose cv-removed-badge">Supprimée par le client</span>}
         <span className="cv-muted">{item.advisorName ? "Conseiller : " + item.advisorName : "En attente d’un conseiller"}</span>
         <span className="cv-directory-preview">{item.preview || "Aucun message pour le moment."}</span>
         <span className="cv-directory-open">{selectedId===item.id ? "Conversation sélectionnée" : "Ouvrir la conversation"} →</span>

@@ -61,7 +61,8 @@ export interface ConversationEvent {
 }
 export interface QueueEvent {
   schemaVersion: 1;
-  type: "CONVERSATION_QUEUED" | "CONVERSATION_LEFT_QUEUE";
+  // CONVERSATION_DELETED_BY_CUSTOMER: the customer removed it from their space (it is now ended).
+  type: "CONVERSATION_QUEUED" | "CONVERSATION_LEFT_QUEUE" | "CONVERSATION_DELETED_BY_CUSTOMER";
   occurredAt: string;
   skill: string;
   conversationId: string;

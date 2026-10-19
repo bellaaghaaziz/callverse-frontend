@@ -11,6 +11,7 @@ import {
 import { useConnection, useTopic } from "@/hooks/useTopic";
 import { useQueueTopics } from "@/hooks/useQueueTopic";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
+import { deletionNotice } from "@/lib/customer";
 import {
   canReply as canReplyTo,
   messageFromEvent,
@@ -168,7 +169,16 @@ export function useAdvisorWorkspace() {
   );
   useQueueTopics(
     queues.map((queue) => queue.skill),
-    () => {
+    (event) => {
+      // A customer removed a conversation this advisor holds: say so, even if another chat is open.
+      const removed = deletionNotice(
+        event,
+        myConversations.map((c) => ({ id: c.id, customerName: customerNames[c.customerId] })),
+      );
+      if (removed) {
+        showToast(removed);
+        refreshMine().catch((error) => showToast(errorMessage(error)));
+      }
       refreshQueues().catch((error) => showToast(errorMessage(error)));
     },
   );
