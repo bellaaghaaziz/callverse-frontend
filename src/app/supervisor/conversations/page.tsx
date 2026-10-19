@@ -36,14 +36,14 @@ export default function SupervisorConversationsPage() {
             <p className="cv-subtitle">Filtrez, repérez les escalades, ouvrez un échange.</p>
           </div>
         </div>
-        <div className="cv-cs-reveal" style={{ animationDelay: "60ms" }}>
+        <div className="cv-supervision-chat cv-focused-workspace cv-cs-reveal" style={{ animationDelay: "60ms" }}>
           <SupervisedConversations refreshKey={refreshKey} onOpen={open} />
-        </div>
-        {selectedId && (
-          <section className="cv-section cv-cs-reveal" id="conversation-panel" aria-label="Conversation ouverte" tabIndex={-1}>
+          <section className="cv-supervision-detail" id="conversation-panel" aria-label="Conversation ouverte" tabIndex={-1}>
+          {selectedId ? (
             <ConversationPanel key={selectedId} id={selectedId} role="SUPERVISOR" />
+          ) : <div className="cv-card cv-chat-empty"><h2>Ouvrez une conversation</h2><p>Choisissez un échange pour lire les messages et accompagner le client.</p></div>}
           </section>
-        )}
+        </div>
       </div>
     </AppShell>
   );

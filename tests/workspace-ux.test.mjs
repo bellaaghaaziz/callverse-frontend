@@ -20,7 +20,7 @@ test("every staff role gets its own pages, each banner item leading to a route o
   const { staffNav } = load("navigation");
   for (const [role, home] of [["Conseiller", "/advisor"], ["Superviseur", "/supervisor"], ["Analyste / Admin", "/admin"]]) {
     const items = staffNav(role);
-    assert.ok(items.length >= 4, role);
+    assert.ok(items.length >= (home === "/admin" ? 2 : 4), role);
     assert.equal(items[0].href.split("?")[0], home);
     for (const item of items) assert.ok(item.href.startsWith(home), `${role}: ${item.href}`);
     assert.equal(new Set(items.map(item => item.href)).size, items.length, role);
@@ -36,8 +36,8 @@ test("the current page is found by path, and an admin section by its query", () 
   assert.equal(activeHref(staffNav("Conseiller"), "/advisor/clients/", ""), "/advisor/clients");
   const admin = staffNav("Analyste / Admin");
   assert.equal(activeHref(admin, "/admin", ""), admin[0].href);
-  const clients = admin.find(item => item.label === "Clients");
-  assert.equal(activeHref(admin, "/admin", "?section=Clients"), clients.href);
+  assert.equal(activeHref(admin, "/admin", "?section=Clients"), "/admin");
+  assert.equal(admin.filter(item => item.href.startsWith("/admin?")).length, 0, "sections stay in the admin tabs instead of a duplicate banner navigation");
 });
 
 test("a long navigation keeps its first items in the banner and moves the rest into « Plus »", () => {

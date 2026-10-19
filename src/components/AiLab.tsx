@@ -47,7 +47,7 @@ export default function AiLab({ supervision = false }: { supervision?: boolean }
   return <section className="cv-card cv-card-pad cv-section" id="ai-lab">
     <h2 className="cv-tool-title">Laboratoire IA</h2>
     <p className="cv-subtitle">Essais isolés : aucune réponse envoyée au client et aucune modification métier automatique.</p>
-    <p className="cv-notice">Choisissez un échange auquel vous avez accès. L’IA peut rechercher les procédures publiées pour préparer une réponse. Les actions bancaires et la consultation des comptes par l’IA sont désactivées dans cet essai ; vérifiez vous-même le dossier avant d’utiliser la proposition.</p>
+    <p className="cv-notice">Choisissez un échange auquel vous avez accès. Pour préparer une suggestion, l’IA peut consulter les informations autorisées du dossier et les procédures publiées. Aucune opération bancaire n’est exécutée dans cet espace ; relisez la proposition avant de l’utiliser. Les dialogues simulés restent séparés des dossiers réels.</p>
     <button className="cv-button cv-button-secondary" data-tour="lab-health" disabled={busy} onClick={async () => {
       setBusy(true); setError(""); try { const data = await request(); setStatus("Service connecté · " + (data.workforce.model_file_present ? "modèle PPO présent" : "modèle PPO absent")); }
       catch (e) { setError(e instanceof Error ? e.message : "Service indisponible"); } finally { setBusy(false); }

@@ -32,6 +32,16 @@ export const intentLabel: Record<string, string> = {
   ACCOUNT_CLOSURE: "Clôture de compte",
   OTHER: "Autre demande",
 };
+export function conversationSubject(conversation: { intent?: string | null; skill: string }) {
+  if (conversation.intent && conversation.intent !== "OTHER" && intentLabel[conversation.intent]) {
+    return intentLabel[conversation.intent];
+  }
+  const subjects: Record<string, string> = {
+    ACCOUNTS: "Question sur mon compte", CARDS: "Question sur ma carte",
+    CREDIT: "Demande de crédit", FRAUD: "Paiement inconnu",
+  };
+  return subjects[conversation.skill] || "Ma demande";
+}
 export const customerDisplayName = (
   customer: { firstName: string; lastName: string } | null,
 ) =>

@@ -114,6 +114,9 @@ export default function AppShell({
     const isCurrent = item.href === current;
     return (
       <Link key={item.href} href={item.href} onClick={event => open(item, event)}
+        // Fixed same-origin AI links copy the tab's session and keep the chat mounted.
+        target={item.icon === "ai" ? "_blank" : undefined} rel={item.icon === "ai" ? "opener" : undefined}
+        data-tour={item.icon === "ai" ? "ai-entry" : undefined}
         className={className + (isCurrent ? " " + currentClass : "")} aria-current={isCurrent ? "page" : undefined}>
         <Icon size={17} aria-hidden="true" />{item.label}
       </Link>

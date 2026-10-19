@@ -57,7 +57,7 @@ test("advisor preview authenticates the AI service and cannot execute live banki
   });
   assert.equal((await api.POST(request({feature:"suggestion",conversationId:"10000000-0000-4000-8000-000000000001"}))).status,200);
   const sent=JSON.parse(calls[4].options.body);
-  assert.equal(sent.mode,"SIMULATION");
+  assert.equal(sent.mode,"PREVIEW");
   assert.equal(calls[4].options.headers["x-ai-key"],"test-key");
   assert.ok(!sent.message.includes("test@example.com"));
   assert.ok(!sent.message.includes("1234567890123456"));

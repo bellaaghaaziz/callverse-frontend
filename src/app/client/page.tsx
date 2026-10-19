@@ -84,7 +84,7 @@ export default function ClientHome() {
           {incidents === null ? <p className="cv-muted">Vérification…</p> : incidents === 0
             ? <p className="cv-cs-status cv-cs-status-ok"><CheckCircle2 size={20} aria-hidden="true" />Tous nos services fonctionnent normalement.</p>
             : <p className="cv-cs-status cv-cs-status-warn"><TriangleAlert size={20} aria-hidden="true" />{incidents === 1 ? "Un incident est en cours." : `${incidents} incidents sont en cours.`} <Link href="/client/aide">Voir le détail</Link></p>}
-          <p className="cv-muted">Besoin d’aide ? Votre conseiller vous répond dans la messagerie, et l’assistant peut vous aider à toute heure.</p>
+          <p className="cv-muted">Besoin d’aide ? Retrouvez votre conseiller dans Messagerie. L’assistant vous accompagne avant la prise en charge humaine.</p>
         </section>
       </div>
     </div>

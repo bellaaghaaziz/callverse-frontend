@@ -22,14 +22,14 @@ export default function KpiTiles({ kpi }: { kpi: LiveKpi | null }) {
       label: "En attente",
       value: kpi?.waitingTotal,
       icon: Clock,
-      foot: now,
+      foot: "Avant affectation humaine, IA incluse",
       art: "arc",
     },
     {
       label: "En conversation",
       value: kpi?.inService,
       icon: Headphones,
-      foot: now,
+      foot: now + " · affectées ou escaladées",
       art: "rings",
     },
     {

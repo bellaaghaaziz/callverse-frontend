@@ -536,9 +536,26 @@ export interface paths {
         put?: never;
         /**
          * Write in a conversation
-         * @description The assigned advisor writes as ADVISOR, the conversation's customer as CUSTOMER; the server decides the sender. The advisor's first message moves ASSIGNED to ACTIVE. A closed conversation is 409 INVALID_STATE_TRANSITION; a conversation the caller may not read is 404.
+         * @description The assigned advisor writes as ADVISOR, the conversation's customer as CUSTOMER; the server decides the sender. A supervisor may reply as ADVISOR in an ESCALATED conversation. The advisor's first message moves ASSIGNED to ACTIVE. A closed conversation is 409 INVALID_STATE_TRANSITION; a conversation the caller may not read is 404.
          */
         post: operations["postMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{id}/messages/{messageId}/explanation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read sources, checks and recorded decision for an AI reply; staff only */
+        get: operations["getAiMessageExplanation"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -596,7 +613,11 @@ export interface paths {
          */
         get: operations["findCustomerByReference"];
         put?: never;
-        post?: never;
+        /**
+         * Open a customer: login, profile, current account and debit card
+         * @description Staff only (advisor, supervisor, admin). One transaction: a taken e-mail is 409 EMAIL_ALREADY_USED and writes nothing. The customer signs in with the temporary password. Only current accounts open here (CUR_ESSENTIAL, CUR_PREMIUM); invalid input is 400.
+         */
+        post: operations["onboardCustomer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -726,9 +747,32 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Open a contact for myself */
+        /**
+         * Open a contact for myself
+         * @description One live conversation per customer: while one is queued, assigned, active or escalated, 409 CONVERSATION_ALREADY_OPEN names it in the message; close or delete it first.
+         */
         post: operations["openOwnConversation"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove one of my conversations from my space
+         * @description The bank keeps the record. A live conversation is ended as ABANDONED; the advisor and the supervisor see a SYSTEM notice in the transcript and a CONVERSATION_DELETED_BY_CUSTOMER event on the skill's queue topic. Escalated: 409 CONVERSATION_UNDER_SUPERVISION. Not mine, simulated or already removed: 404.
+         */
+        delete: operations["deleteOwnConversation"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1644,6 +1688,17 @@ export interface components {
             /** @example Compte courant Essentiel */
             name: string;
         };
+        CustomerOnboarded: {
+            /** @example 4821 */
+            cardLast4: string;
+            /** Format: uuid */
+            customerId: string;
+            email: string;
+            /** @example CV-04821937 */
+            externalRef: string;
+            /** @example FR76 **** **** 0142 */
+            maskedIban: string;
+        };
         /** @description A bank customer, their accounts and the products they hold */
         CustomerResponse: {
             accounts: components["schemas"]["CustomerAccount"][];
@@ -1717,6 +1772,20 @@ export interface components {
             reason: string;
             /** @example PENDING */
             status: string;
+        };
+        Explanation: {
+            action?: string;
+            checks?: components["schemas"]["ToolCheck"][];
+            /** Format: double */
+            confidence?: number;
+            decisionRecorded?: boolean;
+            intent?: string;
+            /** Format: int64 */
+            latencyMs?: number;
+            /** Format: int64 */
+            messageId?: number;
+            reason?: string;
+            sources?: components["schemas"]["SourceReference"][];
         };
         GrantCredit: {
             /** Format: uuid */
@@ -1883,6 +1952,29 @@ export interface components {
         MessageRequest: {
             /** @example Je bloque votre carte tout de suite. */
             content: string;
+        };
+        OnboardCustomerRequest: {
+            /** @example nadia.benali@example.fr */
+            email: string;
+            /** @example Nadia */
+            firstName: string;
+            /**
+             * @description Opening deposit in euros; 0 or absent for none
+             * @example 250
+             */
+            initialDeposit?: number;
+            /** @example Benali */
+            lastName: string;
+            /** @example +33 6 12 34 56 78 */
+            phone?: string;
+            /** @enum {string} */
+            productCode: "CUR_ESSENTIAL" | "CUR_PREMIUM";
+            /** @example Lyon */
+            region: string;
+            /** @enum {string} */
+            segment: "MASS" | "AFFLUENT" | "PRIVATE" | "PROFESSIONAL";
+            /** @description Temporary password, given to the customer in person */
+            temporaryPassword: string;
         };
         OpenConversationRequest: {
             /** Format: uuid */
@@ -2156,6 +2248,13 @@ export interface components {
             /** Format: int32 */
             targetSeconds?: number;
         };
+        SourceReference: {
+            /** Format: uuid */
+            articleId?: string;
+            /** Format: double */
+            score?: number;
+            title?: string;
+        };
         StartConversationSimulationRequest: {
             /** @enum {string} */
             customerSegment: "MASS" | "AFFLUENT" | "PRIVATE" | "PROFESSIONAL";
@@ -2319,6 +2418,10 @@ export interface components {
             /** @enum {string} */
             status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
             title?: string;
+        };
+        ToolCheck: {
+            ok?: boolean;
+            tool?: string;
         };
         /** @description One movement on an account */
         Transaction: {
@@ -5517,6 +5620,83 @@ export interface operations {
             };
         };
     };
+    getAiMessageExplanation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                messageId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Explanation"];
+                };
+            };
+            /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not authenticated. code UNAUTHENTICATED: no bearer token, or one that is expired, malformed or wrongly signed - all indistinguishable, and the signal to refresh or log in again. code INVALID_CREDENTIALS: login refused; an unknown email and a wrong password are deliberately indistinguishable. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authenticated, but not permitted: code ACCESS_DENIED. Re-authenticating will not help, so clients must not refresh on it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No such route, or a referenced resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A business rule refused the operation. The request was well-formed; the current state of the business forbids it. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected failure. message is deliberately generic and carries no internal detail; see the server log for the stack trace. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     resolveConversation: {
         parameters: {
             query?: never;
@@ -5765,6 +5945,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerResponse"];
+                };
+            };
+            /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not authenticated. code UNAUTHENTICATED: no bearer token, or one that is expired, malformed or wrongly signed - all indistinguishable, and the signal to refresh or log in again. code INVALID_CREDENTIALS: login refused; an unknown email and a wrong password are deliberately indistinguishable. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authenticated, but not permitted: code ACCESS_DENIED. Re-authenticating will not help, so clients must not refresh on it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No such route, or a referenced resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A business rule refused the operation. The request was well-formed; the current state of the business forbids it. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected failure. message is deliberately generic and carries no internal detail; see the server log for the stack trace. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    onboardCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardCustomerRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOnboarded"];
                 };
             };
             /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
@@ -6300,6 +6558,80 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["Conversation"];
                 };
+            };
+            /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not authenticated. code UNAUTHENTICATED: no bearer token, or one that is expired, malformed or wrongly signed - all indistinguishable, and the signal to refresh or log in again. code INVALID_CREDENTIALS: login refused; an unknown email and a wrong password are deliberately indistinguishable. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authenticated, but not permitted: code ACCESS_DENIED. Re-authenticating will not help, so clients must not refresh on it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No such route, or a referenced resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A business rule refused the operation. The request was well-formed; the current state of the business forbids it. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected failure. message is deliberately generic and carries no internal detail; see the server log for the stack trace. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteOwnConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Rejected before any business rule ran: the body is not valid JSON (code MALFORMED_REQUEST), a parameter or field broke a rule (code VALIDATION_FAILED), or a use-case precondition was unmet. */
             400: {

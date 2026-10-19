@@ -4,6 +4,7 @@ import { Users, Sparkles } from "lucide-react";
 import { aiWorkspace, skillNames, type WorkforceRecommendation } from "@/lib/ai-workspace";
 import { ApiError, errorMessage } from "@/lib/api";
 import WorkforceApplication from "./WorkforceApplication";
+import { workforceWaitLabel, workforceNoTransferTitle } from "@/lib/workforce-presentation";
 
 export default function WorkforceCard() {
   const [result, setResult] = useState<WorkforceRecommendation | null>(null);
@@ -28,6 +29,8 @@ export default function WorkforceCard() {
     REALLOCATE: "Rééquilibrer les équipes", REASSIGN: "Rééquilibrer les équipes",
     ADD_CAPACITY: "Renforcer la capacité", ESCALATE: "Demander une revue",
   };
+  const noTransfer = !!result && ["NONE", "NO_OP", "NOOP"].includes(result.type);
+  const waiting = result ? Object.entries(result.observation.queues).filter(([, count]) => count > 0) : [];
   return <section className="cv-card cv-card-pad cv-section" id="workforce" aria-busy={busy}>
     <div className="cv-ai-card-heading"><div><p className="cv-eyebrow"><Users size={15} /> EFFECTIFS</p>
       <h2 className="cv-tool-title">Une recommandation pour votre équipe</h2>
@@ -36,20 +39,22 @@ export default function WorkforceCard() {
     </div>
     {error && <p className="cv-error cv-section" role="alert">{error}</p>}
     {result && <div className="cv-section" aria-live="polite">
-      <div className="cv-notice"><strong>{actions[result.type] || "Proposition d’organisation"}</strong>
+      <div className="cv-notice"><strong>{noTransfer ? workforceNoTransferTitle(result.observation.queues) : actions[result.type] || "Proposition d’organisation"}</strong>
         <p>{result.reason}</p>
+        {noTransfer && waiting.length > 0 && <p>Files à examiner : {waiting.map(([skill, count]) => `${skillNames[skill] || skill} (${count} en attente)`).join(", ")}. Vérifiez les conversations et la disponibilité de conseillers compétents.</p>}
+        {noTransfer && waiting.length > 0 && <a className="cv-button cv-button-secondary cv-button-small" href="/supervisor/conversations">Examiner les conversations</a>}
         {result.fromPool && result.toPool && <p>{skillNames[result.fromPool] || result.fromPool} → {skillNames[result.toPool] || result.toPool}{result.count != null ? ` · ${result.count} conseiller(s)` : ""}</p>}
-        <p>{applied ? "Le transfert validé a été enregistré." : "Cette proposition nécessite votre revue avant toute modification."}</p>
-        {result.caveats?.length > 0 && <ul className="cv-subtitle">{result.caveats.map((caveat, index) => <li key={index}>{caveat}</li>)}</ul>}
+        <p>{applied ? "Le transfert validé a été enregistré." : noTransfer ? "Aucun transfert n’a été proposé ni effectué." : "Cette proposition nécessite votre revue avant toute modification."}</p>
+        {result.caveats?.length > 0 && <details className="cv-section"><summary>Précisions sur l’analyse</summary><ul className="cv-subtitle">{result.caveats.map((caveat, index) => <li key={index}>{caveat}</li>)}</ul></details>}
         {result.type === "REASSIGN" && <WorkforceApplication key={result.decisionId} proposal={result} onApplied={() => setApplied(true)} />}
       </div>
       <div className="cv-table-wrap cv-section"><table className="cv-table"><caption className="sr-only">Données utilisées pour la recommandation</caption>
         <thead><tr><th>Compétence</th><th>En attente</th><th>Attente moyenne</th><th>Disponibles</th></tr></thead>
         <tbody>{Object.entries(skillNames).map(([skill, name]) => <tr key={skill}><td>{name}</td><td>{result.observation.queues[skill] ?? "—"}</td>
-          <td>{result.observation.averageWaitSeconds[skill] == null ? "—" : `${Math.round(result.observation.averageWaitSeconds[skill])} s`}</td><td>{result.observation.available[skill] ?? "—"}</td></tr>)}</tbody>
+          <td>{workforceWaitLabel(result.observation.averageWaitSeconds[skill])}</td><td>{result.observation.available[skill] ?? "—"}</td></tr>)}</tbody>
       </table></div>
-      <p className="cv-subtitle">Les conseillers polyvalents peuvent figurer dans plusieurs compétences. La tendance utilise une valeur neutre.
-        {!result.observation.slaMeasured && " Aucun SLA n’est encore mesuré aujourd’hui : une valeur neutre a été utilisée."}</p>
+      <p className="cv-subtitle">Ces files regroupent les discussions en attente d’affectation, même si l’IA répond déjà. Les discussions escaladées sont suivies séparément par la supervision. Une réponse IA ne vaut pas validation humaine.</p>
+      <p className="cv-subtitle">« Disponibles » indique les conseillers pouvant encore accueillir un chat. Un transfert exige en plus un conseiller libre et les compétences requises.</p>
       <p className="cv-subtitle">Analyse du {new Date(result.generatedAt).toLocaleString("fr-FR")} · Référence {result.decisionId}</p>
     </div>}
   </section>;

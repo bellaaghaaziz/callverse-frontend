@@ -11,7 +11,6 @@ import { useConnection, useTopic } from "@/hooks/useTopic";
 import { reconnectStomp } from "@/lib/stomp";
 import { RefreshCw } from "lucide-react";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
-import WorkforceCard from "@/components/ai/WorkforceCard";
 import { useRouter } from "next/navigation";
 import { pushSample, type Sample } from "@/lib/charts";
 type AlertHistory = { content: SupervisionAlert[]; page: { number: number; totalPages: number } };
@@ -131,7 +130,6 @@ export default function SupervisorPage() {
         )}
         <KpiTiles kpi={kpi} />
         <SupervisionCharts kpi={kpi} waitingHistory={waitingHistory} />
-        <WorkforceCard />
         <div className="cv-two-columns">
           <QueuesCard kpi={kpi} />
           <AlertsCard

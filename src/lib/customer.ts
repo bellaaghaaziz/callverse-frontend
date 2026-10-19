@@ -16,13 +16,13 @@ export interface ConversationListItem {
   skill: string;
 }
 
-// Who the customer is talking to, and about what. Never the customer's own name.
+// Lead with the request, then show who can help. Never the customer's own name.
 export function conversationHeading(item: ConversationListItem) {
   const fromNewBackend = item.counterpartName !== undefined;
   const advisor = fromNewBackend ? item.counterpartName : item.advisorName;
   return {
-    title: advisor || "En attente d’un conseiller",
-    subtitle: item.subject || SKILL_LABELS[item.skill] || item.skill,
+    title: item.subject || SKILL_LABELS[item.skill] || item.skill,
+    subtitle: advisor || "Assistant IA · conseiller sur demande",
   };
 }
 

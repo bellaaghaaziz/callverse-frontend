@@ -30,10 +30,12 @@ const statusesFor = (choice: string) =>
 export default function SupervisedConversations({
   refreshKey,
   onOpen,
+  selectedId,
 }: {
   // Changes whenever the live KPI or alert feed reports activity.
   refreshKey: string;
   onOpen: (id: string) => void;
+  selectedId?: string | null;
 }) {
   // Each result remembers the query it answers, so rows from other filters
   // never show under the current ones (for example after a failed request).
@@ -160,91 +162,18 @@ export default function SupervisedConversations({
           </p>
         )
       )}
-      <div className="cv-table-wrap">
-        <table className="cv-table cv-conv-table">
-          <caption className="sr-only">
-            Conversations supervisées, page {page + 1} sur {totalPages}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Client</th>
-              <th scope="col">Statut</th>
-              <th scope="col">File</th>
-              <th scope="col">Conseiller</th>
-              <th scope="col">Arrivée</th>
-              <th scope="col">Attente</th>
-              <th scope="col">Délai cible</th>
-              <th scope="col">Messages</th>
-              <th scope="col">Dernier message</th>
-              <th scope="col">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {current?.content.map((conversation) => (
-              <tr key={conversation.id}>
-                <td>
-                  <strong className="cv-conv-name">
-                    {conversation.customer.name}
-                  </strong>
-                  {conversation.customer.reference && (
-                    <p className="cv-conv-ref">
-                      {conversation.customer.reference}
-                    </p>
-                  )}
-                </td>
-                <td>
-                  <div className="cv-conv-status">
-                    <StatusBadge status={conversation.status} />
-                    {conversation.pendingEscalation && (
-                      <span className="cv-badge cv-badge-rose">
-                        Escalade en attente
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  {conversation.skill
-                    ? skillLabel[conversation.skill] || conversation.skill
-                    : "—"}
-                </td>
-                <td>{conversation.advisor?.name ?? "—"}</td>
-                <td>{dateTime.format(new Date(conversation.queuedAt))}</td>
-                <td>{waitLabel(conversation.waitSeconds)}</td>
-                <td>
-                  {conversation.slaMet == null
-                    ? "—"
-                    : conversation.slaMet
-                      ? "Respecté"
-                      : "Dépassé"}
-                </td>
-                <td>{conversation.messageCount}</td>
-                <td>
-                  {conversation.lastMessageAt
-                    ? dateTime.format(new Date(conversation.lastMessageAt))
-                    : "—"}
-                </td>
-                <td>
-                  {/* One action per row: a named button, not a ⋮ menu; the
-                      tooltip shows the name to mouse users. */}
-                  <button
-                    className="cv-icon-button cv-row-open"
-                    aria-label={
-                      "Ouvrir la conversation de " + conversation.customer.name
-                    }
-                    title={
-                      "Ouvrir la conversation de " + conversation.customer.name
-                    }
-                    onClick={() => onOpen(conversation.id)}
-                  >
-                    <ArrowUpRight size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="cv-supervised-list" tabIndex={0} aria-label="Conversations de l’équipe">
+        {current?.content.map(conversation => <button type="button" key={conversation.id}
+          className={"cv-supervised-item" + (selectedId === conversation.id ? " cv-directory-selected" : "")}
+          aria-pressed={selectedId === conversation.id} onClick={() => onOpen(conversation.id)}
+          aria-label={"Ouvrir la conversation de " + conversation.customer.name}>
+          <span className="cv-directory-heading"><strong>{conversation.customer.name}</strong><ArrowUpRight size={15} /></span>
+          <span className="cv-directory-heading"><StatusBadge status={conversation.status} /><span className="cv-muted">{conversation.skill ? skillLabel[conversation.skill] || conversation.skill : "Relation client"}</span></span>
+          <span className="cv-muted">{conversation.advisor?.name ?? "En attente d’un conseiller"} · {conversation.messageCount} message{conversation.messageCount > 1 ? "s" : ""}</span>
+          <span className="cv-muted">Attente {waitLabel(conversation.waitSeconds)}{conversation.slaMet === false ? " · Délai dépassé" : ""}</span>
+          {conversation.pendingEscalation && <span className="cv-badge cv-badge-rose">Escalade en attente</span>}
+          <span className="cv-muted">{dateTime.format(new Date(conversation.lastMessageAt || conversation.queuedAt))}</span>
+        </button>)}
       </div>
       {current?.content.length === 0 && (
         <div className="cv-empty">

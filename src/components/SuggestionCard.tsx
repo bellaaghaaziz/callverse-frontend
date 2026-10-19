@@ -48,6 +48,7 @@ export default function SuggestionCard({
         </button>
       </div>
       <p className="cv-muted">{facts.join(" · ")}</p>
+      <p className="cv-muted">Suggestion en lecture seule : les consultations sont possibles, toute intervention reste à la charge du conseiller. La confiance affichée est une estimation du modèle.</p>
       {/* Below the fold of the fixed-height slot: scroll to read it. */}
       <p className="mt-2 whitespace-pre-wrap">{suggestion.reply}</p>
       {suggestion.sources.length > 0 && (

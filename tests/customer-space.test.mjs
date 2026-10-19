@@ -20,16 +20,16 @@ test("a customer's conversation is headed by the advisor and the request, never 
   const { conversationHeading } = load();
   assert.deepEqual(
     plain(conversationHeading({ customerName: "Léa Dubois", counterpartName: "Karim Benali", subject: "Carte bancaire", skill: "CARDS" })),
-    { title: "Karim Benali", subtitle: "Carte bancaire" },
+    { title: "Carte bancaire", subtitle: "Karim Benali" },
   );
   assert.deepEqual(
     plain(conversationHeading({ customerName: "Léa Dubois", counterpartName: null, subject: "Suspicion de fraude", skill: "FRAUD" })),
-    { title: "En attente d’un conseiller", subtitle: "Suspicion de fraude" },
+    { title: "Suspicion de fraude", subtitle: "Assistant IA · conseiller sur demande" },
   );
   // An older backend without the new fields still never shows the customer's name.
   assert.deepEqual(
     plain(conversationHeading({ customerName: "Léa Dubois", advisorName: "Karim", skill: "CARDS" })),
-    { title: "Karim", subtitle: "Cartes" },
+    { title: "Cartes", subtitle: "Karim" },
   );
 });
 

@@ -12,6 +12,8 @@ import AdvisorChatPanel from "@/components/advisor/ChatPanel";
 import AdvisorCustomerColumn from "@/components/advisor/CustomerColumn";
 import AdvisorActionForms from "@/components/advisor/ActionForms";
 import AdvisorActivity from "@/components/advisor/AdvisorActivity";
+import WorkspaceTabs from "@/components/WorkspaceTabs";
+import AssistantPanel from "@/components/advisor/AssistantPanel";
 
 export default function AdvisorPage() {
   const workspace = useAdvisorWorkspace();
@@ -118,19 +120,16 @@ export default function AdvisorPage() {
           </button>
         </div>
       </div>
-      <AdvisorActivity workspace={workspace} />
-      <div className="cv-advisor-grid">
+      <details className="cv-activity-disclosure"><summary>Mon activité et les files</summary><AdvisorActivity workspace={workspace} /></details>
+      <div id="workspace-chat" className="cv-advisor-grid cv-focused-workspace">
         <AdvisorInbox workspace={workspace} />
         <AdvisorChatPanel workspace={workspace} forms={forms} />
-        <AdvisorCustomerColumn workspace={workspace}>
-          <AdvisorActionForms
-            workspace={workspace}
-            forms={forms}
-            handleOpenTicket={handleOpenTicket}
-            handleEscalate={handleEscalate}
-          />
-        </AdvisorCustomerColumn>
+        <div className="cv-context-column"><WorkspaceTabs tabs={[
+          { id: "context", label: "Contexte", content: <AdvisorCustomerColumn workspace={workspace} /> },
+          { id: "assistant", label: "Assistant IA", content: <AssistantPanel workspace={workspace} /> },
+        ]} /></div>
       </div>
+      <AdvisorActionForms workspace={workspace} forms={forms} handleOpenTicket={handleOpenTicket} handleEscalate={handleEscalate} />
     </AppShell>
   );
 }

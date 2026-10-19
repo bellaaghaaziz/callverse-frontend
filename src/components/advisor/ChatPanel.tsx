@@ -72,7 +72,7 @@ export default function AdvisorChatPanel({
             </div>
             <div className="cv-chat-status">
               <StatusBadge status={activeConv.status} />
-              <span className="cv-muted">{messages.length} messages</span>
+              <span className="cv-muted">{messages.length} message{messages.length > 1 ? "s" : ""}</span>
             </div>
           </div>
           <div className="cv-chat-context">
@@ -88,7 +88,7 @@ export default function AdvisorChatPanel({
             role="ADVISOR"
             customerName={customerName}
           />
-          {canReply && needsHumanTakeoverNotice(messages) && <p className="cv-notice m-4" role="status">L’assistant IA a répondu à ce client. Votre premier message reprend la main : l’IA ne répondra plus.</p>}
+          {canReply && needsHumanTakeoverNotice(messages) && <p className="cv-notice m-4" role="status">L’IA accompagne le client jusqu’à votre première réponse. En répondant, vous prenez le relais et arrêtez ses réponses automatiques.</p>}
           <div className="cv-composer">
             {canReply ? (
               <>

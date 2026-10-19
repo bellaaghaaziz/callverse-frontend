@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       conversation_id: conversation.id, customer_id: conversation.customerId,
       message: modelText(messages[last].content),
       history: messages.slice(0, last).map((m: {sender: string; content: string; sentAt: string}) => ({ role: m.sender === "CUSTOMER" ? "customer" : "advisor", content: modelText(m.content), ts: m.sentAt })),
-      context: { tenure_months: customer.tenureMonths, segment: customer.segment }, mode: "SIMULATION",
+      context: { tenure_months: customer.tenureMonths, segment: customer.segment }, mode: "PREVIEW",
     }, conversation.customerId));
   } catch (error) { return failure(error); }
 }

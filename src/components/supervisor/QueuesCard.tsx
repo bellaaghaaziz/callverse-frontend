@@ -7,7 +7,7 @@ import CardHeading from "./CardHeading";
 // « Files par compétence »: waiting contacts per queue, then three indicators.
 export default function QueuesCard({ kpi }: { kpi: LiveKpi | null }) {
   const indicators = [
-    ["Attente moyenne", waitLabel(kpi?.averageWaitSeconds)],
+    ["Attente avant affectation", waitLabel(kpi?.averageWaitSeconds)],
     ["Respect du délai cible", percentLabel(kpi?.slaRatio)],
     ["Taux d’abandon", percentLabel(kpi?.abandonRate)],
   ];
@@ -16,7 +16,7 @@ export default function QueuesCard({ kpi }: { kpi: LiveKpi | null }) {
       <CardHeading
         icon={Layers}
         title="Files par compétence"
-        subtitle="Répartition des contacts en attente"
+        subtitle="Discussions en attente d’affectation humaine, même si l’IA répond"
         count={kpi?.queues.length || 0}
       />
       <div

@@ -19,16 +19,9 @@ const NAV: Record<string, NavItem[]> = {
     { href: "/supervisor/twin", label: "Jumeau numérique", icon: "twin" },
     { href: "/supervisor/ai", label: "Pilotage IA", icon: "ai" },
   ],
-  // The admin keeps its tabbed page; each banner item opens one tab.
+  // Admin sections already have tabs; do not repeat them in the banner.
   "Analyste / Admin": [
-    { href: "/admin?section=Utilisateurs", label: "Utilisateurs", icon: "users" },
-    { href: "/admin?section=Clients", label: "Clients", icon: "clients" },
-    { href: "/admin?section=Proc%C3%A9dures", label: "Procédures", icon: "tools" },
-    { href: "/admin?section=Accueil", label: "Accueil", icon: "frontdesk" },
-    { href: "/admin?section=Jumeau%20num%C3%A9rique", label: "Jumeau numérique", icon: "twin" },
-    { href: "/admin?section=Catalogue%20produits", label: "Catalogue", icon: "catalog" },
-    { href: "/admin?section=Conseillers", label: "Conseillers", icon: "advisors" },
-    { href: "/admin?section=R%C3%A8gles", label: "Règles et accès", icon: "rules" },
+    { href: "/admin", label: "Administration", icon: "users" },
     { href: "/admin/ai", label: "Pilotage IA", icon: "ai" },
   ],
 };

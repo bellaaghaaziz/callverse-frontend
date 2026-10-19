@@ -15,12 +15,14 @@ function compile(file,imports={}) {
  return compiledModule.exports;
 }
 const presentation=compile('lib/presentation.ts');
-const ChatThread=compile('components/ChatThread.tsx',{'@/lib/presentation':presentation}).default;
+const Explanation=compile('components/AiMessageExplanation.tsx',{'@/lib/api':{}}).default;
+const ChatThread=compile('components/ChatThread.tsx',{'@/lib/presentation':presentation,'./AiMessageExplanation':{default:Explanation}}).default;
 const message=(id,aiGenerated)=>({id,conversationId:'test',sender:'ADVISOR',content:'Réponse '+id,sentAt:'2026-10-18T09:00:00Z',aiGenerated});
 for(const role of ['CUSTOMER','ADVISOR','SUPERVISOR'])test('AI attribution remains visible on every adjacent message for '+role,()=>{
  const ai=renderToStaticMarkup(React.createElement(ChatThread,{role,messages:[message(1,true),message(2,true)]}));
  assert.equal((ai.match(/aria-label="Message rédigé par l&#x27;assistant IA"/g)||[]).length,2);
  assert(!ai.includes('Vous'));
+ assert.equal((ai.match(/Pourquoi cette réponse/g)||[]).length,role==='CUSTOMER'?0:2);
  const human=renderToStaticMarkup(React.createElement(ChatThread,{role,messages:[message(1,false)]}));
  assert(!human.includes('Assistant IA'));
 });

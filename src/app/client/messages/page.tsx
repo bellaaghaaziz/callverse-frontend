@@ -27,12 +27,17 @@ export default function ClientMessages() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [notice, setNotice] = useState("");
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
   const load = useCallback(async (signal?: AbortSignal) => {
     try {
-      const page = await apiFetch<{ content: ConversationChoice[] }>("/conversations/accessible?page=0", { signal });
-      if (!signal?.aborted) { setItems(page.content); setListError(""); }
+      const result = await apiFetch<{ content: ConversationChoice[]; hasNext: boolean }>(`/conversations/accessible?page=${page}`, { signal });
+      if (!signal?.aborted) {
+        setItems(result.content); setHasNext(result.hasNext); setListError("");
+        setSelected(previous => previous || result.content.find(item => LIVE.includes(item.status))?.id || result.content[0]?.id || null);
+      }
     } catch (e) { if (!signal?.aborted) setListError(errorMessage(e)); }
-  }, []);
+  }, [page]);
   useEffect(() => {
     const controller = new AbortController();
     void load(controller.signal);
@@ -43,7 +48,8 @@ export default function ClientMessages() {
     if (params.size) window.history.replaceState(null, "", "/client/messages");
     const refresh = () => void load();
     window.addEventListener("callverse:reconnected", refresh);
-    return () => { controller.abort(); window.removeEventListener("callverse:reconnected", refresh); };
+    window.addEventListener("callverse:conversation-updated", refresh);
+    return () => { controller.abort(); window.removeEventListener("callverse:reconnected", refresh); window.removeEventListener("callverse:conversation-updated", refresh); };
   }, [load]);
   const live = items?.find(item => LIVE.includes(item.status)) || null;
   const current = items?.find(item => item.id === selected) || null;
@@ -126,7 +132,7 @@ export default function ClientMessages() {
         </section>
       )}
 
-      <div className="cv-cs-messaging">
+      <div className="cv-cs-messaging cv-focused-workspace">
         <section className="cv-cs-card cv-cs-conversations" aria-labelledby="conversations-title" data-tour="client-conversations">
           <div className="cv-cs-card-head"><h2 id="conversations-title">Mes conversations</h2></div>
           {listError && <p role="alert" className="cv-error">{listError}</p>}
@@ -137,13 +143,16 @@ export default function ClientMessages() {
               const heading = conversationHeading(item);
               return (
                 <li key={item.id} className={"cv-cs-conversation" + (selected === item.id ? " cv-cs-conversation-selected" : "")}>
-                  <button type="button" className="cv-cs-conversation-open" aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}>
+                  <button type="button" className="cv-cs-conversation-open" aria-pressed={selected === item.id} onClick={() => {
+                    setSelected(item.id);
+                    if (window.matchMedia("(max-width: 900px)").matches) requestAnimationFrame(() => document.querySelector('[data-tour="client-chat"]')?.scrollIntoView({ behavior: "smooth", block: "start" }));
+                  }}>
                     <span className="cv-cs-conversation-head"><strong>{heading.title}</strong><StatusBadge status={item.status} /></span>
                     <span className="cv-cs-conversation-subject">{heading.subtitle} · {when.format(new Date(item.queuedAt))}</span>
                     <span className="cv-cs-conversation-preview">{item.preview || "Aucun message pour le moment."}</span>
                   </button>
                   {item.status !== "ESCALATED" && (
-                    <button type="button" className="cv-icon-button cv-cs-conversation-delete" aria-label={`Supprimer la conversation « ${heading.subtitle} »`}
+                    <button type="button" className="cv-icon-button cv-cs-conversation-delete" aria-label={`Supprimer la conversation « ${heading.title} »`}
                       onClick={() => { setDeleteError(""); setToDelete(item); }}>
                       <Trash2 size={17} />
                     </button>
@@ -152,6 +161,11 @@ export default function ClientMessages() {
               );
             })}
           </ul>
+          {(page > 0 || hasNext) && <nav className="cv-directory-pages" aria-label="Pages de mes conversations">
+            <button type="button" className="cv-button cv-button-secondary cv-button-small" disabled={page === 0} onClick={() => setPage(value => value - 1)}>Précédent</button>
+            <span>Page {page + 1}</span>
+            <button type="button" className="cv-button cv-button-secondary cv-button-small" disabled={!hasNext} onClick={() => setPage(value => value + 1)}>Suivant</button>
+          </nav>}
         </section>
         <div data-tour="client-chat">
           {selected ? (
@@ -170,7 +184,7 @@ export default function ClientMessages() {
 
       <ConfirmDialog open={!!toDelete} title="Supprimer cette conversation ?" confirmLabel="Supprimer" busy={deleting}
         onCancel={() => setToDelete(null)} onConfirm={confirmDelete}>
-        <p>La conversation « {toDelete ? conversationHeading(toDelete).subtitle : ""} » disparaîtra de votre espace.
+        <p>La conversation « {toDelete ? conversationHeading(toDelete).title : ""} » disparaîtra de votre espace.
           {toDelete && LIVE.includes(toDelete.status) ? " Elle sera terminée et votre conseiller en sera informé." : ""}</p>
         <p className="cv-muted">Pour des raisons réglementaires, la banque en conserve une trace.</p>
         {deleteError && <p className="cv-error" role="alert">{deleteError}</p>}

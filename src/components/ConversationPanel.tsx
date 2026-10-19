@@ -12,9 +12,10 @@ import {
 import { useTopic, useConnection } from "@/hooks/useTopic";
 import ChatThread from "./ChatThread";
 import StatusBadge from "./StatusBadge";
-import { MessageSquare, RefreshCw, Send, CheckCircle2 } from "lucide-react";
+import { MessageSquare, RefreshCw, Send, CheckCircle2, Sparkles } from "lucide-react";
 import { reconnectStomp } from "@/lib/stomp";
 import QualityCard from "./ai/QualityCard";
+import { intentLabel, skillLabel } from "@/lib/presentation";
 export default function ConversationPanel({
   id,
   role,
@@ -36,6 +37,7 @@ export default function ConversationPanel({
   const helpId = useId();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [replyState, setReplyState] = useState<"idle" | "waiting" | "delayed">("idle");
   const latestStatus = useRef("");
   const connection = useConnection();
   const loaded = conversation !== null;
@@ -57,7 +59,7 @@ export default function ConversationPanel({
           setError("");
           setConversation((previous) =>
             latestStatus.current === eventVersion
-              ? record
+              ? previous && previous.status === record.status && previous.advisorId === record.advisorId && previous.endedAt === record.endedAt ? previous : record
               : previous
                 ? { ...record, status: previous.status }
                 : record,
@@ -72,11 +74,15 @@ export default function ConversationPanel({
     }
     void load();
     window.addEventListener("callverse:reconnected", load);
+    // Continue receiving human replies and late escalation events if realtime is unavailable.
+    const timer = role === "CUSTOMER" && connection !== "connected"
+      ? setInterval(() => void load(), 5000) : undefined;
     return () => {
       controller.abort();
+      clearInterval(timer);
       window.removeEventListener("callverse:reconnected", load);
     };
-  }, [id, loaded]);
+  }, [id, loaded, role, connection]);
   useTopic<ConversationEvent>(
     conversation ? "/topic/conversation/" + id : null,
     (event) => {
@@ -113,8 +119,8 @@ export default function ConversationPanel({
     !!conversation &&
     (role === "CUSTOMER"
       ? !["RESOLVED", "ABANDONED"].includes(conversation.status)
-      : role === "ADVISOR" &&
-        ["ASSIGNED", "ACTIVE", "ESCALATED"].includes(conversation.status));
+      : (role === "ADVISOR" && ["ASSIGNED", "ACTIVE", "ESCALATED"].includes(conversation.status)) ||
+        (role === "SUPERVISOR" && conversation.status === "ESCALATED"));
   const canAbandon =
     !!conversation &&
     ["QUEUED", "ASSIGNED", "ACTIVE"].includes(conversation.status);
@@ -123,6 +129,40 @@ export default function ConversationPanel({
   useEffect(() => {
     if (status) onStatus?.(status);
   }, [status, onStatus]);
+  const lastMessage = messages.at(-1);
+  const humanHasReplied = messages.some(message => message.sender === "ADVISOR" && !message.aiGenerated);
+  useEffect(() => {
+    if (role === "CUSTOMER" && conversation) {
+      window.dispatchEvent(new CustomEvent("callverse:conversation-updated", { detail: id }));
+    }
+  }, [id, role, conversation, lastMessage?.id]);
+  useEffect(() => {
+    if (role !== "CUSTOMER" || !canWrite || lastMessage?.sender !== "CUSTOMER") {
+      setReplyState("idle");
+      return;
+    }
+    const deadline = Date.parse(lastMessage.sentAt) + 90000;
+    if (Date.now() >= deadline) { setReplyState("delayed"); return; }
+    setReplyState("waiting");
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function followReply() {
+      if (Date.now() >= deadline) { setReplyState("delayed"); return; }
+      try {
+        const eventVersion = latestStatus.current;
+        const [transcript, record] = await Promise.all([
+          apiFetch<Schema["Transcript"]>(`/conversations/${id}/messages?limit=200`, { signal: controller.signal }),
+          apiFetch<Conversation>(`/conversations/${id}`, { signal: controller.signal }),
+        ]);
+        if (controller.signal.aborted) return;
+        setMessages(previous => mergeMessages(previous, transcript.messages));
+        if (latestStatus.current === eventVersion) setConversation(previous => previous?.status === record.status ? previous : record);
+      } catch { /* Keep the chat usable during a temporary connection failure. */ }
+      if (!controller.signal.aborted) timer = setTimeout(() => void followReply(), 3000);
+    }
+    timer = setTimeout(() => void followReply(), 3000);
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [id, role, canWrite, lastMessage?.id, lastMessage?.sender, lastMessage?.sentAt]);
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!canWrite || !draft.trim()) return;
@@ -161,7 +201,7 @@ export default function ConversationPanel({
     }
   }
   return (
-    <section className="cv-card">
+    <section className="cv-card cv-conversation-panel">
       <div className="cv-chat-header">
         <div className="cv-chat-person">
           <span className="cv-avatar cv-avatar-light">
@@ -184,6 +224,10 @@ export default function ConversationPanel({
           </span>
         </div>
       </div>
+      {role !== "CUSTOMER" && conversation && <div className="cv-chat-context"><span>{skillLabel[conversation.skill] || conversation.skill}</span><span>{intentLabel[conversation.intent || ""] || "Demande client"}</span></div>}
+      {role === "CUSTOMER" && canWrite && <div className="cv-chat-context" role="status">
+        {humanHasReplied ? "Votre conseiller a pris le relais." : conversation?.status === "ESCALATED" ? "Un spécialiste a été demandé. L’assistant IA reste avec vous en attendant." : "L’assistant IA vous accompagne. Un conseiller peut prendre le relais."}
+      </div>}
       {connection !== "connected" && (
         <div className="px-5 py-3">
           <button
@@ -201,15 +245,24 @@ export default function ConversationPanel({
         </div>
       )}
       {(role === "SUPERVISOR" || role === "ADMIN") && conversation?.status === "RESOLVED" && (
-        <div className="cv-card-pad"><QualityCard conversationId={id} status={conversation.status} /></div>
+        <details className="cv-quality-detail"><summary>Analyse qualité IA</summary><QualityCard conversationId={id} status={conversation.status} /></details>
       )}
-      <div className="flex flex-col h-[420px] min-h-0">
+      <div className="cv-conversation-transcript flex flex-col h-[420px] min-h-0">
         <ChatThread
           messages={messages}
           role={role}
           loading={!conversation && !error}
         />
       </div>
+      {role === "CUSTOMER" && replyState !== "idle" && <div className="cv-reply-status" role="status">
+        {humanHasReplied ? <MessageSquare size={14} /> : <Sparkles size={14} />}
+        {humanHasReplied ? "Votre message est envoyé. En attente de votre conseiller." : replyState === "waiting" ? "L’assistant IA prépare votre réponse…" : "Votre message est enregistré. La réponse prend plus de temps que prévu."}
+        {replyState === "delayed" && <button className="cv-button cv-button-secondary cv-button-small" onClick={() => {
+          void apiFetch<Schema["Transcript"]>(`/conversations/${id}/messages?limit=200`)
+            .then(transcript => setMessages(previous => mergeMessages(previous, transcript.messages)))
+            .catch(error => setError(errorMessage(error)));
+        }}>Actualiser l’échange</button>}
+      </div>}
       {canWrite ? (
         <div className="cv-composer">
           <form onSubmit={send}>
@@ -231,7 +284,7 @@ export default function ConversationPanel({
           </form>
           <p>
             <span id={helpId}>
-              Votre échange est visible par le conseiller et le client.
+              {role === "CUSTOMER" ? "Votre message reste dans cette discussion." : "Votre échange est visible par le conseiller et le client."}
             </span>
             <span>{draft.length}/2000</span>
           </p>

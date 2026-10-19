@@ -11,7 +11,7 @@ export default function AdvisorCustomerColumn({
   children,
 }: {
   workspace: AdvisorWorkspace;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const {
     customer,

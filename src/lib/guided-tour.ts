@@ -42,7 +42,7 @@ export function tourForPath(path: string): TourDefinition | null {
     case "/supervisor": return { scope: "supervisor", steps: [intro, navigation,
       step("kpi", ".cv-stat-grid", "Lire la situation en direct", "Ces indicateurs distinguent les contacts en attente, les échanges en cours et les conversations terminées aujourd’hui. Un tiret signifie qu’aucune mesure n’est disponible."),
       step("charts", '[data-tour="supervision-charts"]', "Trois graphiques en direct", "La charge de chaque file, l’état des contacts du jour et l’évolution de l’attente depuis votre arrivée. Survolez une barre ou la courbe pour lire la valeur."),
-      step("workforce", "#workforce", "Demander un avis sur les effectifs", "Cliquez sur « Analyser les effectifs » après la visite pour obtenir une recommandation fondée sur l’activité. Elle ne déplace aucun conseiller automatiquement."),
+      step("workforce", '[data-tour="ai-entry"]', "Ouvrir le pilotage IA", "Pilotage IA ouvre les recommandations dans un autre onglet. Les données et les limites y sont expliquées ; aucun conseiller n’est déplacé automatiquement."),
       step("queues", '[data-tour="supervision-queues"]', "Repérer les files sous tension", "Comparez le nombre de contacts, les temps d’attente et le respect du délai cible pour identifier les files qui ont besoin d’attention."),
       step("alerts", "#alerts", "Suivre les alertes", "Les escalades et les alertes apparaissent ici. Ouvrir une alerte affiche la conversation sur la page Conversations."),
       account, help] };
@@ -69,7 +69,7 @@ export function tourForPath(path: string): TourDefinition | null {
     case "/client/messages": return { scope: "client-messages", steps: [clientWelcome, clientNavigation,
       step("new", '[data-tour="client-new"]', "Écrire à un conseiller", "Choisissez le sujet de votre demande. Une seule conversation peut être en cours à la fois : terminez-la ou supprimez-la pour en ouvrir une nouvelle."),
       step("list", '[data-tour="client-conversations"]', "Vos conversations", "Chaque conversation indique votre conseiller et le sujet de la demande. Vous pouvez supprimer une conversation de votre espace ; la banque en conserve la trace."),
-      step("chat", '[data-tour="client-chat"]', "Échanger en direct", "Les messages de votre conseiller ou de l’assistant arrivent ici en direct."),
+      step("chat", '[data-tour="client-chat"]', "Échanger en direct", "L’IA répond ici, y compris pendant une escalade. Vous pouvez demander un conseiller humain. Dès sa première réponse, il prend le relais et l’IA cesse de répondre dans cette discussion."),
       account, help] };
     case "/client/aide": return { scope: "client-help", steps: [clientWelcome, clientNavigation,
       step("followup", '[data-tour="client-followup"]', "Suivre vos demandes", "Retrouvez les dossiers ouverts par votre conseiller et leur avancement."),

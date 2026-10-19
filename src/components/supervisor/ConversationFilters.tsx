@@ -81,22 +81,25 @@ export default function ConversationFilters({
           </option>
         ))}
       </select>
-      <input
+      <details className="cv-date-filters">
+      <summary>Période{from || to ? " · filtre actif" : " (facultatif)"}</summary>
+      <label className="cv-label">Depuis<input
         type="datetime-local"
         aria-label="Arrivées depuis"
         className="cv-input"
         max={to || undefined}
         value={from}
         onChange={(e) => onFrom(e.target.value)}
-      />
-      <input
+      /></label>
+      <label className="cv-label">Jusqu’au<input
         type="datetime-local"
         aria-label="Arrivées avant"
         className="cv-input"
         min={from || undefined}
         value={to}
         onChange={(e) => onTo(e.target.value)}
-      />
+      /></label>
+      </details>
     </form>
   );
 }

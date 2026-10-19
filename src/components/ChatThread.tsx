@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, MessageSquare } from "lucide-react";
 import type { Message, Role } from "@/lib/contracts";
 import { initialsFor, roleLabel, timeLabel } from "@/lib/presentation";
+import AiMessageExplanation from "./AiMessageExplanation";
 function dayLabel(time: string) {
   const date = new Date(time);
   const today = new Date();
@@ -151,6 +152,7 @@ export default function ChatThread({
                         {timeLabel(message.sentAt)}
                       </time>
                     </div>
+                    {message.aiGenerated === true && role !== "CUSTOMER" && <AiMessageExplanation conversationId={message.conversationId} messageId={message.id} onOpen={() => { atBottom.current = false; }} />}
                   </div>
                 </div>
               )}
