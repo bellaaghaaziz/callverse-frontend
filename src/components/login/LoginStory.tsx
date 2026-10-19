@@ -110,6 +110,7 @@ export default function LoginStory() {
           <path d="M71 160 V194 Q71 226 103 226 H122" />
         </svg>
         <span className="cv-login-connector-dot" />
+        <span className="cv-login-typing"><i /><i /><i /></span>
         <p className="cv-login-chat-label cv-login-chat-advisor">Conseiller</p>
         <p className="cv-login-bubble cv-login-bubble-own">
           Bonjour ! Regardons cela ensemble.

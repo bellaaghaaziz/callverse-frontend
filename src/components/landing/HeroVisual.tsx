@@ -142,6 +142,7 @@ export default function HeroVisual() {
                     10:27 <CheckCheck size={11} />
                   </small>
                 </p>
+                <span className="cv-preview-typing"><i /><i /><i /></span>
                 <p className="cv-preview-bubble">
                   Oui, c’est 4587. Merci beaucoup !<small>10:28</small>
                 </p>

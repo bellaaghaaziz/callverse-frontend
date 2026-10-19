@@ -2,6 +2,7 @@ import Link from "next/link";
 import Brand from "@/components/Brand";
 import HeroVisual from "@/components/landing/HeroVisual";
 import LandingNav from "@/components/landing/LandingNav";
+import LandingMotion from "@/components/landing/LandingMotion";
 import { CtaArt, FeatureArt } from "@/components/landing/Illustrations";
 import {
   ArrowUpRight,
@@ -100,6 +101,7 @@ const stack = [
 export default function Home() {
   return (
     <div className="cv-landing">
+      <LandingMotion />
       <header className="cv-landing-nav">
         <Brand />
         <LandingNav />
@@ -115,12 +117,10 @@ export default function Home() {
               <span className="cv-status-dot" />
               LA RELATION CLIENT, RÉINVENTÉE
             </p>
-            <h1>
-              Plus proches.
-              <br />
-              Plus clairs.
-              <br />
-              <em>Ensemble.</em>
+            <h1 className="cv-hero-title">
+              <span className="cv-line"><span>Plus proches.</span></span>
+              <span className="cv-line"><span>Plus clairs.</span></span>
+              <span className="cv-line"><span><em>Ensemble.</em></span></span>
             </h1>
             <p className="cv-hero-description">
               Le bon échange commence avec les bonnes informations. Réunissez
@@ -152,8 +152,27 @@ export default function Home() {
           </div>
           <HeroVisual />
         </section>
+        <section className="cv-pulse" aria-label="CallVerse en chiffres" data-reveal>
+          <ul className="cv-pulse-figures">
+            <li><strong data-count="4">4</strong><span>espaces dédiés, un par rôle</span></li>
+            <li><strong data-count="4">4</strong><span>files de compétences bancaires</span></li>
+            <li><strong data-count="20">20</strong><span>procédures pour répondre juste</span></li>
+            <li><strong data-count="3">3</strong><span>stratégies comparées par le jumeau numérique</span></li>
+          </ul>
+          <div className="cv-marquee" aria-hidden="true">
+            <div className="cv-marquee-track">
+              {[0, 1].map(copy => (
+                <span key={copy}>
+                  {["Conversations en direct", "Assistant IA", "Escalade au superviseur", "Dossier client 360°", "Jumeau numérique", "Masquage des données", "Indicateurs en temps réel", "Évaluation qualité", "Ouverture de compte"].map(item => (
+                    <span className="cv-marquee-item" key={item}><i />{item}</span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
         <section className="cv-experience" id="experience">
-          <div className="cv-section-intro">
+          <div className="cv-section-intro" data-reveal>
             <div>
               <p className="cv-eyebrow">
                 MOINS DE DISPERSION, PLUS DE RELATION.
@@ -171,7 +190,7 @@ export default function Home() {
               et faire avancer la conversation.
             </p>
           </div>
-          <div className="cv-feature-grid">
+          <div className="cv-feature-grid" data-reveal>
             {features.map((feature) => (
               <article key={feature.label} className="cv-feature-card">
                 <FeatureArt kind={feature.kind} />
@@ -187,7 +206,7 @@ export default function Home() {
           </div>
         </section>
         <section className="cv-roles-section" id="roles">
-          <div className="cv-section-intro">
+          <div className="cv-section-intro" data-reveal>
             <div>
               <p className="cv-eyebrow">À CHACUN SON ESPACE</p>
               <h2>
@@ -203,7 +222,7 @@ export default function Home() {
               avec les bons outils et la bonne information.
             </p>
           </div>
-          <div className="cv-role-grid">
+          <div className="cv-role-grid" data-reveal>
             {roles.map((role) => (
               <Link href="/login" key={role.n} className="cv-role-card">
                 <span className="cv-role-card-top">
@@ -223,11 +242,11 @@ export default function Home() {
           </div>
         </section>
         <section className="cv-architecture" id="architecture">
-          <div className="cv-architecture-intro">
+          <div className="cv-architecture-intro" data-reveal>
             <p className="cv-eyebrow">ARCHITECTURE</p>
             <h2>Une base simple et solide.</h2>
           </div>
-          <ul className="cv-architecture-list">
+          <ul className="cv-architecture-list" data-reveal>
             {stack.map((item) => (
               <li key={item.title}>
                 <item.icon size={18} />
@@ -239,7 +258,7 @@ export default function Home() {
             ))}
           </ul>
         </section>
-        <section className="cv-landing-cta">
+        <section className="cv-landing-cta" data-reveal>
           <CtaArt />
           <div>
             <p className="cv-eyebrow">CHAQUE ÉCHANGE COMPTE.</p>
