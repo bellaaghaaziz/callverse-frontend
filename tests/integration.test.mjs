@@ -722,10 +722,7 @@ test("the stylesheet keeps text at 4.5:1 and focus rings at 3:1 on their surface
   check(".cv-login-intro", "color", sheet, 4.5);
   check(".cv-login-label", "color", sheet, 4.5);
   check(".cv-login-input::placeholder", "color", ["#ffffff"], 4.5);
-  check(".cv-login-demo-heading", "color", sheet, 4.5);
-  check(".cv-login-demo-text", "color", sheet, 4.5);
-  check(".cv-login-account strong", "color", ["#ffffff"], 4.5);
-  check(".cv-login-account small", "color", ["#ffffff"], 4.5);
+  // The demonstration accounts box was removed (real sign-in only); its checks went with it.
   check(".cv-login-service", "color", sheet, 4.5);
   check(".cv-login-legal", "color", sheet, 4.5);
   // Non-text: the toggle's eye and the input icons are 3:1 on the white field.

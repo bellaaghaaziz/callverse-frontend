@@ -111,7 +111,7 @@ export default function AppShell({
   }, []);
   function logout() {
     void logoutSession().catch(() => { /* The local session is already closed. */ });
-    router.push("/");
+    router.push("/login?logout=1");
   }
   function navigate(id: string) {
     setActive(id);

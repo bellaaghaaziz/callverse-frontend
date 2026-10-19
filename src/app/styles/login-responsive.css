@@ -1,25 +1,10 @@
 /* Login breakpoints. The desktop layout scales with --p; below 1200 px wide the unit can sit on its
-   floor, and a full demo card (486 units of column) no longer fits, so the cards turn compact.
-   Stacked at ≤ 1000 (the story becomes a short dark band), phone at ≤ 700. */
+   floor, so the form side narrows its padding. Stacked at ≤ 1000 (the story becomes a short dark
+   band), phone at ≤ 700. */
 @media (min-width: 1001px) and (max-width: 1200px) {
   .cv-login-form-side {
     --pad-l: calc(48 * var(--p));
     --pad-r: calc(40 * var(--p));
-  }
-  .cv-login-accounts {
-    gap: calc(12 * var(--p));
-  }
-  .cv-login-account {
-    gap: calc(12 * var(--p));
-    padding: calc(12 * var(--p)) calc(10 * var(--p)) calc(12 * var(--p))
-      calc(12 * var(--p));
-  }
-  .cv-login-account-icon {
-    width: calc(44 * var(--p));
-    height: calc(44 * var(--p));
-  }
-  .cv-login-account > svg {
-    display: none;
   }
 }
 @media (max-width: 1000px) {
@@ -112,26 +97,8 @@
   .cv-login-form-side h1 {
     font-size: 34px;
   }
-  .cv-login-demo-heading {
-    margin-top: 32px;
-  }
 }
 @media (max-width: 560px) {
-  .cv-login-accounts {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-  .cv-login-account {
-    min-height: 76px;
-    padding: 12px 16px 12px 12px;
-  }
-  .cv-login-account-icon {
-    width: 48px;
-    height: 48px;
-  }
-  .cv-login-account small {
-    margin-top: 3px;
-  }
   /* The shield flows with the wrapped note instead of standing apart from it. */
   .cv-login-legal {
     display: block;

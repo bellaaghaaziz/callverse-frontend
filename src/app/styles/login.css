@@ -206,92 +206,102 @@
   background: linear-gradient(100deg, #04624e, #087a5e);
 }
 
-/* Demo accounts: same buttons, white cards with a mint icon well. */
-.cv-login-demo-heading {
+/* Signed in: a short confirmation before the workspace opens. Signed out: a calm notice. */
+.cv-login-success {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: calc(16 * var(--p));
-  margin-top: calc(37 * var(--p));
-  font-family: var(--font-body), sans-serif;
-  font-size: calc(12 * var(--p));
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.18em;
-  color: var(--lp-deep);
-}
-.cv-login-demo-heading::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--lp-border);
-}
-.cv-login-demo-text {
-  max-width: calc(455 * var(--p));
-  margin-top: calc(15 * var(--p));
-  font-size: calc(16 * var(--p));
-  line-height: 1.31;
-  color: var(--lp-muted);
-}
-.cv-login-accounts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(14 * var(--p));
-  margin-top: calc(7 * var(--p));
-}
-.cv-login-account {
-  display: flex;
-  align-items: center;
-  gap: calc(15 * var(--p));
-  min-height: calc(99 * var(--p));
-  padding: calc(14 * var(--p)) calc(12 * var(--p)) calc(14 * var(--p))
-    calc(14 * var(--p));
-  border: 1px solid #e6efeb;
-  border-radius: calc(10 * var(--p));
+  gap: 14px;
+  margin-top: calc(28 * var(--p));
+  padding: calc(36 * var(--p)) calc(24 * var(--p));
+  border-radius: calc(18 * var(--p));
   background: var(--surface);
-  box-shadow: 0 calc(10 * var(--p)) calc(24 * var(--p)) #0b4a400f;
-  text-align: left;
-  color: var(--lp-brand);
+  border: 1px solid var(--lp-border);
+  box-shadow: 0 calc(20 * var(--p)) calc(44 * var(--p)) #0b4a4014;
+  text-align: center;
+  animation: cv-login-rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-.cv-login-account > svg {
-  width: calc(19 * var(--p));
-  height: calc(19 * var(--p));
-  margin-left: calc(-7 * var(--p));
-}
-.cv-login-account:hover:not(:disabled) {
-  border-color: #b9dccf;
-}
-.cv-login-account-icon {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: calc(56 * var(--p));
-  height: calc(56 * var(--p));
-  border-radius: 50%;
-  background: var(--lp-mint);
-  box-shadow:
-    inset 0 0 0 1px #ffffffb3,
-    0 calc(6 * var(--p)) calc(14 * var(--p)) #29a3871f;
-}
-.cv-login-account-icon svg {
-  width: calc(25 * var(--p));
-  height: calc(25 * var(--p));
-}
-.cv-login-account-text {
-  flex: 1;
-  min-width: 0;
-}
-.cv-login-account strong {
-  display: block;
-  font-size: calc(15.5 * var(--p));
-  font-weight: 600;
+.cv-login-success h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: calc(26 * var(--p));
   color: var(--lp-ink);
 }
-.cv-login-account small {
-  display: block;
-  margin-top: calc(5 * var(--p));
-  font-size: calc(13.5 * var(--p));
-  line-height: 1.48;
+.cv-login-success p {
   color: var(--lp-muted);
+}
+.cv-login-check {
+  display: grid;
+  place-items: center;
+  width: calc(76 * var(--p));
+  height: calc(76 * var(--p));
+  border-radius: 50%;
+  background: var(--lp-mint);
+  box-shadow: 0 0 0 0 #29a38755;
+  animation: cv-login-ring 1.4s ease-out 0.2s both;
+}
+.cv-login-check svg {
+  width: 56%;
+  height: 56%;
+}
+.cv-login-check path {
+  fill: none;
+  stroke: var(--lp-brand);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+  animation: cv-login-draw 0.5s ease-out 0.25s forwards;
+}
+.cv-login-progress {
+  width: calc(160 * var(--p));
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lp-mint);
+  overflow: hidden;
+}
+.cv-login-progress span {
+  display: block;
+  height: 100%;
+  background: var(--lp-brand);
+  animation: cv-login-fill 1.2s ease-in-out forwards;
+}
+.cv-login-farewell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: calc(18 * var(--p));
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--lp-mint);
+  color: var(--lp-deep);
+  font-weight: 600;
+  animation: cv-login-rise 0.45s ease-out both;
+}
+.cv-login-farewell .cv-login-check {
+  width: 36px;
+  height: 36px;
+  background: var(--surface);
+  animation: none;
+}
+@keyframes cv-login-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cv-login-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes cv-login-ring {
+  to { box-shadow: 0 0 0 18px #29a38700; }
+}
+@keyframes cv-login-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-login-success, .cv-login-farewell, .cv-login-check, .cv-login-progress span { animation: none; }
+  .cv-login-check path { animation: none; stroke-dashoffset: 0; }
+  .cv-login-progress span { width: 100%; }
 }
 
 /* Health line (the real BackendHealth status) and the access note. */
