@@ -28,6 +28,12 @@ type Transaction = Schema["Transaction"];
 export function useAdvisorWorkspace() {
   const [myConversations, setMyConversations] = useState<Conversation[]>([]);
   const customerNames = useCustomerNames(myConversations);
+  // Every conversation held this session, kept after it ends: a customer's deletion first ends
+  // the conversation (it then leaves myConversations), and only then announces the deletion.
+  const heldThisSession = useRef(new Map<string, string | undefined>());
+  useEffect(() => {
+    for (const c of myConversations) heldThisSession.current.set(c.id, customerNames[c.customerId]);
+  }, [myConversations, customerNames]);
   const [queues, setQueues] = useState<Queue[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -173,7 +179,7 @@ export function useAdvisorWorkspace() {
       // A customer removed a conversation this advisor holds: say so, even if another chat is open.
       const removed = deletionNotice(
         event,
-        myConversations.map((c) => ({ id: c.id, customerName: customerNames[c.customerId] })),
+        [...heldThisSession.current].map(([id, customerName]) => ({ id, customerName })),
       );
       if (removed) {
         showToast(removed);
