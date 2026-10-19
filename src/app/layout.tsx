@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Manrope } from "next/font/google";
+import BrandIntro from "@/components/BrandIntro";
+import { INTRO_SCRIPT } from "@/lib/motion";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -26,10 +28,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
+    // The inline script adds classes to <html> before React hydrates: expected, not a mismatch.
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${manrope.variable} antialiased`}
       >
+        <BrandIntro />
         {children}
       </body>
     </html>

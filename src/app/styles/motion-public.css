@@ -1,0 +1,229 @@
+/* Motion for the public pages: the brand intro, the landing page and the login page.
+   The page's own entrance waits for the intro when it plays (--intro-delay) and starts at once
+   when it is skipped. Everything here stops under prefers-reduced-motion. */
+:root { --intro-delay: 2.3s; --ease-out: cubic-bezier(.16, .84, .24, 1); --ease-back: cubic-bezier(.34, 1.56, .64, 1); }
+.cv-intro-skip { --intro-delay: 0s; }
+
+/* ------------------------------------------------------------------ brand intro */
+.cv-intro {
+  position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; pointer-events: none;
+  background: radial-gradient(circle at 50% 42%, var(--lp-night-2), transparent 62%), linear-gradient(160deg, var(--lp-night-deep), var(--lp-night) 55%, var(--lp-deep));
+  clip-path: circle(150% at 50% 46%);
+  animation: cv-intro-open .55s var(--ease-out) 1.85s forwards;
+}
+.cv-intro-skip .cv-intro { display: none; }
+.cv-intro-core { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: cv-intro-lift .5s var(--ease-out) 1.75s forwards; }
+.cv-intro-halo {
+  position: absolute; top: -40px; width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, #1df5bc55, transparent 65%); opacity: 0; scale: .5;
+  animation: cv-intro-halo 1.3s ease-out .25s forwards;
+}
+.cv-intro-mark { display: flex; align-items: center; gap: 9px; height: 84px; }
+.cv-intro-mark i {
+  display: block; width: 13px; border-radius: 8px; background: var(--lp-glow);
+  box-shadow: 0 0 18px #1df5bc66; transform-origin: 50% 100%; scale: 1 0;
+  animation: cv-intro-bar .55s var(--ease-back) forwards;
+}
+.cv-intro-mark i:nth-child(1) { height: 34px; animation-delay: .12s; }
+.cv-intro-mark i:nth-child(2) { height: 62px; animation-delay: .21s; background: #7fdfb6; }
+.cv-intro-mark i:nth-child(3) { height: 84px; animation-delay: .30s; }
+.cv-intro-mark i:nth-child(4) { height: 48px; animation-delay: .39s; background: #7fdfb6; }
+.cv-intro-word { display: flex; font-family: var(--font-display), sans-serif; font-size: clamp(2.4rem, 6vw, 3.4rem); font-weight: 700; letter-spacing: -.03em; color: #fff; }
+.cv-intro-word > span { display: inline-block; opacity: 0; translate: 0 18px; animation: cv-intro-letter .42s var(--ease-out) forwards; }
+.cv-intro-dot { color: var(--lp-glow); animation: cv-intro-dot .5s var(--ease-back) 1s forwards !important; scale: 0; translate: 0 0 !important; }
+.cv-intro-tagline { color: var(--lp-mist); font-size: .98rem; letter-spacing: .02em; opacity: 0; animation: cv-intro-fade .5s ease-out .85s forwards; }
+@keyframes cv-intro-bar { to { scale: 1 1; } }
+@keyframes cv-intro-letter { to { opacity: 1; translate: 0 0; } }
+@keyframes cv-intro-dot { 0% { opacity: 1; scale: 0; } 60% { opacity: 1; scale: 1.5; } 100% { opacity: 1; scale: 1; } }
+@keyframes cv-intro-fade { to { opacity: 1; } }
+@keyframes cv-intro-halo { 0% { opacity: 0; scale: .5; } 45% { opacity: 1; } 100% { opacity: .35; scale: 1.5; } }
+@keyframes cv-intro-lift { to { opacity: 0; scale: 1.08; } }
+@keyframes cv-intro-open { to { clip-path: circle(0% at 50% 46%); visibility: hidden; } }
+
+/* ------------------------------------------------------------------ landing: hero */
+.cv-landing-nav { position: sticky; top: 0; z-index: 50; background: var(--lp-bg); transition: background-color .3s ease, box-shadow .3s ease, backdrop-filter .3s ease; }
+.cv-landing-nav-scrolled { background: #fbfcf9e6; backdrop-filter: blur(12px); box-shadow: 0 10px 30px #05262e14; }
+.cv-hero-title .cv-line { display: block; overflow: hidden; padding-bottom: .06em; }
+.cv-hero-title .cv-line > span { display: inline-block; translate: 0 105%; animation: cv-rise-line .9s var(--ease-out) forwards; }
+.cv-hero-title .cv-line:nth-child(1) > span { animation-delay: calc(var(--intro-delay) + .05s); }
+.cv-hero-title .cv-line:nth-child(2) > span { animation-delay: calc(var(--intro-delay) + .17s); }
+.cv-hero-title .cv-line:nth-child(3) > span { animation-delay: calc(var(--intro-delay) + .29s); }
+.cv-hero-title em { background: linear-gradient(90deg, var(--lp-brand), var(--lp-accent), var(--lp-brand-light), var(--lp-brand)); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: cv-shimmer-text 6s ease-in-out infinite; }
+.cv-hero-copy > .cv-eyebrow, .cv-hero-description, .cv-hero-actions, .cv-hero-footnote { opacity: 0; translate: 0 16px; animation: cv-fade-up .8s var(--ease-out) forwards; }
+.cv-hero-copy > .cv-eyebrow { animation-delay: var(--intro-delay); }
+.cv-hero-description { animation-delay: calc(var(--intro-delay) + .45s); }
+.cv-hero-actions { animation-delay: calc(var(--intro-delay) + .58s); }
+.cv-hero-footnote { animation-delay: calc(var(--intro-delay) + .7s); }
+.cv-hero-actions .cv-button { position: relative; overflow: hidden; }
+.cv-hero-actions .cv-button::after, .cv-landing-cta .cv-button::after {
+  content: ""; position: absolute; inset: 0; translate: -120% 0;
+  background: linear-gradient(100deg, transparent 30%, #ffffff55 50%, transparent 70%);
+  animation: cv-sweep 3.6s ease-in-out calc(var(--intro-delay) + 1.4s) infinite;
+}
+.cv-hero-more svg { transition: translate .25s ease; }
+.cv-hero-more:hover svg { translate: 4px 0; }
+.cv-hero-avatars i { animation: cv-pop-in .5s var(--ease-back) both; }
+.cv-hero-avatars i:nth-child(1) { animation-delay: calc(var(--intro-delay) + .8s); }
+.cv-hero-avatars i:nth-child(2) { animation-delay: calc(var(--intro-delay) + .9s); }
+.cv-hero-avatars i:nth-child(3) { animation-delay: calc(var(--intro-delay) + 1s); }
+.cv-status-dot { animation: cv-ping 2.2s ease-out infinite; }
+
+/* Hero art: a breathing sphere, light paths drawing themselves, and pointer parallax. */
+.cv-hero-sphere { animation: cv-breathe 9s ease-in-out infinite; }
+.cv-hero-swoosh path { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: cv-draw 2.2s var(--ease-out) calc(var(--intro-delay) + .2s) forwards; }
+.cv-hero-swoosh path + path { animation-delay: calc(var(--intro-delay) + .55s); animation-duration: 2.6s; }
+.cv-hero-stage { --px: 0; --py: 0; }
+.cv-product-preview {
+  opacity: 0; translate: 0 30px;
+  animation: cv-fade-up 1s var(--ease-out) calc(var(--intro-delay) + .25s) forwards;
+  transform: perspective(1400px) rotateX(calc(var(--py) * -5deg)) rotateY(calc(var(--px) * 7deg));
+  transition: transform .5s var(--ease-out);
+}
+.cv-glass-card { opacity: 0; animation: cv-glass-in .8s var(--ease-back) forwards, cv-float 6s ease-in-out infinite; transition: transform .6s var(--ease-out); }
+.cv-glass-queue { animation-delay: calc(var(--intro-delay) + .7s), calc(var(--intro-delay) + 1.5s); transform: translate3d(calc(var(--px) * -26px), calc(var(--py) * -18px), 0); }
+.cv-glass-resolved { animation-delay: calc(var(--intro-delay) + .95s), calc(var(--intro-delay) + 2.2s); transform: translate3d(calc(var(--px) * 30px), calc(var(--py) * 22px), 0); }
+.cv-glass-clear { animation-delay: calc(var(--intro-delay) + 1.2s), calc(var(--intro-delay) + 1.8s); transform: translate3d(calc(var(--px) * -18px), calc(var(--py) * 26px), 0); }
+.cv-preview-online i { animation: cv-ping 2s ease-out infinite; border-radius: 50%; }
+
+/* The preview's chat plays itself: a message, the advisor's answer, the customer typing, the reply. */
+.cv-preview-bubble { opacity: 0; translate: 0 10px; scale: .96; animation: cv-bubble-in .5s var(--ease-back) forwards; }
+.cv-preview-messages > .cv-preview-bubble:nth-of-type(1) { animation-delay: calc(var(--intro-delay) + .9s); }
+.cv-preview-messages > .cv-preview-bubble:nth-of-type(2) { animation-delay: calc(var(--intro-delay) + 1.8s); }
+.cv-preview-messages > .cv-preview-bubble:nth-of-type(3) { animation-delay: calc(var(--intro-delay) + 3.4s); }
+.cv-preview-typing, .cv-login-typing {
+  display: inline-flex; gap: 4px; align-self: flex-start; padding: 8px 12px; border-radius: 14px; background: #eef4f1;
+  opacity: 0; max-height: 0; overflow: hidden; margin: 0;
+  animation: cv-typing-life 1.2s ease forwards calc(var(--intro-delay) + 2.25s);
+}
+.cv-preview-typing i, .cv-login-typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--lp-muted); animation: cv-typing-dot 1s ease-in-out infinite; }
+.cv-preview-typing i:nth-child(2), .cv-login-typing i:nth-child(2) { animation-delay: .15s; }
+.cv-preview-typing i:nth-child(3), .cv-login-typing i:nth-child(3) { animation-delay: .3s; }
+.cv-preview-send { animation: cv-send-pulse .6s ease-out calc(var(--intro-delay) + 1.7s) 1; }
+
+/* ------------------------------------------------------------------ landing: figures and marquee */
+.cv-pulse { margin: 24px 0 0; padding-inline: max(clamp(20px, 5.6vw, 80px), calc((100% - 1280px) / 2)); display: flex; flex-direction: column; gap: 22px; }
+.cv-pulse-figures { list-style: none; margin: 0; padding: 26px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; border-radius: 26px;
+  background: linear-gradient(135deg, var(--lp-night-deep), var(--lp-night) 60%, var(--lp-deep)); color: #fff; box-shadow: 0 30px 60px #02302b2e; }
+.cv-pulse-figures li { display: flex; flex-direction: column; gap: 6px; padding: 6px 10px; border-left: 1px solid #ffffff1f; }
+.cv-pulse-figures li:first-child { border-left: 0; }
+.cv-pulse-figures strong { font-family: var(--font-display), sans-serif; font-size: clamp(2rem, 4vw, 2.9rem); line-height: 1; color: var(--lp-glow); font-variant-numeric: tabular-nums; }
+.cv-pulse-figures span { color: var(--lp-mist); font-size: .92rem; }
+.cv-marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.cv-marquee-track { display: flex; width: max-content; animation: cv-marquee 38s linear infinite; }
+.cv-marquee:hover .cv-marquee-track { animation-play-state: paused; }
+.cv-marquee-track > span { display: flex; }
+.cv-marquee-item { display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; margin-right: 12px; border-radius: 999px; border: 1px solid var(--lp-border); background: #fff; color: var(--lp-ink); font-weight: 600; white-space: nowrap; }
+.cv-marquee-item i { width: 8px; height: 8px; border-radius: 50%; background: var(--lp-accent); }
+@media (max-width: 800px) { .cv-pulse-figures { grid-template-columns: 1fr 1fr; } .cv-pulse-figures li:nth-child(3) { border-left: 0; } }
+
+/* ------------------------------------------------------------------ landing: sections reveal on scroll */
+.cv-js [data-reveal] { opacity: 0; translate: 0 34px; transition: opacity .9s var(--ease-out), translate .9s var(--ease-out); }
+.cv-js [data-reveal].is-visible { opacity: 1; translate: 0 0; }
+.cv-js .cv-feature-grid[data-reveal], .cv-js .cv-role-grid[data-reveal], .cv-js .cv-architecture-list[data-reveal] { opacity: 1; translate: none; }
+.cv-js [data-reveal].cv-feature-grid > *, .cv-js [data-reveal].cv-role-grid > *, .cv-js [data-reveal].cv-architecture-list > * {
+  opacity: 0; translate: 0 40px; transition: opacity .8s var(--ease-out), translate .8s var(--ease-out);
+}
+.cv-js [data-reveal].is-visible > * { opacity: 1; translate: 0 0; }
+.cv-js [data-reveal].is-visible > :nth-child(2) { transition-delay: .1s; }
+.cv-js [data-reveal].is-visible > :nth-child(3) { transition-delay: .2s; }
+.cv-js [data-reveal].is-visible > :nth-child(4) { transition-delay: .3s; }
+.cv-js [data-reveal].is-visible > :nth-child(5) { transition-delay: .4s; }
+.cv-feature-card, .cv-role-card { transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out), border-color .35s ease; }
+.cv-feature-card:hover, .cv-role-card:hover { transform: translateY(-8px); box-shadow: 0 30px 60px #05262e1f; }
+.cv-feature-symbol, .cv-role-icon { transition: transform .45s var(--ease-back); }
+.cv-feature-card:hover .cv-feature-symbol, .cv-role-card:hover .cv-role-icon { transform: rotate(-10deg) scale(1.12); }
+.cv-feature-arrow, .cv-role-card-link svg { transition: translate .3s var(--ease-out); }
+.cv-feature-card:hover .cv-feature-arrow { translate: 4px -4px; }
+.cv-role-card:hover .cv-role-card-link svg { translate: 5px 0; }
+.cv-architecture-list li { transition: transform .3s var(--ease-out); }
+.cv-architecture-list li:hover { transform: translateY(-4px); }
+.cv-landing-cta .cv-button { position: relative; overflow: hidden; }
+.cv-cta-art { animation: cv-float 8s ease-in-out infinite; }
+
+/* ------------------------------------------------------------------ login: story panel */
+.cv-login-glow { animation: cv-breathe 8s ease-in-out infinite; }
+.cv-login-swoosh { stroke-dasharray: 2600; stroke-dashoffset: 2600; animation: cv-draw 2.6s var(--ease-out) calc(var(--intro-delay) + .1s) forwards; }
+.cv-login-swoosh-thin { animation-delay: calc(var(--intro-delay) + .45s); }
+.cv-login-thread { stroke-dasharray: 6 8; animation: cv-flow 2.4s linear infinite; }
+.cv-login-node { transform-box: fill-box; transform-origin: center; animation: cv-node 2.4s ease-in-out infinite; }
+.cv-login-node:nth-of-type(2) { animation-delay: .8s; }
+.cv-login-node:nth-of-type(3) { animation-delay: 1.6s; }
+.cv-login-tile { opacity: 0; animation: cv-glass-in .8s var(--ease-back) forwards, cv-float 7s ease-in-out infinite; }
+.cv-login-tile-chat { animation-delay: calc(var(--intro-delay) + .5s), calc(var(--intro-delay) + 1.3s); }
+.cv-login-tile-chart { animation-delay: calc(var(--intro-delay) + .7s), calc(var(--intro-delay) + 2.2s); }
+.cv-login-tile-person { animation-delay: calc(var(--intro-delay) + .9s), calc(var(--intro-delay) + 1.7s); }
+.cv-login-story > .cv-brand, .cv-login-story > .cv-login-eyebrow, .cv-login-headline, .cv-login-lead, .cv-login-story-bottom {
+  opacity: 0; translate: 0 18px; animation: cv-fade-up .8s var(--ease-out) forwards;
+}
+.cv-login-story > .cv-brand { animation-delay: var(--intro-delay); }
+.cv-login-story > .cv-login-eyebrow { animation-delay: calc(var(--intro-delay) + .1s); }
+.cv-login-headline { animation-delay: calc(var(--intro-delay) + .2s); }
+.cv-login-headline em { background: linear-gradient(90deg, var(--lp-mint-strong), var(--lp-glow), #ffffff, var(--lp-mint-strong)); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: cv-shimmer-text 6s ease-in-out infinite; }
+.cv-login-lead { animation-delay: calc(var(--intro-delay) + .35s); }
+.cv-login-story-bottom { animation-delay: calc(var(--intro-delay) + .6s); }
+/* The sample exchange plays: the customer writes, the line connects, the advisor types, then answers. */
+.cv-login-card { opacity: 0; translate: 0 26px; animation: cv-fade-up .9s var(--ease-out) calc(var(--intro-delay) + .45s) forwards; }
+.cv-login-bubble { opacity: 0; scale: .94; transform-origin: left center; animation: cv-bubble-in .5s var(--ease-back) calc(var(--intro-delay) + 1.05s) forwards; }
+.cv-login-bubble-own { transform-origin: right center; animation-delay: calc(var(--intro-delay) + 2.75s); }
+.cv-login-avatar-client, .cv-login-chat-client { opacity: 0; animation: cv-fade-in .4s ease calc(var(--intro-delay) + .95s) forwards; }
+.cv-login-avatar-advisor, .cv-login-chat-advisor { opacity: 0; animation: cv-fade-in .4s ease calc(var(--intro-delay) + 1.6s) forwards; }
+.cv-login-connector path { stroke-dashoffset: 200; animation: cv-connector 1s ease-out calc(var(--intro-delay) + 1.4s) forwards; }
+.cv-login-connector-dot { opacity: 0; animation: cv-pop-in .4s var(--ease-back) calc(var(--intro-delay) + 2s) forwards, cv-ping 2s ease-out calc(var(--intro-delay) + 2.4s) infinite; }
+.cv-login-typing { position: absolute; left: calc(430 * var(--u)); top: calc(208 * var(--u)); background: #ffffff1f; animation-delay: calc(var(--intro-delay) + 1.7s); }
+.cv-login-typing i { background: var(--lp-mint-strong); }
+.cv-login-card-note { opacity: 0; animation: cv-fade-in .6s ease calc(var(--intro-delay) + 3.2s) forwards; }
+
+/* ------------------------------------------------------------------ login: form side */
+.cv-login-form-container > * { opacity: 0; translate: 0 14px; animation: cv-fade-up .7s var(--ease-out) forwards; }
+.cv-login-form-container > :nth-child(1) { animation-delay: calc(var(--intro-delay) + .1s); }
+.cv-login-form-container > :nth-child(2) { animation-delay: calc(var(--intro-delay) + .18s); }
+.cv-login-form-container > :nth-child(3) { animation-delay: calc(var(--intro-delay) + .26s); }
+.cv-login-form-container > :nth-child(4) { animation-delay: calc(var(--intro-delay) + .34s); }
+.cv-login-form-container > :nth-child(5) { animation-delay: calc(var(--intro-delay) + .42s); }
+.cv-login-form-container > :nth-child(n + 6) { animation-delay: calc(var(--intro-delay) + .5s); }
+.cv-login-control { transition: box-shadow .25s ease, transform .25s ease; border-radius: 12px; }
+.cv-login-control:focus-within { box-shadow: 0 0 0 4px #29a38726, 0 12px 26px #0b4a4014; transform: translateY(-1px); }
+.cv-login-control:focus-within .cv-login-field-icon { color: var(--lp-brand); transition: color .25s ease; }
+.cv-login-submit { position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .25s ease; }
+.cv-login-submit::after { content: ""; position: absolute; inset: 0; translate: -120% 0; background: linear-gradient(100deg, transparent 30%, #ffffff40 50%, transparent 70%); transition: translate .7s var(--ease-out); }
+.cv-login-submit:hover:not(:disabled)::after { translate: 120% 0; }
+.cv-login-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 30px #067a6140; }
+.cv-login-submit svg { transition: translate .25s ease; }
+.cv-login-submit:hover:not(:disabled) svg { translate: 4px 0; }
+
+/* ------------------------------------------------------------------ shared keyframes */
+@keyframes cv-rise-line { to { translate: 0 0; } }
+@keyframes cv-fade-up { to { opacity: 1; translate: 0 0; } }
+@keyframes cv-fade-in { to { opacity: 1; } }
+@keyframes cv-pop-in { from { opacity: 0; scale: .4; } to { opacity: 1; scale: 1; } }
+@keyframes cv-glass-in { from { opacity: 0; scale: .85; } to { opacity: 1; scale: 1; } }
+@keyframes cv-bubble-in { to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes cv-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+@keyframes cv-breathe { 0%, 100% { scale: 1; opacity: .9; } 50% { scale: 1.08; opacity: 1; } }
+@keyframes cv-draw { to { stroke-dashoffset: 0; } }
+@keyframes cv-flow { to { stroke-dashoffset: -28; } }
+@keyframes cv-node { 0%, 100% { scale: 1; } 50% { scale: 1.7; } }
+@keyframes cv-connector { to { stroke-dashoffset: 0; } }
+@keyframes cv-ping { 0% { box-shadow: 0 0 0 0 #29a38780; } 80%, 100% { box-shadow: 0 0 0 9px #29a38700; } }
+@keyframes cv-sweep { 0%, 60% { translate: -120% 0; } 100% { translate: 120% 0; } }
+@keyframes cv-shimmer-text { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes cv-marquee { to { transform: translateX(-50%); } }
+@keyframes cv-typing-life { 0% { opacity: 0; max-height: 0; } 15% { opacity: 1; max-height: 40px; } 85% { opacity: 1; max-height: 40px; } 100% { opacity: 0; max-height: 0; padding: 0; } }
+/* Once gone, the hero's indicator gives back the flex gap it occupied, so the reply sits where it would have. */
+.cv-preview-typing { animation-name: cv-typing-life-hero; }
+@keyframes cv-typing-life-hero { 0% { opacity: 0; max-height: 0; margin-bottom: calc(-14 * var(--u)); } 15% { opacity: 1; max-height: 40px; margin-bottom: 0; } 85% { opacity: 1; max-height: 40px; margin-bottom: 0; } 100% { opacity: 0; max-height: 0; padding: 0; margin-bottom: calc(-14 * var(--u)); } }
+@keyframes cv-typing-dot { 0%, 60%, 100% { translate: 0 0; opacity: .5; } 30% { translate: 0 -4px; opacity: 1; } }
+@keyframes cv-send-pulse { 50% { scale: 1.25; } }
+
+/* ------------------------------------------------------------------ reduced motion: everything shows, nothing moves */
+@media (prefers-reduced-motion: reduce) {
+  .cv-intro { display: none; }
+  .cv-landing *, .cv-landing *::after, .cv-login *, .cv-login *::after { animation: none !important; transition: none !important; }
+  .cv-hero-title .cv-line > span, .cv-hero-copy > *, .cv-product-preview, .cv-glass-card, .cv-preview-bubble,
+  .cv-login-tile, .cv-login-story > *, .cv-login-card, .cv-login-bubble, .cv-login-avatar, .cv-login-chat-label,
+  .cv-login-connector-dot, .cv-login-card-note, .cv-login-form-container > * { opacity: 1 !important; translate: none !important; scale: none !important; }
+  .cv-hero-swoosh path, .cv-login-swoosh, .cv-login-connector path { stroke-dashoffset: 0 !important; }
+  .cv-preview-typing, .cv-login-typing { display: none; }
+  .cv-js [data-reveal], .cv-js [data-reveal] > * { opacity: 1 !important; translate: none !important; }
+  .cv-product-preview, .cv-glass-card { transform: none !important; }
+}
