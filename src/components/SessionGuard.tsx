@@ -4,17 +4,29 @@ import { usePathname, useRouter } from "next/navigation";
 import { api, errorMessage, refreshSession } from "@/lib/api";
 import { expireSession } from "@/lib/auth";
 import { roleHome, type Role } from "@/lib/contracts";
+import LaunchScreen from "./shell/LaunchScreen";
+
+// The last session this tab verified. Moving to another page of the same space shows that page at
+// once (and re-checks in the background) instead of the launch screen again. A full reload starts
+// with no memory, like the server render, so hydration always matches.
+let verified: { token: string; home: string } | null = null;
+const alreadyVerified = (pathname: string) => {
+  if (typeof window === "undefined" || !verified) return false;
+  return verified.token === sessionStorage.getItem("jwt")
+    && (pathname === verified.home || pathname.startsWith(verified.home + "/"));
+};
+
 export default function SessionGuard({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [ready, setReady] = useState(false);
+  const pathname = usePathname();
+  const [ready, setReady] = useState(() => alreadyVerified(pathname));
   const [warning, setWarning] = useState("");
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const router = useRouter();
-  const pathname = usePathname();
   useEffect(() => {
     let active = true;
     let expiryTimer: ReturnType<typeof setTimeout> | undefined;
@@ -48,6 +60,7 @@ export default function SessionGuard({
           router.replace(home);
           return;
         }
+        verified = { token: sessionStorage.getItem("jwt") || "", home };
         setReady(true);
         setError("");
         setWarning("");
@@ -88,6 +101,7 @@ export default function SessionGuard({
       window.removeEventListener("callverse:session-refreshed", renewed);
     };
   }, [pathname, router, retry]);
+  if (!ready && !error) return <LaunchScreen />;
   if (!ready)
     return (
       <div className="min-h-screen flex items-center justify-center p-8 text-[#60766b]">
@@ -102,9 +116,7 @@ export default function SessionGuard({
                 Réessayer
               </button>
             </>
-          ) : (
-            "Vérification de la session…"
-          )}
+          ) : null}
         </div>
       </div>
     );

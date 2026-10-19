@@ -6,6 +6,7 @@ import { ChevronDown, Home, LifeBuoy, LogOut, MessageSquare, Wallet } from "luci
 import SessionGuard from "@/components/SessionGuard";
 import Brand from "@/components/Brand";
 import GuidedTour from "@/components/GuidedTour";
+import RouteProgress from "@/components/shell/RouteProgress";
 import { apiFetch, errorMessage, logoutSession } from "@/lib/api";
 import { customerNav, isCurrent } from "@/lib/customer";
 import { initialsFor } from "@/lib/presentation";
@@ -92,6 +93,7 @@ function CustomerFrame({ children }: { children: ReactNode }) {
               </div>
             </div>
           </div>
+          <RouteProgress />
         </header>
         <main className="cv-cs-main" id="main-content" tabIndex={-1}>
           <div className="cv-cs-page" key={pathname}>{children}</div>

@@ -1,0 +1,138 @@
+/* Staff spaces on the banner layout, page transitions, the launch screen and the dashboards' charts.
+   Builds on customer.css (the shared banner); every motion stops under prefers-reduced-motion. */
+
+/* Staff banner: wider pages, the « Plus » menu and the mobile panel. */
+.cv-staff .cv-cs-banner-inner, .cv-staff-main { max-width: 1400px; }
+.cv-staff .cv-cs-nav { flex-wrap: nowrap; overflow: visible; }
+.cv-staff .cv-cs-nav-link { padding: 9px 13px; font-size: .9rem; white-space: nowrap; }
+.cv-cs-more { position: relative; }
+.cv-cs-more > button { background: transparent; border: 0; cursor: pointer; }
+.cv-cs-more-menu {
+  position: absolute; left: 0; top: calc(100% + 10px); min-width: 230px; z-index: 40;
+  display: flex; flex-direction: column; padding: 8px; border-radius: 16px; background: #fff;
+  border: 1px solid var(--lp-border); box-shadow: 0 24px 50px #05262e2e; animation: cv-cs-pop .18s ease-out;
+}
+.cv-cs-more-link, .cv-cs-mobile-link {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+  color: var(--lp-ink); font-weight: 600; font-size: .92rem;
+}
+.cv-cs-more-link:hover, .cv-cs-mobile-link:hover { background: var(--lp-wash); }
+.cv-cs-more-current, .cv-cs-mobile-current { background: var(--lp-mint); color: var(--lp-brand-strong); }
+.cv-cs-more-link:focus-visible, .cv-cs-mobile-link:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 1px; }
+.cv-cs-mobile-toggle { display: none; color: #fff; padding: 8px; border-radius: 12px; border: 1px solid #ffffff33; }
+.cv-cs-mobile-toggle:focus-visible { outline: 3px solid var(--focus-ring-on-dark); outline-offset: 2px; }
+.cv-cs-mobile-panel {
+  position: sticky; top: 64px; z-index: 29; display: flex; flex-direction: column; gap: 2px;
+  margin: 0 12px; padding: 10px; border-radius: 0 0 18px 18px; background: #fff;
+  box-shadow: 0 20px 40px #05262e26; animation: cv-cs-pop .2s ease-out;
+}
+@media (max-width: 1180px) {
+  .cv-staff .cv-cs-nav-link svg { display: none; }
+}
+@media (max-width: 900px) {
+  .cv-cs-mobile-toggle { display: inline-flex; }
+}
+.cv-staff-main { padding-top: 28px; }
+.cv-staff-split { display: grid; grid-template-columns: minmax(320px, 440px) 1fr; gap: 24px; align-items: start; }
+.cv-staff-split-even { grid-template-columns: 1fr 1fr; }
+@media (max-width: 1000px) { .cv-staff-split, .cv-staff-split-even { grid-template-columns: 1fr; } }
+
+/* Page transition: each page arrives with a short rise; the banner stays put. */
+.cv-cs-page { animation: cv-route-in .42s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes cv-route-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Route progress: a thin bar under the banner while the next page loads. */
+.cv-route-progress { position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; pointer-events: none; overflow: hidden; }
+.cv-route-progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--lp-glow), var(--lp-accent)); opacity: 0; }
+.cv-route-progress-loading span { opacity: 1; animation: cv-route-load 2.4s cubic-bezier(.1, .7, .2, 1) forwards; }
+.cv-route-progress-done span { opacity: 0; width: 100%; transition: opacity .35s ease .1s; }
+@keyframes cv-route-load { from { width: 0; } to { width: 85%; } }
+
+/* Launch screen: the brand on its colour while the session is secured (BNP-style opening). */
+.cv-launch {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: radial-gradient(circle at 50% 35%, var(--lp-night-2), transparent 60%), linear-gradient(160deg, var(--lp-night-deep), var(--lp-night) 55%, var(--lp-deep));
+  color: #fff; animation: cv-launch-in .3s ease-out both;
+}
+.cv-launch-mark { display: flex; align-items: center; gap: 7px; height: 64px; }
+.cv-launch-mark i { display: block; width: 10px; border-radius: 6px; background: var(--lp-glow); animation: cv-launch-wave 1.1s ease-in-out infinite; }
+.cv-launch-mark i:nth-child(1) { height: 26px; animation-delay: 0s; }
+.cv-launch-mark i:nth-child(2) { height: 48px; animation-delay: .12s; background: #7fdfb6; }
+.cv-launch-mark i:nth-child(3) { height: 62px; animation-delay: .24s; }
+.cv-launch-mark i:nth-child(4) { height: 36px; animation-delay: .36s; background: #7fdfb6; }
+.cv-launch-brand { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; }
+.cv-launch-brand span { color: var(--lp-glow); }
+.cv-launch-text { color: var(--lp-mist); font-size: .95rem; }
+.cv-launch-bar { width: 160px; height: 3px; border-radius: 999px; background: #ffffff1f; overflow: hidden; margin-top: 6px; }
+.cv-launch-bar span { display: block; width: 40%; height: 100%; border-radius: 999px; background: var(--lp-glow); animation: cv-launch-slide 1.2s ease-in-out infinite; }
+@keyframes cv-launch-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cv-launch-wave { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1); } }
+@keyframes cv-launch-slide { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+
+/* Charts */
+.cv-chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 20px; }
+@media (max-width: 1100px) { .cv-chart-grid { grid-template-columns: 1fr; } }
+.cv-chart { margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.cv-chart-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-weight: 700; color: var(--lp-ink); }
+.cv-chart-total { font-weight: 600; font-size: .85rem; color: var(--lp-muted); }
+.cv-chart-empty { color: var(--lp-muted); font-size: .92rem; padding: 18px 0; }
+.cv-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.cv-bars li { display: grid; grid-template-columns: minmax(90px, 140px) 1fr auto; align-items: center; gap: 12px; }
+.cv-bars-label { font-size: .9rem; color: var(--lp-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cv-bars-track { height: 12px; background: var(--lp-wash); border-radius: 0 6px 6px 0; overflow: hidden; }
+.cv-bars-fill { display: block; height: 100%; background: var(--lp-brand); border-radius: 0 6px 6px 0; transform-origin: left; animation: cv-bar-grow .7s cubic-bezier(.2, .7, .2, 1) both; transition: width .5s ease; }
+.cv-bars li:hover .cv-bars-fill { background: var(--lp-brand-strong); }
+.cv-bars-value { font-weight: 700; font-variant-numeric: tabular-nums; font-size: .9rem; color: var(--lp-ink); min-width: 2ch; text-align: right; }
+@keyframes cv-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.cv-share { display: flex; gap: 2px; height: 16px; border-radius: 8px; overflow: hidden; background: var(--lp-wash); }
+.cv-share-segment { height: 100%; transform-origin: left; animation: cv-bar-grow .7s cubic-bezier(.2, .7, .2, 1) both; transition: width .5s ease; }
+.cv-share-empty { flex: 1; }
+.cv-legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.cv-legend li { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--lp-ink); }
+.cv-legend strong { margin-left: auto; font-variant-numeric: tabular-nums; }
+.cv-legend-share { color: var(--lp-muted); min-width: 3.5ch; text-align: right; }
+.cv-legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.cv-trend { position: relative; }
+.cv-trend svg { width: 100%; height: auto; display: block; overflow: visible; border-radius: 8px; }
+.cv-trend svg:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; }
+.cv-trend-axis { stroke: var(--lp-border); stroke-width: 1; }
+.cv-trend-line { fill: none; stroke: var(--lp-brand); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: cv-trend-draw 1s ease-out forwards; }
+.cv-trend-cross { stroke: var(--lp-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.cv-trend-dot { fill: #fff; stroke: var(--lp-brand); stroke-width: 2.5; }
+.cv-trend-tip { font-size: .88rem; color: var(--lp-muted); margin-top: 6px; }
+.cv-trend-tip strong { color: var(--lp-ink); }
+@keyframes cv-trend-draw { to { stroke-dashoffset: 0; } }
+
+/* Advisor activity strip */
+.cv-activity { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin: 4px 0 22px; align-items: stretch; }
+.cv-activity-stats { display: flex; flex-direction: column; gap: 10px; }
+.cv-stat-pill { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #fff; border: 1px solid var(--lp-border); animation: cv-cs-rise .5s ease both; }
+.cv-stat-pill:nth-child(2) { animation-delay: 70ms; }
+.cv-stat-pill:nth-child(3) { animation-delay: 140ms; }
+.cv-stat-pill svg { color: var(--lp-brand); flex-shrink: 0; }
+.cv-stat-pill strong { font-size: 1.15rem; }
+.cv-activity-chart { background: #fff; border: 1px solid var(--lp-border); border-radius: 18px; padding: 18px; }
+@media (max-width: 1000px) { .cv-activity { grid-template-columns: 1fr; } }
+
+/* Customer onboarding */
+.cv-onboard h2 { display: flex; align-items: center; gap: 8px; }
+.cv-onboard-form { display: flex; flex-direction: column; gap: 18px; margin-top: 14px; }
+.cv-onboard-form fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.cv-onboard-form legend { font-weight: 700; font-size: .82rem; letter-spacing: .08em; text-transform: uppercase; color: var(--lp-eyebrow); margin-bottom: 8px; }
+.cv-onboard-password-field { display: flex; gap: 10px; align-items: flex-end; }
+.cv-onboard-password-field .cv-label { flex: 1; }
+.cv-onboard-done { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.cv-onboard-check { color: var(--lp-brand); animation: cv-cs-pop .4s ease-out both; }
+.cv-onboard-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin: 0; width: 100%; }
+.cv-onboard-summary dt { font-size: .82rem; color: var(--lp-muted); }
+.cv-onboard-summary dd { margin: 2px 0 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cv-onboard-password { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 12px; background: var(--lp-mint); width: 100%; }
+.cv-onboard-password strong { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-cs-page, .cv-launch, .cv-launch-mark i, .cv-launch-bar span, .cv-route-progress-loading span,
+  .cv-bars-fill, .cv-share-segment, .cv-trend-line, .cv-stat-pill, .cv-onboard-check, .cv-cs-more-menu, .cv-cs-mobile-panel { animation: none; }
+  .cv-trend-line { stroke-dashoffset: 0; }
+  .cv-route-progress-loading span { width: 85%; }
+  .cv-bars-fill, .cv-share-segment { transition: none; }
+}

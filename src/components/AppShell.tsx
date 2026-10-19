@@ -3,300 +3,173 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ShieldCheck,
-  Headphones,
+  Bell,
+  BookOpen,
   ChevronDown,
+  FlaskConical,
+  Headphones,
+  History,
+  House,
+  LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
+  Package,
+  SlidersHorizontal,
+  Sparkles,
+  UserPlus,
+  Users,
   X,
-  ArrowUpRight,
-  LifeBuoy,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import SessionGuard from "./SessionGuard";
 import Brand from "./Brand";
-import { itemsByRole } from "./shell/navItems";
-import { SidebarArt, SpaceCard } from "./shell/GreenSidebar";
-import { logoutSession } from "@/lib/api";
 import GuidedTour from "./GuidedTour";
+import RouteProgress from "./shell/RouteProgress";
+import { logoutSession } from "@/lib/api";
+import { activeHref, splitNav, staffNav, type NavItem } from "@/lib/navigation";
+
+const icons: Record<string, LucideIcon> = {
+  workspace: MessageSquare, history: History, clients: UserPlus, tools: BookOpen, ai: Sparkles,
+  overview: House, followup: Bell, twin: FlaskConical, users: Users, frontdesk: Headphones,
+  catalog: Package, advisors: LayoutDashboard, rules: SlidersHorizontal,
+};
+const roleName: Record<string, string> = {
+  Conseiller: "Conseiller", Superviseur: "Superviseur", "Analyste / Admin": "Administrateur",
+};
+const VISIBLE_ITEMS = 5;
+
+// The staff spaces share the customer's banner layout: the brand, one link per page, the guide and
+// the account on the right, and a menu panel on small screens. Each page is its own route.
 export default function AppShell({
   role,
   initials,
   title,
-  variant = "green",
   children,
 }: {
   role: string;
   initials: string;
   title: string;
-  // All workspaces share the same visual direction.
+  // Kept for the pages that still pass it: every space now shares the same direction.
   variant?: "green";
   children: ReactNode;
 }) {
-  const green = variant === "green";
   const router = useRouter();
   const pathname = usePathname();
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia("(max-width:900px)");
-    const update = () => {
-      setIsMobile(media.matches);
-      if (!media.matches) setMobileOpen(false);
-    };
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const previous = document.activeElement as HTMLElement;
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    (document.querySelector(".cv-mobile-close") as HTMLElement | null)?.focus();
-    return () => {
-      document.body.style.overflow = overflow;
-      previous?.focus();
-    };
-  }, [mobileOpen]);
+  const items = staffNav(role);
+  const [search, setSearch] = useState("");
   const [email, setEmail] = useState("");
-  const items =
-    itemsByRole[role as keyof typeof itemsByRole] || itemsByRole.Client;
-  const [active, setActive] = useState(role === "Superviseur" && pathname.endsWith("/twin") ? "twin" : items[0].id);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => {
-    if (!profileOpen && !mobileOpen) return;
-    const key = (event: KeyboardEvent) => {
-      if (mobileOpen && event.key === "Tab") {
-        const nodes = Array.from(
-          document.querySelectorAll<HTMLElement>(
-            ".cv-sidebar button,.cv-sidebar a",
-          ),
-        ).filter((node) => node.offsetParent !== null);
-        const first = nodes[0],
-          last = nodes[nodes.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-      if (event.key === "Escape") {
-        setProfileOpen(false);
-        setMobileOpen(false);
-      }
-    };
-    const click = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest(".cv-account-container"))
-        setProfileOpen(false);
-    };
-    document.addEventListener("keydown", key);
-    document.addEventListener("click", click);
-    return () => {
-      document.removeEventListener("keydown", key);
-      document.removeEventListener("click", click);
-    };
-  }, [profileOpen, mobileOpen]);
-  useEffect(() => {
-    try {
-      setEmail(JSON.parse(sessionStorage.getItem("user") || "{}").email || "");
-    } catch {}
-    const listener = (event: Event) => {
+    setSearch(window.location.search);
+    try { setEmail(JSON.parse(sessionStorage.getItem("user") || "{}").email || ""); } catch {}
+    // The admin page announces its tab; the banner follows it.
+    const section = (event: Event) => {
       const id = (event as CustomEvent<string>).detail;
-      if (id) setActive(id);
+      if (id) setSearch("?section=" + encodeURIComponent(id));
     };
-    window.addEventListener("callverse:section", listener);
-    return () => window.removeEventListener("callverse:section", listener);
+    window.addEventListener("callverse:section", section);
+    return () => window.removeEventListener("callverse:section", section);
   }, []);
+  useEffect(() => {
+    if (!accountOpen && !moreOpen && !mobileOpen) return;
+    const close = (event: Event) => {
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") { setAccountOpen(false); setMoreOpen(false); setMobileOpen(false); }
+        return;
+      }
+      const target = event.target as HTMLElement;
+      if (!target.closest(".cv-cs-account")) setAccountOpen(false);
+      if (!target.closest(".cv-cs-more")) setMoreOpen(false);
+      if (!target.closest(".cv-cs-mobile-panel, .cv-cs-mobile-toggle")) setMobileOpen(false);
+    };
+    document.addEventListener("keydown", close);
+    document.addEventListener("click", close);
+    return () => { document.removeEventListener("keydown", close); document.removeEventListener("click", close); };
+  }, [accountOpen, moreOpen, mobileOpen]);
+  useEffect(() => { setMoreOpen(false); setMobileOpen(false); setAccountOpen(false); }, [pathname]);
+
+  const current = activeHref(items, pathname, search);
+  const { visible, more } = splitNav(items, VISIBLE_ITEMS, current);
+
+  function open(item: NavItem, event: React.MouseEvent) {
+    // Admin sections are tabs of one page: switch the tab in place instead of reloading the page.
+    if (item.href.startsWith("/admin?") && window.location.pathname === "/admin") {
+      event.preventDefault();
+      const id = new URLSearchParams(item.href.split("?")[1]).get("section") || "";
+      window.history.replaceState(null, "", item.href);
+      setSearch("?section=" + encodeURIComponent(id));
+      window.dispatchEvent(new CustomEvent("callverse:navigate", { detail: id }));
+      setMoreOpen(false); setMobileOpen(false);
+    }
+  }
   function logout() {
     void logoutSession().catch(() => { /* The local session is already closed. */ });
     router.push("/login?logout=1");
   }
-  function navigate(id: string) {
-    setActive(id);
-    setMobileOpen(false);
-    if (id === "twin" && role === "Superviseur") { router.push("/supervisor/twin"); return; }
-    if (role === "Superviseur" && window.location.pathname !== "/supervisor") { router.push("/supervisor#" + id); return; }
-    if (role === "Analyste / Admin" && window.location.pathname !== "/admin") { router.push("/admin?section=" + encodeURIComponent(id)); return; }
-    if (role === "Analyste / Admin")
-      window.dispatchEvent(
-        new CustomEvent("callverse:navigate", { detail: id }),
-      );
-    else
-      document
-        .getElementById(id)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  const link = (item: NavItem, className: string, currentClass: string) => {
+    const Icon = icons[item.icon] || MessageSquare;
+    const isCurrent = item.href === current;
+    return (
+      <Link key={item.href} href={item.href} onClick={event => open(item, event)}
+        className={className + (isCurrent ? " " + currentClass : "")} aria-current={isCurrent ? "page" : undefined}>
+        <Icon size={17} aria-hidden="true" />{item.label}
+      </Link>
+    );
+  };
+
   return (
     <SessionGuard>
-      <div className={green ? "cv-app cv-shell-green" : "cv-app"}>
-        <a href="#main-content" className="cv-button cv-skip-link">
-          Aller au contenu principal
-        </a>
-        {mobileOpen && (
-          <button
-            className="cv-nav-backdrop"
-            tabIndex={-1}
-            aria-label="Fermer la navigation"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-        <aside
-          aria-label="Barre latérale"
-          inert={isMobile && !mobileOpen}
-          aria-hidden={isMobile && !mobileOpen}
-          className={"cv-sidebar " + (mobileOpen ? "cv-sidebar-open" : "")}
-        >
-          {green && <SidebarArt />}
-          <div className="cv-sidebar-brand">
+      <div className="cv-cs cv-staff">
+        <div className="cv-cs-orbs" aria-hidden="true"><span /><span /><span /></div>
+        <a href="#main-content" className="cv-button cv-skip-link">Aller au contenu principal</a>
+        <header className="cv-cs-banner">
+          <div className="cv-cs-banner-inner">
             <Brand dark />
-            <button
-              className="cv-mobile-close"
-              aria-label="Fermer le menu"
-              onClick={() => setMobileOpen(false)}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          {!green && (
-            <>
-              <div className="cv-workspace-switch">
-                <span className="cv-workspace-logo">
-                  <Headphones size={18} />
-                </span>
-                <div>
-                  <strong>Espace CallVerse</strong>
-                  <small>Relation client bancaire</small>
+            <nav className="cv-cs-nav" aria-label="Navigation principale" data-tour="navigation">
+              {visible.map(item => link(item, "cv-cs-nav-link", "cv-cs-nav-current"))}
+              {more.length > 0 && (
+                <div className="cv-cs-more">
+                  <button type="button" className="cv-cs-nav-link" aria-expanded={moreOpen} onClick={() => setMoreOpen(o => !o)}>
+                    Plus <ChevronDown size={15} aria-hidden="true" />
+                  </button>
+                  {moreOpen && <div className="cv-cs-more-menu">{more.map(item => link(item, "cv-cs-more-link", "cv-cs-more-current"))}</div>}
                 </div>
-                <ChevronDown size={14} />
-              </div>
-              <p className="cv-nav-caption">VOTRE ESPACE</p>
-            </>
-          )}
-          <nav aria-label="Navigation principale" data-tour="navigation">
-            {items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => navigate(item.id)}
-                className={
-                  "cv-nav-item " + (active === item.id ? "cv-nav-active" : "")
-                }
-                aria-current={active === item.id ? "page" : undefined}
-              >
-                <item.icon size={19} />
-                <span>{item.label}</span>
-                {active === item.id && <span className="cv-nav-active-dot" />}
-              </button>
-            ))}
-          </nav>
-          {/* The green shell drops the account card: logout stays in the account menu. */}
-          {green ? (
-            <SpaceCard role={role} />
-          ) : (
-            <div className="cv-sidebar-bottom">
-              <div className="cv-sidebar-help">
-                <LifeBuoy size={20} />
-                <strong>Un espace, chaque échange.</strong>
-                <p>
-                  Retrouvez vos conversations et les outils utiles à votre rôle.
-                </p>
-              </div>
-              <div className="cv-sidebar-account">
-                <span className="cv-avatar">{initials}</span>
-                <div>
-                  <strong>
-                    {role === "Analyste / Admin" ? "Administrateur" : role}
-                  </strong>
-                  <small title={email}>{email || "Session active"}</small>
-                </div>
-                <button
-                  aria-label="Se déconnecter"
-                  title="Se déconnecter"
-                  onClick={logout}
-                >
-                  <LogOut size={17} />
-                </button>
-              </div>
-            </div>
-          )}
-        </aside>
-        <div className="cv-app-content" inert={mobileOpen}>
-          <header className="cv-app-header">
-            <div className="cv-header-left">
-              <button
-                className="cv-mobile-toggle cv-icon-button"
-                aria-label="Ouvrir le menu"
-                data-tour="mobile-menu"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu size={21} />
-              </button>
-              <div className="cv-breadcrumb">
-                {!green && (
-                  <>
-                    <span>CallVerse</span>
-                    <span>/</span>
-                  </>
-                )}
-                <strong>{title}</strong>
-              </div>
-            </div>
-            <div className="cv-header-right">
+              )}
+            </nav>
+            <div className="cv-cs-tools">
               <GuidedTour />
-              {(role === "Conseiller" || role === "Superviseur" || role === "Analyste / Admin") && (
-                <Link data-tour="ai-entry" className="cv-button cv-button-secondary cv-button-small" href={role === "Conseiller" ? "/advisor/ai" : role === "Superviseur" ? "/supervisor/ai" : "/admin/ai"}>
-                  {role === "Conseiller" ? "Laboratoire local" : "Pilotage IA"}
-                </Link>
-              )}
-              {!green && (
-                <span className="cv-header-role">
-                  <ShieldCheck size={14} />
-                  {role === "Analyste / Admin" ? "Administration" : role}
-                </span>
-              )}
-              <div className="relative cv-account-container">
-                <button
-                  // Green shell: the name starts with the visible initials (WCAG 2.5.3).
-                  aria-label={
-                    green ? initials + ", menu du compte" : "Menu du compte"
-                  }
-                  aria-expanded={profileOpen}
-                  data-tour="account"
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="cv-account-trigger"
-                >
-                  <span className="cv-avatar cv-avatar-light">{initials}</span>
-                  <ChevronDown size={15} />
+              <div className="cv-cs-account">
+                <button type="button" className="cv-cs-account-trigger" aria-expanded={accountOpen} aria-haspopup="true"
+                  aria-label={initials + ", menu du compte"} data-tour="account" onClick={() => setAccountOpen(o => !o)}>
+                  <span className="cv-cs-avatar" aria-hidden="true">{initials}</span>
+                  <span className="cv-cs-account-name">{roleName[role] || role}</span>
+                  <ChevronDown size={15} aria-hidden="true" />
                 </button>
-                {profileOpen && (
-                  <div className="cv-account-menu">
-                    <strong>Session active</strong>
-                    <p>{email}</p>
-                    <button onClick={logout}>
-                      <LogOut size={16} />
-                      Se déconnecter
-                    </button>
-                  </div>
-                )}
+                {accountOpen && <div className="cv-cs-account-menu">
+                  <strong>{roleName[role] || role}</strong>
+                  <p>{email}</p>
+                  <button type="button" onClick={logout}><LogOut size={16} aria-hidden="true" />Se déconnecter</button>
+                </div>}
               </div>
+              <button type="button" className="cv-cs-mobile-toggle" aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+                aria-expanded={mobileOpen} data-tour="mobile-menu" onClick={() => setMobileOpen(o => !o)}>
+                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
             </div>
-          </header>
-          <main className="cv-main cv-green" id="main-content" tabIndex={-1}>
-            {children}
-          </main>
-          <footer className="cv-app-footer">
-            <span>
-              <span className="cv-footer-dot" />
-              CallVerse · Relation client
-            </span>
-            <span>
-              Chaque échange compte.
-              <ArrowUpRight size={12} />
-            </span>
-          </footer>
-        </div>
+          </div>
+          <RouteProgress />
+        </header>
+        {mobileOpen && (
+          <nav className="cv-cs-mobile-panel" aria-label="Navigation principale (mobile)">
+            {items.map(item => link(item, "cv-cs-mobile-link", "cv-cs-mobile-current"))}
+          </nav>
+        )}
+        <main className="cv-cs-main cv-staff-main cv-green" id="main-content" tabIndex={-1} aria-label={title}>
+          <div className="cv-cs-page" key={pathname}>{children}</div>
+        </main>
       </div>
     </SessionGuard>
   );
