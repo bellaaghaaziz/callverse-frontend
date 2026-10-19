@@ -13,7 +13,7 @@ function load() {
 test("guides cover each authenticated workspace and use unique, read-only steps", () => {
   const { tourForPath } = load();
   const scopes = [];
-  for (const path of ["/advisor", "/client", "/client/comptes", "/client/messages", "/client/aide", "/supervisor", "/admin", "/advisor/ai", "/supervisor/ai", "/admin/ai"]) {
+  for (const path of ["/advisor", "/client", "/client/comptes", "/client/messages", "/client/aide", "/advisor/historique", "/advisor/clients", "/advisor/outils", "/supervisor/conversations", "/supervisor/suivi", "/supervisor/clients", "/supervisor", "/admin", "/advisor/ai", "/supervisor/ai", "/admin/ai"]) {
     const guide = tourForPath(path); assert(guide); scopes.push(guide.scope);
     assert(guide.steps.length >= 5);
     assert.equal(new Set(guide.steps.map(s => s.id)).size, guide.steps.length);

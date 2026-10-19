@@ -9,7 +9,7 @@ export interface TourDefinition { scope: string; steps: TourStep[] }
 
 const step = (id: string, target: string, title: string, body: string): TourStep =>
   ({ id, target, title, body });
-const navigation = step("navigation", '[data-tour="navigation"], [data-tour="mobile-menu"]', "Retrouvez vos outils", "Sur ordinateur, le menu est à gauche. Sur mobile, le bouton menu ouvre les mêmes rubriques. Cette visite présente les commandes sans les activer.");
+const navigation = step("navigation", '[data-tour="navigation"], [data-tour="mobile-menu"]', "Retrouvez vos outils", "Chaque rubrique est une page du bandeau, en haut. Sur mobile, le bouton menu ouvre les mêmes rubriques. Cette visite présente les commandes sans les activer.");
 const account = step("account", '[data-tour="account"]', "Votre compte et la déconnexion", "Ouvrez ce menu pour vérifier le compte utilisé et vous déconnecter, notamment sur un ordinateur partagé.");
 const help = step("help", '[data-tour="help"]', "Le guide reste à portée de main", "Vous pouvez relancer la visite de cette page à tout moment avec ce bouton. Pour commencer à utiliser les commandes, terminez ou quittez la visite.");
 const clientWelcome = step("welcome", '[data-tour="client-welcome"]', "Bienvenue dans votre espace", "Une visite rapide de cette page. Vous pouvez avancer, revenir en arrière ou la quitter à tout moment.");
@@ -21,24 +21,41 @@ export function tourForPath(path: string): TourDefinition | null {
   const intro = step("welcome", ".cv-page-heading", "Bienvenue dans votre espace", "Prenons quelques instants pour découvrir les zones utiles. Vous pouvez avancer, revenir en arrière ou passer la visite à tout moment.");
   switch (route) {
     case "/advisor": return { scope: "advisor", steps: [intro, navigation,
+      step("activity", ".cv-activity", "Votre activité en direct", "Vos conversations en charge, les clients qui attendent dans vos files et la file la plus chargée, mis à jour en direct."),
       step("queues", ".cv-queue-section", "Prendre un contact dans une file", "Les nombres indiquent les clients en attente par compétence. Après la visite, cliquez sur une file pour prendre le prochain contact. Une file vide ne fournit aucune conversation."),
       step("inbox", ".cv-conversation-list", "Ouvrir une conversation attribuée", "Vos contacts pris en charge apparaissent ici. Sélectionnez-en un pour afficher ses messages et son dossier client."),
       step("chat", ".cv-chat-panel .cv-chat-header, .cv-chat-empty h3", "Échanger et traiter la demande", "La conversation s’affiche au centre. Vous pouvez répondre, ouvrir un ticket, escalader ou résoudre selon son état. Une réponse IA peut aussi arriver directement dans cet échange."),
       step("customer", ".cv-customer-column > .cv-card", "Consulter le dossier client", "Les informations du client, ses comptes et ses cartes apparaissent après sélection d’une conversation. Vérifiez le dossier avant toute action bancaire."),
-      step("frontdesk", "#frontdesk", "Enregistrer une nouvelle demande", "Choisissez le client dans la liste, recherchez-le par son nom si nécessaire, puis choisissez la compétence et le motif et enregistrez le contact. Le client retrouve ensuite sa demande dans sa liste de conversations."),
+      account, help] };
+    case "/advisor/historique": return { scope: "advisor-history", steps: [intro, navigation,
+      step("history-list", '[data-tour="history-list"]', "Retrouver une conversation", "Recherchez par client, conseiller ou message. Une conversation en cours s’ouvre sur votre poste ; une conversation terminée se relit ici."),
+      step("followup", ".cv-section", "Suivre les tickets", "Les tickets et gestes commerciaux qui continuent après la conversation."),
+      account, help] };
+    case "/advisor/clients": return { scope: "advisor-clients", steps: [intro, navigation,
+      step("onboarding", '[data-tour="onboarding"]', "Ouvrir un nouveau client", "Renseignez l’identité, le profil et le compte à ouvrir. Générez un mot de passe temporaire et remettez-le au client : il pourra se connecter aussitôt."),
+      step("frontdesk", "#frontdesk", "Enregistrer un contact", "Pour un client existant, choisissez-le puis orientez sa demande vers la bonne file."),
+      account, help] };
+    case "/advisor/outils": return { scope: "advisor-tools", steps: [intro, navigation,
       step("knowledge", "#knowledge", "Rechercher une procédure", "Saisissez quelques mots pour retrouver une procédure publiée et consulter les informations utiles à votre réponse."),
-      step("incidents", "#incidents", "Vérifier les incidents de service", "Avant de diagnostiquer une difficulté, consultez les incidents nationaux et ceux de la région du client."),
-      step("lab-entry", '[data-tour="ai-entry"]', "Un laboratoire séparé", "Le laboratoire local permet des essais manuels. Il est distinct du conseiller IA qui répond dans les conversations et peut nécessiter une configuration locale."),
+      step("incidents", "#incidents", "Vérifier les incidents de service", "Avant de diagnostiquer une difficulté, consultez les incidents nationaux et régionaux."),
       account, help] };
     case "/supervisor": return { scope: "supervisor", steps: [intro, navigation,
       step("kpi", ".cv-stat-grid", "Lire la situation en direct", "Ces indicateurs distinguent les contacts en attente, les échanges en cours et les conversations terminées aujourd’hui. Un tiret signifie qu’aucune mesure n’est disponible."),
+      step("charts", '[data-tour="supervision-charts"]', "Trois graphiques en direct", "La charge de chaque file, l’état des contacts du jour et l’évolution de l’attente depuis votre arrivée. Survolez une barre ou la courbe pour lire la valeur."),
       step("workforce", "#workforce", "Demander un avis sur les effectifs", "Cliquez sur « Analyser les effectifs » après la visite pour obtenir une recommandation fondée sur l’activité. Elle ne déplace aucun conseiller automatiquement."),
       step("queues", '[data-tour="supervision-queues"]', "Repérer les files sous tension", "Comparez le nombre de contacts, les temps d’attente et le respect du délai cible pour identifier les files qui ont besoin d’attention."),
-      step("alerts", "#alerts", "Suivre les alertes de la session", "Les escalades et les alertes reçues depuis votre connexion apparaissent ici. Ouvrez une alerte pour consulter la conversation concernée."),
-      step("conversations", "#conversation", "Retrouver un échange", "Recherchez et filtrez les conversations, puis ouvrez leur détail. Une conversation résolue peut afficher son évaluation qualité ; vous pouvez actualiser si l’analyse est encore en cours."),
-      step("frontdesk", "#frontdesk", "Enregistrer un contact", "Vous pouvez également rechercher un client et orienter une nouvelle demande vers une file de compétence."),
-      aiEntry, account, help] };
-    // The customer's space: one page per need, each with its own short tour.
+      step("alerts", "#alerts", "Suivre les alertes", "Les escalades et les alertes apparaissent ici. Ouvrir une alerte affiche la conversation sur la page Conversations."),
+      account, help] };
+    case "/supervisor/conversations": return { scope: "supervisor-conversations", steps: [intro, navigation,
+      step("conversations", "#conversation", "Retrouver un échange", "Recherchez et filtrez les conversations, puis ouvrez leur détail. Une conversation supprimée par le client garde sa trace ici."),
+      account, help] };
+    case "/supervisor/suivi": return { scope: "supervisor-followup", steps: [intro, navigation,
+      step("followup", ".cv-supervisor .cv-cs-reveal + .cv-cs-reveal", "Tickets et gestes commerciaux", "Changez le statut d’un ticket, ajoutez un commentaire, consultez les gestes commerciaux accordés."),
+      account, help] };
+    case "/supervisor/clients": return { scope: "supervisor-clients", steps: [intro, navigation,
+      step("onboarding", '[data-tour="onboarding"]', "Ouvrir un nouveau client", "Le client repart avec son accès, un compte courant et une carte de débit."),
+      step("frontdesk", "#frontdesk", "Enregistrer un contact", "Le contact enregistré s’ouvre ensuite dans la page Conversations."),
+      account, help] };
     case "/client": return { scope: "client", steps: [clientWelcome, clientNavigation,
       step("balance", '[data-tour="client-balance"]', "Vos avoirs en un coup d’œil", "Le total de vos comptes en euros. Le détail de chaque compte et de vos opérations se trouve dans « Mes comptes »."),
       step("actions", '[data-tour="client-actions"]', "Les actions les plus utiles", "Écrivez à un conseiller, consultez vos comptes ou téléchargez un relevé en un clic."),

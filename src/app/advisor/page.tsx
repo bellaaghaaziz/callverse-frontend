@@ -1,13 +1,9 @@
 "use client";
 
 import AppShell from "@/components/AppShell";
-import { apiFetch, errorMessage } from "@/lib/api";
-import {
-  FrontDesk,
-  KnowledgeSearch,
-  Incidents,
-} from "@/components/IntegrationTools";
+import { apiFetch } from "@/lib/api";
 import { reconnectStomp } from "@/lib/stomp";
+import { useEffect } from "react";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { useAdvisorWorkspace } from "@/hooks/useAdvisorWorkspace";
 import { useActionForms } from "@/hooks/useActionForms";
@@ -15,8 +11,7 @@ import AdvisorInbox from "@/components/advisor/Inbox";
 import AdvisorChatPanel from "@/components/advisor/ChatPanel";
 import AdvisorCustomerColumn from "@/components/advisor/CustomerColumn";
 import AdvisorActionForms from "@/components/advisor/ActionForms";
-import ConversationHistory from "@/components/advisor/ConversationHistory";
-import SupportDesk from "@/components/SupportDesk";
+import AdvisorActivity from "@/components/advisor/AdvisorActivity";
 
 export default function AdvisorPage() {
   const workspace = useAdvisorWorkspace();
@@ -34,6 +29,14 @@ export default function AdvisorPage() {
     selectedCustomerId,
   } = workspace;
   const forms = useActionForms(busy, selectedId, selectedCustomerId);
+  // « Mes conversations » sends a live conversation here to be worked on.
+  const { setActiveConvId } = workspace;
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("conversation");
+    if (!wanted) return;
+    window.history.replaceState(null, "", "/advisor");
+    void refreshMine().then(() => setActiveConvId(wanted)).catch(() => {});
+  }, [refreshMine, setActiveConvId]);
   const {
     ticket,
     setTicket,
@@ -74,7 +77,7 @@ export default function AdvisorPage() {
   }
 
   return (
-    <AppShell role="Conseiller" initials="CO" title="Espace de travail">
+    <AppShell role="Conseiller" initials="CO" title="Poste de travail">
       {activeNotification && (
         <div className="cv-toast" role="status">
           <CheckCircle2 size={17} />
@@ -115,6 +118,7 @@ export default function AdvisorPage() {
           </button>
         </div>
       </div>
+      <AdvisorActivity workspace={workspace} />
       <div className="cv-advisor-grid">
         <AdvisorInbox workspace={workspace} />
         <AdvisorChatPanel workspace={workspace} forms={forms} />
@@ -126,29 +130,6 @@ export default function AdvisorPage() {
             handleEscalate={handleEscalate}
           />
         </AdvisorCustomerColumn>
-      </div>
-      <ConversationHistory workspace={workspace} />
-      <SupportDesk role="ADVISOR" customerId={selectedCustomerId} conversationId={selectedId} />
-      <div className="cv-section">
-        <div className="cv-section-title">
-          <h2>Vos outils, à portée de main</h2>
-          <p>Pour accompagner chaque demande</p>
-        </div>
-        <div className="grid lg:grid-cols-2 gap-5">
-          <div id="frontdesk" className="scroll-mt-6">
-            <FrontDesk
-              onOpened={() => {
-                void refreshQueues().catch((e) => showToast(errorMessage(e)));
-              }}
-            />
-          </div>
-          <div id="knowledge" className="scroll-mt-6">
-            <KnowledgeSearch />
-          </div>
-        </div>
-        <div id="incidents" className="cv-section">
-          <Incidents region={customer?.region} />
-        </div>
       </div>
     </AppShell>
   );

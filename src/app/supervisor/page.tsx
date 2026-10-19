@@ -1,12 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
-import ConversationPanel from "@/components/ConversationPanel";
-import { FrontDesk } from "@/components/IntegrationTools";
 import AlertsCard from "@/components/supervisor/AlertsCard";
 import KpiTiles from "@/components/supervisor/KpiTiles";
 import QueuesCard from "@/components/supervisor/QueuesCard";
-import SupervisedConversations from "@/components/supervisor/SupervisedConversations";
+import SupervisionCharts from "@/components/supervisor/SupervisionCharts";
 import { apiFetch, errorMessage } from "@/lib/api";
 import type { LiveKpi, SupervisionAlert } from "@/lib/contracts";
 import { useConnection, useTopic } from "@/hooks/useTopic";
@@ -14,7 +12,8 @@ import { reconnectStomp } from "@/lib/stomp";
 import { RefreshCw } from "lucide-react";
 import { useCustomerNames } from "@/hooks/useCustomerNames";
 import WorkforceCard from "@/components/ai/WorkforceCard";
-import SupportDesk from "@/components/SupportDesk";
+import { useRouter } from "next/navigation";
+import { pushSample, type Sample } from "@/lib/charts";
 type AlertHistory = { content: SupervisionAlert[]; page: { number: number; totalPages: number } };
 function mergeAlerts(previous: SupervisionAlert[], incoming: SupervisionAlert[]) {
   const unique = new Map<string, SupervisionAlert>();
@@ -29,7 +28,9 @@ export default function SupervisorPage() {
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const alertNames = useCustomerNames(alerts);
   const [error, setError] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const router = useRouter();
+  // The waiting total of every live snapshot this session, for the trend chart.
+  const [waitingHistory, setWaitingHistory] = useState<Sample[]>([]);
   const connection = useConnection();
   const latestAt = useRef("");
   const requestVersion = useRef(0);
@@ -37,6 +38,7 @@ export default function SupervisorPage() {
     if (snapshot.schemaVersion !== 1 || snapshot.at < latestAt.current) return;
     latestAt.current = snapshot.at;
     setKpi(snapshot);
+    setWaitingHistory(previous => pushSample(previous, { at: snapshot.at, value: snapshot.waitingTotal }, 40));
   }, []);
   const refresh = useCallback(async () => {
     const version = ++requestVersion.current;
@@ -80,15 +82,8 @@ export default function SupervisorPage() {
     } catch (error) { setError(errorMessage(error)); }
     finally { setLoadingAlerts(false); }
   }
-  const openConversation = (id: string) => {
-    setSelectedId(id);
-    // After the panel renders, bring it into view and move focus into it.
-    requestAnimationFrame(() => {
-      const panel = document.getElementById("conversation-panel");
-      panel?.focus({ preventScroll: true });
-      panel?.scrollIntoView({ behavior: "smooth" });
-    });
-  };
+  // Alerts open the conversation on its own page.
+  const openConversation = (id: string) => router.push(`/supervisor/conversations?open=${id}`);
   return (
     <AppShell
       role="Superviseur"
@@ -135,8 +130,8 @@ export default function SupervisorPage() {
           </p>
         )}
         <KpiTiles kpi={kpi} />
+        <SupervisionCharts kpi={kpi} waitingHistory={waitingHistory} />
         <WorkforceCard />
-        <SupportDesk role="SUPERVISOR" />
         <div className="cv-two-columns">
           <QueuesCard kpi={kpi} />
           <AlertsCard
@@ -146,29 +141,6 @@ export default function SupervisorPage() {
             hasMore={moreAlerts}
             loading={loadingAlerts}
             onLoadMore={() => void loadMoreAlerts()}
-          />
-        </div>
-        <SupervisedConversations
-          refreshKey={(kpi?.at ?? "") + "|" + (alerts[0]?.occurredAt ?? "")}
-          onOpen={openConversation}
-        />
-        {selectedId && (
-          <section
-            className="cv-section"
-            id="conversation-panel"
-            aria-label="Conversation ouverte"
-            tabIndex={-1}
-          >
-            <ConversationPanel
-              key={selectedId}
-              id={selectedId}
-              role="SUPERVISOR"
-            />
-          </section>
-        )}
-        <div className="cv-section" id="frontdesk">
-          <FrontDesk
-            onOpened={(conversation) => setSelectedId(conversation.id)}
           />
         </div>
       </div>
